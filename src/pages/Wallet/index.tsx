@@ -86,8 +86,8 @@ export const Wallet = () => {
           `https://api.fck.foundation/api/v2/analytics?jetton_ids=${pageList
             .map(({ id }) => id)
             .join(",")}&time_min=${Math.floor(
-            Date.now() / 1000 - 86400
-          )}&timescale=${86400 / 6}`,
+            Date.now() / 1000 - 86400 * 7
+          )}&timescale=${86400}`,
           { signal }
         )
         .then(({ data: { data } }) => data),

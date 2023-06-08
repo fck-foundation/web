@@ -94,8 +94,8 @@ export const Search: React.FC<Props> = () => {
           `https://api.fck.foundation/api/v2/analytics?jetton_ids=${searchList
             ?.map(({ id }) => id)
             ?.join(",")}&time_min=${Math.floor(
-            Date.now() / 1000 - pagination[timescale]
-          )}&timescale=${pagination[timescale] / 6}`,
+            Date.now() / 1000 - pagination[timescale] * 7
+          )}&timescale=${pagination[timescale]}`,
           { signal }
         )
         .then(({ data: { data } }) => data),

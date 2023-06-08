@@ -9,7 +9,7 @@ import cookie from "react-cookies";
 class TonProofApiService {
   private storageKey = "access-token";
 
-  private host = "https://api.fck.foundation";
+  private host = "https://tonapi.io/";
 
   public accessToken?: string;
 
@@ -18,6 +18,21 @@ class TonProofApiService {
 
   constructor() {
     this.accessToken = cookie.load(this.storageKey) as string;
+
+    if (!this.accessToken) {
+      this.generatePayload();
+    }
+  }
+
+  generatePayload() {
+    this.connectWalletRequest = new Promise(async (resolve) => {
+      const response = await (
+        await fetch(`${this.host}/v2/tonconnect/proof`, {
+          method: "POST",
+        })
+      ).json();
+      resolve({ tonProof: response.payload as string });
+    });
   }
 
   async checkProof(proof: TonProofItemReplySuccess["proof"], account: Account) {
@@ -32,7 +47,7 @@ class TonProofApiService {
       };
 
       const response = await (
-        await fetch(`${this.host}/api/v2/ton-connect/auth`, {
+        await fetch(`https://api.fck.foundation/api/v2/ton-connect/auth`, {
           method: "POST",
           body: JSON.stringify(reqBody),
           headers: {
@@ -41,6 +56,9 @@ class TonProofApiService {
           },
         })
       ).json();
+
+      // (await this.connectWalletRequest).tonProof =
+      console;
 
       console.log("PROF RESPONSE:", response);
 
@@ -70,6 +88,7 @@ class TonProofApiService {
   reset() {
     this.accessToken = undefined;
     cookie.remove(this.storageKey);
+    this.generatePayload();
   }
 }
 

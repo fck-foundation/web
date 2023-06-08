@@ -199,6 +199,7 @@
   "promoteInfo": "Select from the list or find by name the token you would like to vote for (will be valid 2 weeks, until $1)",
   "notAvailable": "The data is not available now, try later",
   "pay": "Pay",
+  "swap": "Swap",
   "topVoted": "Top voted tokens",
   "voteProcessing": "Vote processing",
   "beta": "beta",

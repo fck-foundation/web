@@ -45,7 +45,7 @@ export const Calc: React.FC = () => {
             ?.map(({ id }) => id)
             .join(",")}&time_min=${Math.floor(
             Date.now() / 1000 - 1000
-          )}&time_max=${Math.floor(Date.now() / 1000)}&timescale=${100}`,
+          )}&time_max=${Math.floor(Date.now() / 1000)}&timescale=${300}`,
           { signal }
         )
         .then(
@@ -290,7 +290,7 @@ export const Calc: React.FC = () => {
                     )
                   }
                 >
-                  {t("pay")}
+                  {t("swap")}
                   <Spacer x={0.4} />
                   {displayCalcValue}$
                   <img

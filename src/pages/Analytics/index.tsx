@@ -12,7 +12,6 @@ import { Jettons } from "./Jettons";
 import { Header } from "./Header";
 
 export const pagination = {
-  "1M": 60,
   "5M": 300,
   "30M": 1800,
   "1H": 3600,

@@ -58,8 +58,8 @@ export function Home() {
     queryFn: async () =>
       await fck.getRecentlyAdded(
         9,
-        Math.floor(Date.now() / 1000 - pagination[timescale]),
-        pagination[timescale] / 6
+        Math.floor(Date.now() / 1000 - pagination[timescale] * 7),
+        pagination[timescale]
       ),
     refetchOnMount: false,
     refetchOnReconnect: false,
@@ -84,8 +84,8 @@ export function Home() {
     queryFn: async () =>
       await fck.getPromoting(
         9,
-        Math.floor(Date.now() / 1000 - pagination[timescale]),
-        pagination[timescale] / 6
+        Math.floor(Date.now() / 1000 - pagination[timescale] * 7),
+        pagination[timescale]
       ),
     refetchOnMount: false,
     refetchOnReconnect: false,
@@ -110,8 +110,8 @@ export function Home() {
     queryFn: async () =>
       await fck.getTrending(
         9,
-        Math.floor(Date.now() / 1000 - pagination[timescale]),
-        pagination[timescale] / 6
+        Math.floor(Date.now() / 1000 - pagination[timescale] * 7),
+        pagination[timescale]
       ),
     refetchOnMount: false,
     refetchOnReconnect: false,
