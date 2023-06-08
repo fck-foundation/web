@@ -8,21 +8,25 @@ import {
   Text,
   Spacer,
   CSS,
+  Loading,
 } from "@nextui-org/react";
 import { AppContext } from "contexts/AppContext";
 import { ABS13, ABS14 } from "assets/icons";
 import { ReactComponent as Logo } from "assets/logo.svg";
 
 interface Props {
+  loading?: boolean;
   isLogo?: boolean;
 }
 
-export const ThemeSwitcher: React.FC<Props> = ({ isLogo }) => {
+export const ThemeSwitcher: React.FC<Props> = ({ loading, isLogo }) => {
   const { nftItems, enabled, theme, setEnabled, setTheme } =
     useContext(AppContext);
 
   return isLogo ? (
-    theme.id && !!nftItems?.length ? (
+    loading ? (
+      <Loading css={{ padding: 9 }} />
+    ) : theme.id && !!nftItems?.length ? (
       <Image
         showSkeleton
         src={

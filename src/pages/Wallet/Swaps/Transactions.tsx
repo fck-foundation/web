@@ -190,7 +190,7 @@ export const Transactions = () => {
                                 </Grid>
                               </>
                             )}
-                            {(item[item?.type as any]?.jetton || item[item?.type as any].nft) && (
+                            {(item[item?.type as any]?.jetton || item[item?.type as any]?.nft) && (
                               <>
                                 <Spacer x={1} />
                                 <Grid>
@@ -217,7 +217,7 @@ export const Transactions = () => {
                                           : "TON"}
                                       </>
                                     ) : (
-                                      item[item?.type as any].nft && (
+                                      item[item?.type as any]?.nft && (
                                         <Link
                                           href={`https://getgems.io/nft/${Address.parseRaw(
                                             item[item?.type as any].nft

@@ -129,7 +129,11 @@ export const Price: React.FC<{
     [enabled]
   );
 
-  const { data: dataJetton, isLoading } = useQuery({
+  const {
+    data: dataJetton,
+    isLoading,
+    isFetching,
+  } = useQuery({
     queryKey: [
       "jetton-analytics-single",
       page,
@@ -870,17 +874,11 @@ export const Price: React.FC<{
         }}
       >
         <Card variant="flat">
-          <Card.Body css={{ p: 0 }}>
-            {isLoading && location.pathname.includes("price") && (
-              <Loading
-                css={{
-                  position: "absolute",
-                  left: "50%",
-                  top: "50%",
-                  transform: "translate3d(-50%, -50%, 0)",
-                }}
-              />
-            )}
+          <Card.Body
+            css={{
+              p: 0,
+            }}
+          >
             <div style={{ position: "absolute", bottom: 22 }}>
               <Grid.Container alignItems="center" wrap="nowrap">
                 <Grid css={{ display: "flex" }}>
@@ -892,7 +890,7 @@ export const Price: React.FC<{
                       mb: "$4",
                     }}
                   >
-                    <ThemeSwitcher isLogo />
+                    <ThemeSwitcher isLogo loading={isLoading || isFetching} />
                   </Badge>
                 </Grid>
                 <Grid>

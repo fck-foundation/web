@@ -124,53 +124,6 @@ export const Calc: React.FC = () => {
               TON network
             </Text>
           </Grid>
-          <Grid css={{ position: "absolute", right: 16, top: 16 }}>
-            <Grid.Container alignItems="center">
-              <Grid>
-                <Text>1 TON</Text>
-              </Grid>
-              <Spacer x={0.4} />
-              <Grid>
-                <Text>≈</Text>
-              </Grid>
-              <Spacer x={0.4} />
-              <Grid>
-                <Button
-                  flat
-                  color="secondary"
-                  css={{
-                    minWidth: "auto",
-                    overflow: "visible",
-                  }}
-                  onPress={() =>
-                    globalThis.open(
-                      `https://dedust.io/swap/${
-                        from !== "TON"
-                          ? Address.parseRaw(
-                              dataJettons[from].address
-                            ).toString()
-                          : "TON"
-                      }/${
-                        to !== "TON"
-                          ? Address.parseRaw(dataJettons[to].address).toString()
-                          : "TON"
-                      }`,
-                      "_blank"
-                    )
-                  }
-                >
-                  {displayCalcValue}
-                  $
-                  <Spacer x={0.4} />
-                  <img
-                    src="/img/dedust.webp"
-                    alt="DeDust.io"
-                    style={{ height: 32 }}
-                  />
-                </Button>
-              </Grid>
-            </Grid.Container>
-          </Grid>
         </Grid.Container>
       </Grid>
       <Spacer y={1} />
@@ -236,7 +189,12 @@ export const Calc: React.FC = () => {
             </Grid.Container>
           </Grid>
           <Grid>
-            <Button flat size="sm" css={{ minWidth: "auto", p: 4 }} onPress={onSwap}>
+            <Button
+              flat
+              size="sm"
+              css={{ minWidth: "auto", p: 4 }}
+              onPress={onSwap}
+            >
               <ARR58
                 style={{
                   fill: "currentColor",
@@ -302,6 +260,45 @@ export const Calc: React.FC = () => {
                     </Dropdown.Menu>
                   </Dropdown>
                 )}
+              </Grid>
+            </Grid.Container>
+          </Grid>
+          <Grid css={{ w: "auto" }}>
+            <Grid.Container alignItems="center" justify="flex-end">
+              <Grid>
+                <Button
+                  flat
+                  color="secondary"
+                  css={{
+                    minWidth: "auto",
+                    overflow: "visible",
+                  }}
+                  onPress={() =>
+                    globalThis.open(
+                      `https://dedust.io/swap/${
+                        from !== "TON"
+                          ? Address.parseRaw(
+                              dataJettons[from].address
+                            ).toString()
+                          : "TON"
+                      }/${
+                        to !== "TON"
+                          ? Address.parseRaw(dataJettons[to].address).toString()
+                          : "TON"
+                      }`,
+                      "_blank"
+                    )
+                  }
+                >
+                  {t("pay")}
+                  <Spacer x={0.4} />
+                  {displayCalcValue}$
+                  <img
+                    src="/img/dedust.webp"
+                    alt="DeDust.io"
+                    style={{ height: 32, position: 'absolute', bottom: -16, right: -16 }}
+                  />
+                </Button>
               </Grid>
             </Grid.Container>
           </Grid>
