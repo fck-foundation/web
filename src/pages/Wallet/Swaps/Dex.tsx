@@ -248,7 +248,11 @@ export const Dex: React.FC<Props> = ({
             <Button
               css={{ borderRadius: 0 }}
               onPress={() =>
-                document.getElementById("tc-connect-button")?.click()
+                (
+                  Array.from(
+                    document.getElementsByTagName("tc-root")[0]?.childNodes
+                  )[0] as any
+                )?.click()
               }
             >
               {t("connectWallet")}

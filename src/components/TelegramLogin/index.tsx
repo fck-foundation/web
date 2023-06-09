@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { Component, createRef, ReactNode } from 'react';
 
 export enum TLoginButtonSize {

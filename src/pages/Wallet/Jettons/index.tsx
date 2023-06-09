@@ -14,7 +14,6 @@ import { GEN17 } from "assets/icons";
 import axios from "axios";
 import { useTonAddress } from "@tonconnect/ui-react";
 import { AppContext } from "contexts";
-import qrcode from "qrcode-generator";
 import { useQuery } from "@tanstack/react-query";
 import { _, normalize } from "utils";
 import { useTranslation } from "react-i18next";

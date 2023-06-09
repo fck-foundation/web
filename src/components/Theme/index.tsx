@@ -1,15 +1,5 @@
-import { useContext, useEffect, useState } from "react";
-import {
-  Button,
-  Popover,
-  Image,
-  Grid,
-  Badge,
-  Text,
-  Spacer,
-  CSS,
-  Loading,
-} from "@nextui-org/react";
+import { useContext } from "react";
+import { Button, Image, Grid, Badge, Spacer, Loading } from "@nextui-org/react";
 import { AppContext } from "contexts/AppContext";
 import { ABS13, ABS14 } from "assets/icons";
 import { ReactComponent as Logo } from "assets/logo.svg";

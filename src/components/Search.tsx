@@ -40,7 +40,7 @@ export const Search: React.FC<Props> = () => {
   const refJetton = useRef<HTMLDivElement>(null);
   const address = useTonAddress();
   // const [present] = useIonActionSheet();
-  const { jettons, timescale, setOpen } = useContext(AppContext);
+  const { authorized, jettons, timescale, setOpen } = useContext(AppContext);
   const tokens = cookie.load("tokens");
   const [widths, setWidths] = useState({
     logo: 0,
@@ -221,6 +221,20 @@ export const Search: React.FC<Props> = () => {
     setOpen(false);
   }, [location.pathname]);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (ref.current && !ref.current.contains(event.target)) {
+        setSearch("");
+      }
+    };
+    document.addEventListener("click", handleClickOutside, true);
+    return () => {
+      document.removeEventListener("click", handleClickOutside, true);
+    };
+  }, [ref]);
+
+  const isLoadingWallet = typeof authorized === "undefined";
+
   return (
     <Grid.Container ref={ref} className="findcheck" wrap="nowrap">
       <Grid
@@ -243,7 +257,13 @@ export const Search: React.FC<Props> = () => {
           onClick={() => navigate("/")}
         >
           <Grid.Container alignItems="center" wrap="nowrap">
-            <Grid css={{ display: "flex", ...(active && { display: "none" }), zIndex: 2 }}>
+            <Grid
+              css={{
+                display: "flex",
+                ...(active && { display: "none" }),
+                zIndex: 2,
+              }}
+            >
               <Badge
                 size="xs"
                 content={t("beta")}
@@ -254,7 +274,7 @@ export const Search: React.FC<Props> = () => {
                   ...(active && { display: "none" }),
                 }}
               >
-                <ThemeSwitcher isLogo />
+                <ThemeSwitcher isLogo loading={isLoadingWallet} />
               </Badge>
             </Grid>
             <Grid>
@@ -328,7 +348,10 @@ export const Search: React.FC<Props> = () => {
         </Grid.Container>
       </Grid>
 
-      <Grid className="findcheck__trigger" css={{ marginLeft: !active ? "$4" : "$0" }}>
+      <Grid
+        className="findcheck__trigger"
+        css={{ marginLeft: !active ? "$4" : "$0" }}
+      >
         <Button
           flat
           size="sm"
@@ -357,29 +380,6 @@ export const Search: React.FC<Props> = () => {
               </Button>
             </Button.Group>
           </Grid>
-          <Spacer y={0.4} />
-          {["all", "wallets"].includes(tab) &&
-            dataWalletSearch?.map((wallet, i) => (
-              <>
-                <Grid key={i} className="jetton-card" xs={12}>
-                  <Card
-                    variant="bordered"
-                    isPressable
-                    onPress={() => {
-                      setSearch("");
-                      setActive(false);
-                      setOpen(false);
-                      navigate(
-                        `/wallet/${Address.parse(wallet.address).toString()}`
-                      );
-                    }}
-                  >
-                    <Card.Header>{wallet.name}</Card.Header>
-                  </Card>
-                </Grid>
-                <Spacer y={0.4} />
-              </>
-            ))}
           {["all", "tokens"].includes(tab) && (
             <AnimatePresence>
               {isLoadingStatsSearch ? (
@@ -608,6 +608,28 @@ export const Search: React.FC<Props> = () => {
               )}
             </AnimatePresence>
           )}
+          {["all", "wallets"].includes(tab) &&
+            dataWalletSearch?.map((wallet, i) => (
+              <>
+                <Grid key={i} className="jetton-card" xs={12}>
+                  <Card
+                    variant="bordered"
+                    isPressable
+                    onPress={() => {
+                      setSearch("");
+                      setActive(false);
+                      setOpen(false);
+                      navigate(
+                        `/wallet/${Address.parse(wallet.address).toString()}`
+                      );
+                    }}
+                  >
+                    <Card.Header>{wallet.name}</Card.Header>
+                  </Card>
+                </Grid>
+                {dataWalletSearch.length - 1 !== i && <Spacer y={0.4} />}
+              </>
+            ))}
         </div>
       )}
     </Grid.Container>

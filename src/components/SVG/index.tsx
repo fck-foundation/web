@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 export const SvgInline = (props) => {
   const [svg, setSvg] = useState<any>(null);

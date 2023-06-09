@@ -5,41 +5,28 @@ import {
   useEffect,
   useState,
   Dispatch,
-  useCallback,
 } from "react";
 import cookie from "react-cookies";
+import { useTranslation } from "react-i18next";
 import { ToastContainer } from "react-toastify";
 import {
-  THEME,
   TonConnectUIProvider,
   useTonAddress,
   useTonConnectUI,
   useTonWallet,
 } from "@tonconnect/ui-react";
+import { CHAIN } from "@tonconnect/sdk";
 import { useQuery } from "@tanstack/react-query";
-import axios from "libs/axios";
-import { coingecko } from "api";
-import { fck } from "api/fck";
-import useDarkMode from "use-dark-mode";
+import { TonClient } from "ton";
+import { coingecko, fck } from "api";
 import {
-  JettonApi,
-  DNSApi,
   NFTApi,
   RawBlockchainApi,
-  SubscriptionApi,
-  TraceApi,
-  WalletApi,
   Configuration,
   NftItemRepr,
 } from "tonapi-sdk-js";
 import { TonProofApi } from "TonProofApi";
-import { useTranslation } from "react-i18next";
-import { CHAIN } from "@tonconnect/sdk";
-import { useTheme } from "next-themes";
-import { Loading } from "@nextui-org/react";
 import { getCookie } from "utils";
-import { TonClient } from "ton";
-import { useLocation } from "react-router-dom";
 
 import "react-toastify/dist/ReactToastify.css";
 
@@ -55,6 +42,8 @@ export type JType = {
   address: string;
   decimals: number;
   verified: number;
+  dedust_lp_address?: string;
+  dedust_swap_address?: string;
   data?: any[];
   stats: { promoting_points: number };
 };
@@ -64,7 +53,7 @@ export type JScale = "1M" | "5M" | "30M" | "1H" | "4H" | "1D" | "7D" | "30D";
 interface AppProps {
   isBottom: boolean;
   open: boolean;
-  authorized: boolean;
+  authorized?: boolean;
   address: string;
   rawAddress: string;
   nftItems?: NftItemRepr[];
@@ -161,9 +150,7 @@ const AppProviderWrapper = ({
   const [data, setData] = useState({});
   const [isBottom, setIsBottom] = useState(false);
   const [jetton, setJetton] = useState<Record<string, any>>({});
-  const [authorized, setAuthorized] = useState(
-    !!globalThis.localStorage.getItem("access-token")
-  );
+  const [authorized, setAuthorized] = useState<boolean>();
   const [timescale, setTimescale] = useState<
     "1M" | "5M" | "30M" | "1H" | "4H" | "1D" | "7D" | "30D"
   >((cookie.load("timescale") as any) || "1D");
@@ -183,59 +170,47 @@ const AppProviderWrapper = ({
   }, [list]);
 
   useEffect(() => {
+    tonConnectUI.setConnectRequestParameters({ state: "loading" });
     tonConnectUI.connectionRestored.then((restored) => {
       if (restored) {
         console.log(
           "Connection restored. Wallet:",
           JSON.stringify({
             ...tonConnectUI.wallet,
-            ...tonConnectUI.walletInfo,
           })
         );
+        setAuthorized(true);
       } else {
-        console.log("Connection was not restored.");
+        tonConnectUI.disconnect();
+        localStorage.removeItem("access-token");
+        cookie.remove("access-token");
+        setAuthorized(false);
+        document
+          .getElementsByTagName("html")[0]
+          .classList.remove(`${theme.color}${enabled ? "" : "-light"}-theme`);
+        document
+          .getElementsByTagName("html")[0]
+          .classList.add(`${enabled ? "dark" : "light"}-theme`);
+        setTheme({ color: enabled ? "dark" : "light" });
       }
+
+      tonConnectUI.setConnectRequestParameters({ state: "ready" as any });
     });
   }, []);
 
-  useEffect(
-    () =>
-      tonConnectUI.onStatusChange(async (w) => {
-        if (!w || w.account.chain === CHAIN.TESTNET) {
-          TonProofApi.reset();
-          setAuthorized(false);
-          return;
-        }
-
-        if (w.connectItems?.tonProof && "proof" in w.connectItems.tonProof) {
-          await TonProofApi.checkProof(
-            w.connectItems.tonProof.proof,
-            w.account
-          );
-        }
-
-        if (!TonProofApi.accessToken) {
-          tonConnectUI.disconnect();
-          setAuthorized(false);
-          return;
-        } else {
-          setAuthorized(true);
-        }
-      }),
-    [tonConnectUI]
-  );
-
   useEffect(() => {
-    const get = async () => {
-      if (wallet) {
-        const response = await TonProofApi.getAccountInfo(wallet.account);
-
-        setData(response);
+    tonConnectUI.onStatusChange(async (w) => {
+      if (!w || w.account.chain === CHAIN.TESTNET) {
+        TonProofApi.reset();
+        setAuthorized(false);
+        return;
       }
-    };
 
-    get();
-  }, [wallet]);
+      if (w.connectItems?.tonProof && "proof" in w.connectItems.tonProof) {
+        await TonProofApi.checkProof(w.connectItems.tonProof.proof, w.account);
+      }
+    });
+  }, [tonConnectUI]);
 
   useEffect(() => {
     if (theme) {
@@ -373,10 +348,7 @@ const AppProviderWrapper = ({
 export const AppProvider = ({ children }) => {
   return (
     <>
-      <TonConnectUIProvider
-        manifestUrl="https://fck.foundation/tonconnect-manifest.json"
-        getConnectParameters={() => TonProofApi.connectWalletRequest}
-      >
+      <TonConnectUIProvider manifestUrl="https://fck.foundation/tonconnect-manifest.json">
         <AppProviderWrapper>
           <ToastContainer />
           {children}

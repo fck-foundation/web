@@ -27,17 +27,6 @@ code {
   box-sizing: border-box;
 }
 
-#tc-wallets-modal-container {
-  img {
-    min-width: 52px;
-    min-height: 52px;
-  }
-  > div:last-child > div > div > div:last-child {
-    border-radius: 100%;
-    overflow: hidden;
-  }
-}
-
 .scene {
   width: 380px;
   perspective: 70vw;
@@ -309,31 +298,8 @@ html:not([class*="light-theme"]) .diamond-item {
   max-width: 100%;
 }
 
-#tc-widget-root ul {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-
-  li {
-    display: flex;
-    justify-content: center;
-    width: calc(100% / 3 - 6px);
-    margin: 0;
-  }
-}
-
-#tc-widget-root > div {
-  z-index: 999999;
-
-  > div {
-    right: 0;
-    position: absolute;
-    top: 0;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
+#tc-widget-root > tc-root > div {
+  z-index: 999999;  
 }
 
 .holder-address {
@@ -401,7 +367,7 @@ html:not([class*="light-theme"]) .diamond-item {
 }
 
 @media (max-width: 480px) {
-  #tc-connect-button > div {
+  #ton-connect-button > div {
     display: none;
   }
 }

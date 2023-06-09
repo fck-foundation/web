@@ -7,23 +7,18 @@ import {
   useRef,
   useState,
 } from "react";
-import cookie, { load } from "react-cookies";
+import cookie from "react-cookies";
 import { useTranslation } from "react-i18next";
-import useDarkMode from "use-dark-mode";
+import { toast } from "react-toastify";
 import {
   Badge,
-  Button,
   Card,
   Grid,
   Loading,
   Spacer,
   Table,
   Link,
-  Avatar,
   Text,
-  Dropdown,
-  Container,
-  Divider,
 } from "@nextui-org/react";
 import {
   ChartOptions,
@@ -38,45 +33,29 @@ import {
 import moment from "moment";
 import { AppContext } from "contexts/AppContext";
 import axios from "libs/axios";
-import { _, nearestDate } from "utils";
-import {
-  useInfiniteQuery,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { _, copyTextToClipboard } from "utils";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toFixed } from "utils/price";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import {
-  ARR01,
-  ARR02,
-  ARR12,
-  ARR20,
   ARR36,
-  ARR40,
   ARR42,
-  ARR43,
   ARR58,
   ARR59,
-  FIL02,
-  GEN02,
-  GEN13,
-  GEN15,
+  Copy,
   GEN20,
-  GRA01,
-  GRA03,
   GRA04,
-  GRA05,
-  GRA06,
-  GRA07,
   GRA11,
   GRA12,
 } from "assets/icons";
 import { colors } from "colors";
-import { Volume } from "../Volume";
 import { pagination } from "pages/Analytics";
 import { useDebounce } from "hooks";
 import { normalize } from "utils";
 import { ThemeSwitcher } from "components";
+import { Address } from "ton-core";
+
+import { Volume } from "../Volume";
 
 export const Price: React.FC<{
   timescale: string;
@@ -98,12 +77,21 @@ export const Price: React.FC<{
   const [info, setInfo] = useState<Record<string, any>>();
   const [metadata, setMetadata] = useState<Record<string, any>>({});
   const [results, setResults] = useState<Record<string, any>>([]);
-  const [seeMore, setSeeMore] = useState(false);
   const [saved, setSaved] = useState(false);
   const [hasNextPage, setHasNextPage] = useState(true);
   const [changes, setChanges] = useState<Record<string, any>>({});
+  const [isLoad, setIsLoad] = useState(false);
 
   const value = useDebounce(loadingPage, 300);
+
+  useEffect(() => {
+    setChanges({
+      jetton: jetton?.id,
+      timescale,
+      location: location.pathname,
+      theme: theme?.color,
+    });
+  }, [jetton, timescale, location.pathname, theme]);
 
   useEffect(() => {
     setPage(value);
@@ -158,7 +146,7 @@ export const Price: React.FC<{
             data?.sources?.DeDust?.jettons[jetton?.id?.toString()]?.prices
         );
     },
-    refetchOnMount: false,
+    // refetchOnMount: false,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
     cacheTime: 60 * 1000,
@@ -390,6 +378,7 @@ export const Price: React.FC<{
 
   useEffect(() => {
     if (
+      !isLoad ||
       !chartRef.current ||
       changes?.jetton !== jetton?.id ||
       changes?.timescale !== timescale ||
@@ -473,6 +462,7 @@ export const Price: React.FC<{
         ],
         []
       );
+      setIsLoad(true);
     }
 
     return () => {
@@ -482,20 +472,11 @@ export const Price: React.FC<{
       //   changes?.location !== location?.pathname ||
       //   changes?.theme !== theme?.color
       // ) {
-      //   chartRef.current!.remove();
+      // chartRef.current?.remove();
       // }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [changes, jetton, timescale, location.pathname, theme]);
-
-  useEffect(() => {
-    setChanges({
-      jetton: jetton?.id,
-      timescale,
-      location: location.pathname,
-      theme: theme?.color,
-    });
-  }, [jetton, timescale, location.pathname, theme]);
+  }, [changes, jetton, timescale, location, chartOptions, theme, isLoad]);
 
   useEffect(() => {
     if (jettons?.length) {
@@ -510,10 +491,10 @@ export const Price: React.FC<{
 
         axios
           .get(
-            `https://tonobserver.com/api/v2/jetton_top_holders/${dataJetton.address}?limit=100`
+            `https://api.ton.cat/v2/contracts/jetton_minter/${dataJetton.address}/holders`
           )
-          .then(({ data: { result } }) => {
-            setResults(result);
+          .then(({ data }) => {
+            setResults(data);
           });
 
         axios
@@ -558,6 +539,19 @@ export const Price: React.FC<{
       setSaved(true);
     }
   }, [ref, isLoading, jetton, location.pathname]);
+
+  const jettonAddress = useMemo(
+    () => jetton?.address && Address.parseRaw(jetton?.address).toString(),
+    [jetton]
+  );
+
+  const onCopy = () => {
+    copyTextToClipboard(jettonAddress);
+    toast.success(t("copied"), {
+      position: toast.POSITION.TOP_RIGHT,
+      theme: enabled ? "dark" : "light",
+    });
+  };
 
   return onRef ? (
     <div
@@ -933,72 +927,92 @@ export const Price: React.FC<{
         </Card>
       </Grid>
 
-      {!seeMore && (
-        <>
-          <Grid css={{ mt: 10 }}>
-            <Button
-              flat
-              css={{ minWidth: "auto" }}
-              onPress={() => setSeeMore(true)}
-            >
-              {t("seeMore")}
-            </Button>
-          </Grid>
-        </>
-      )}
-      {seeMore && (
-        <Grid>
-          <Spacer y={0.4} />
-          <Card variant="flat">
-            <Card.Body>
-              <Grid.Container alignItems="center">
+      <Grid xs={12}>
+        <Card variant="flat">
+          <Card.Body>
+            {!metadata?.total_supply ? (
+              <Grid.Container justify="center">
                 <Grid>
-                  <ARR58
-                    style={{
-                      fill: "currentColor",
-                      fontSize: 32,
-                    }}
-                  />
-                </Grid>
-                <Spacer x={0.4} />
-                <Grid>
-                  <Text
-                    size={24}
-                    css={{
-                      textGradient: "45deg, $primary -20%, $secondary 100%",
-                    }}
-                    weight="bold"
-                  >
-                    {metadata?.total_supply
-                      .slice(
-                        0,
-                        metadata?.total_supply.length - metadata?.decimals
-                      )
-                      .replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")}
-                  </Text>
-                </Grid>
-                <Spacer x={0.4} />
-                <Grid>
-                  <Text size={18}>{metadata?.symbol}</Text>
+                  <Loading />
                 </Grid>
               </Grid.Container>
-              <Text css={{ overflowWrap: "anywhere" }}>
-                {metadata?.description}
-              </Text>
-              {metadata.websites?.map((site, i) => (
-                <Link key={i} href={site} target="_blank">
-                  {site}
-                </Link>
-              ))}
-              {metadata.social?.map((social, i) => (
-                <Link key={i} href={social} target="_blank">
-                  {social}
-                </Link>
-              ))}
-            </Card.Body>
-          </Card>
-        </Grid>
-      )}
+            ) : (
+              <>
+                <Grid.Container alignItems="center">
+                  <Grid xs={12}>
+                    <Grid.Container
+                      alignItems="center"
+                      css={{ color: "$primary", cursor: "pointer" }}
+                      onClick={onCopy}
+                    >
+                      {jettonAddress.slice(0, 4)}
+                      ...
+                      {jettonAddress.slice(-4)}
+                      <Spacer x={0.4} />
+                      <Copy
+                        style={{
+                          fill: "currentColor",
+                          fontSize: 18,
+                        }}
+                      />
+                    </Grid.Container>
+                  </Grid>
+                  <Grid>
+                    <ARR58
+                      style={{
+                        fill: "currentColor",
+                        fontSize: 32,
+                      }}
+                    />
+                  </Grid>
+                  <Spacer x={0.4} />
+                  <Grid>
+                    <Text
+                      size={24}
+                      css={{
+                        textGradient: "45deg, $primary -20%, $secondary 100%",
+                      }}
+                      weight="bold"
+                    >
+                      {metadata?.total_supply
+                        ?.slice(
+                          0,
+                          metadata?.total_supply.length - metadata?.decimals
+                        )
+                        .replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")}
+                    </Text>
+                  </Grid>
+                  <Spacer x={0.4} />
+                  <Grid>
+                    <Text size={18}>{metadata?.symbol}</Text>
+                  </Grid>
+                  <Spacer x={0.4} />
+                  <Grid>
+                    (
+                    <Text size={18} b>
+                      {results?.total}
+                    </Text>{" "}
+                    {t("holders")})
+                  </Grid>
+                </Grid.Container>
+                <Text css={{ overflowWrap: "anywhere" }}>
+                  {metadata?.description}
+                </Text>
+                {metadata.websites?.map((site, i) => (
+                  <Link key={i} href={site} target="_blank">
+                    {site}
+                  </Link>
+                ))}
+                {metadata.social?.map((social, i) => (
+                  <Link key={i} href={social} target="_blank">
+                    {social}
+                  </Link>
+                ))}
+              </>
+            )}
+          </Card.Body>
+        </Card>
+      </Grid>
       <Grid xs={12}>
         <Card variant="flat">
           <Card.Body css={{ p: 0 }}>
@@ -1008,75 +1022,49 @@ export const Price: React.FC<{
                 <Table.Column>{jetton.symbol}</Table.Column>
               </Table.Header>
               <Table.Body>
-                {results
-                  ?.filter((result) => !result.info.jettonWallet.isFake)
-                  ?.map((result, i) => {
-                    return (
-                      <Table.Row key={i}>
-                        <Table.Cell>
-                          <Link
-                            href={`/wallet/${result.info.jettonWallet.ownerAddress}`}
-                          >
-                            {infoAddress[
-                              result.info.jettonWallet.ownerAddress
-                            ] ? (
-                              <Badge
-                                placement="bottom-left"
-                                content={
-                                  infoAddress[
-                                    result.info.jettonWallet.ownerAddress
-                                  ].text
-                                }
-                                color={
-                                  infoAddress[
-                                    result.info.jettonWallet.ownerAddress
-                                  ].color
-                                }
-                                css={{ ml: 25 }}
-                              >
-                                <div className="holder-address">
-                                  {result.info.jettonWallet.ownerAddress.slice(
-                                    0,
-                                    4
-                                  )}
-                                  ...
-                                  {result.info.jettonWallet.ownerAddress.slice(
-                                    -4
-                                  )}
-                                </div>
-                              </Badge>
-                            ) : (
+                {results?.holders?.map((result, i) => {
+                  return (
+                    <Table.Row key={i}>
+                      <Table.Cell>
+                        <Link href={`/wallet/${result.holder_address}`}>
+                          {infoAddress[result.holder_address] ? (
+                            <Badge
+                              placement="bottom-left"
+                              content={infoAddress[result.holder_address].text}
+                              color={infoAddress[result.holder_address].color}
+                              css={{ ml: 25 }}
+                            >
                               <div className="holder-address">
-                                {result.info.jettonWallet.ownerAddress.slice(
-                                  0,
-                                  4
-                                )}
+                                {result.holder_address.slice(0, 4)}
                                 ...
-                                {result.info.jettonWallet.ownerAddress.slice(
-                                  -4
-                                )}
+                                {result.holder_address.slice(-4)}
                               </div>
-                            )}
-                          </Link>
-                        </Table.Cell>
-                        <Table.Cell>
-                          {parseFloat(
-                            normalize(
-                              result.info.jettonWallet.balance,
-                              jetton?.decimals
-                            ).toFixed(jetton?.decimals)
+                            </Badge>
+                          ) : (
+                            <div className="holder-address">
+                              {result.holder_address.slice(0, 4)}
+                              ...
+                              {result.holder_address.slice(-4)}
+                            </div>
                           )}
-                        </Table.Cell>
-                      </Table.Row>
-                    );
-                  })}
+                        </Link>
+                      </Table.Cell>
+                      <Table.Cell>
+                        {parseFloat(
+                          normalize(result.balance, jetton?.decimals).toFixed(
+                            jetton?.decimals
+                          )
+                        ).toLocaleString()}
+                      </Table.Cell>
+                    </Table.Row>
+                  );
+                })}
               </Table.Body>
               <Table.Pagination
                 shadow
                 noMargin
                 align="center"
                 rowsPerPage={5}
-                // onPageChange={page => console.log({ page })}
               />
             </Table>
           </Card.Body>

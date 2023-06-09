@@ -1,0 +1,13 @@
+<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="copy_24px">
+<g id="&#226;&#134;&#179; Light Color">
+<path id="Mask" opacity="0.5" d="M8 7H19V21H8V7Z" fill="currentColor" fill-opacity="0.54"/>
+</g>
+<g id="&#226;&#134;&#179; Dark Color">
+<path id="Mask_2" d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1Z" fill="currentColor" fill-opacity="0.54"/>
+</g>
+<g id="&#226;&#134;&#179; Dark Color_2">
+<path id="Mask_3" fill-rule="evenodd" clip-rule="evenodd" d="M8 5H19C20.1 5 21 5.9 21 7V21C21 22.1 20.1 23 19 23H8C6.9 23 6 22.1 6 21V7C6 5.9 6.9 5 8 5ZM8 21H19V7H8V21Z" fill="currentColor" fill-opacity="0.54"/>
+</g>
+</g>
+</svg>

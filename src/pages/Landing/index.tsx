@@ -1,51 +1,25 @@
-import { useContext, useMemo, useState, useEffect, lazy } from "react";
+import { useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
-import Earth from "3d-earth";
-import { axios } from "libs";
-import {
-  Button,
-  Grid,
-  Spacer,
-  Text,
-  Image,
-  Input,
-  Dropdown,
-  Card,
-  Link,
-  Container,
-} from "@nextui-org/react";
+import { Button, Grid, Spacer, Text, Card } from "@nextui-org/react";
 import { toast } from "react-toastify";
 import cookie from "react-cookies";
 import { Calc, FCard, Promote } from "components";
 import { fck } from "api/fck";
-import { ARR01, ARR07, FIL21, GEN02, GEN11, GEN20 } from "assets/icons";
+import { ARR07, GEN02, GEN11, GEN20 } from "assets/icons";
 import { getList } from "utils/analytics";
 
-import { AppContext, JType } from "../../contexts";
-import getEarthConfig from "../../earth.config";
+import { AppContext } from "../../contexts";
 import { pagination } from "../Analytics";
-import {
-  useTonAddress,
-  useTonConnectUI,
-  useTonWallet,
-} from "@tonconnect/ui-react";
-import { getCookie } from "utils";
-import { data } from "autoprefixer";
 
 export type TimeScale = "1M" | "5M" | "30M" | "1H" | "4H" | "1D" | "30D";
 
 export function Home() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const address = useTonAddress();
-  const wallet = useTonWallet();
-  const [tonConnectUi] = useTonConnectUI();
   const { jettons, enabled, refetchJettons } = useContext(AppContext);
-  const [timescale, setTimescale] = useState<TimeScale>(
-    cookie.load("timescale") || "1D"
-  );
+  const [timescale] = useState<TimeScale>(cookie.load("timescale") || "1D");
   const [voteId, setVoteId] = useState<number>();
   const [processing, setProcessing] = useState(
     cookie.load("processing")
@@ -76,10 +50,7 @@ export function Home() {
     },
   });
 
-  const {
-    data: dataPromo,
-    isLoading: isLoadingPromo,
-  } = useQuery({
+  const { data: dataPromo, isLoading: isLoadingPromo } = useQuery({
     queryKey: ["promo-jettons"],
     queryFn: async () =>
       await fck.getPromoting(
@@ -102,10 +73,7 @@ export function Home() {
     },
   });
 
-  const {
-    data: dataTrending,
-    isLoading: isLoadingTrending,
-  } = useQuery({
+  const { data: dataTrending, isLoading: isLoadingTrending } = useQuery({
     queryKey: ["trending-jettons"],
     queryFn: async () =>
       await fck.getTrending(
@@ -251,9 +219,6 @@ export function Home() {
             </Card.Body>
           </Card>
         </Grid>
-        {/* <Grid md={4}>
-          <div id="earth" style={{ width: 400, height: 400 }} />
-        </Grid> */}
         <Grid xs={12} sm={4}>
           <FCard
             isLoading={loading}

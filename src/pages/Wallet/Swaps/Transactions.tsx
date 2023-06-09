@@ -84,7 +84,7 @@ export const Transactions = () => {
                   <Spacer x={1} />
                   <Grid>
                     <Text css={{ whiteSpace: "nowrap" }}>
-                      {moment(event?.timestamp).format("DD.MM.YY HH:mm")}
+                      {moment(event?.timestamp * 1000).format("DD.MM.YY HH:mm")}
                     </Text>
                   </Grid>
                 </Grid.Container>

@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+import Skeleton from "react-loading-skeleton";
 import {
   Card,
   Grid,
@@ -6,11 +8,9 @@ import {
   Spacer,
   Badge,
 } from "@nextui-org/react";
-import Skeleton from "react-loading-skeleton";
+import { ARR20, GEN03 } from "assets/icons";
 
 import { FJetton } from "../Jetton";
-import { Link } from "react-router-dom";
-import { ARR20, GEN03 } from "assets/icons";
 
 export type Item = {
   id?: number;
@@ -183,7 +183,7 @@ export const FCard: React.FC<React.PropsWithChildren<Props>> = ({
                               color="primary"
                               css={{
                                 flexWrap: "nowrap",
-                                p: "$0 $4 $0 $0",
+                                p: "$0 $4 $0 $1",
                                 cursor: "pointer",
                               }}
                               onClick={(e) => {

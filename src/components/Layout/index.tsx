@@ -1,18 +1,16 @@
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   Navbar,
   Text,
   Dropdown,
-  Avatar,
   Spacer,
-  User,
   Container,
   Card,
   Button,
   Grid,
-  Badge,
   Loading,
-  Popover,
   Divider,
 } from "@nextui-org/react";
 import cookie from "react-cookies";
@@ -22,21 +20,14 @@ import {
   useTonConnectUI,
   useTonWallet,
 } from "@tonconnect/ui-react";
-
-import { colors } from "../../colors";
-import { TLoginButton, TLoginButtonSize, TUser } from "../TelegramLogin";
-import { ThemeSwitcher } from "../Theme";
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { LanguageSwitcher, Search } from "components";
 import { AppContext } from "contexts";
 import { default as Logo } from "assets/logo.svg";
-import { SvgInline } from "../SVG";
 import { GEN16, TG, TW, ABS28, GEN02 } from "assets/icons";
-import { useTranslation } from "react-i18next";
-import { LanguageSwitcher } from "components/Language";
-import useDarkMode from "use-dark-mode";
-import { useTheme } from "next-themes";
-import { TonProofApi } from "TonProofApi";
-import { Search } from "components/Search";
+
+import { TUser } from "../TelegramLogin";
+import { ThemeSwitcher } from "../Theme";
+import { SvgInline } from "../SVG";
 
 export const Layout = ({ children }: { children?: any }) => {
   const ref = useRef(null);
@@ -47,8 +38,15 @@ export const Layout = ({ children }: { children?: any }) => {
   const wallet = useTonWallet();
   const address = useTonAddress();
   const [tonConnectUI] = useTonConnectUI();
-  const { nftItems, enabled, theme, setTheme, setAuthorized, setIsBottom } =
-    useContext(AppContext);
+  const {
+    authorized,
+    nftItems,
+    enabled,
+    theme,
+    setTheme,
+    setAuthorized,
+    setIsBottom,
+  } = useContext(AppContext);
   const [toggle, setToggle] = useState(false);
   const [user, setUser] = useState<TUser>();
 
@@ -74,7 +72,11 @@ export const Layout = ({ children }: { children?: any }) => {
         setUser(undefined);
         break;
       case "connect":
-        document.getElementById("tc-connect-button")?.click();
+        (
+          Array.from(
+            document.getElementsByTagName("tc-root")[0]?.childNodes
+          )[0] as any
+        )?.click();
         break;
       case "whitelist":
         break;
@@ -85,12 +87,6 @@ export const Layout = ({ children }: { children?: any }) => {
         break;
     }
   };
-
-  useEffect(() => {
-    if (!TonProofApi.accessToken) {
-      onAction("logout");
-    }
-  }, []);
 
   const background = useMemo(
     () =>
@@ -131,6 +127,8 @@ export const Layout = ({ children }: { children?: any }) => {
       setIsBottom(scrollTop + clientHeight >= scrollHeight);
     }
   };
+
+  const isLoadingWallet = typeof authorized === "undefined";
 
   return (
     <div className={"ton-background"}>
@@ -224,11 +222,15 @@ export const Layout = ({ children }: { children?: any }) => {
                             }}
                           >
                             <Spacer x={0.4} />
-                            {!user && !address
-                              ? t("signIn")
-                              : user
-                              ? user.first_name
-                              : `...${address.slice(-4)}`}
+                            {isLoadingWallet ? (
+                              <Loading type="points-opacity" />
+                            ) : !user && !address ? (
+                              t("signIn")
+                            ) : user ? (
+                              user.first_name
+                            ) : (
+                              `...${address.slice(-4)}`
+                            )}
                           </Text>
                         </Button>
                       </Dropdown.Trigger>
@@ -301,7 +303,13 @@ export const Layout = ({ children }: { children?: any }) => {
           </Navbar>
 
           <div className="flayout" ref={ref} onScroll={onScroll}>
-            <Container gap={0} css={{ display: "flex" }}>
+            <Container
+              gap={0}
+              css={{
+                display: "flex",
+                maxW: "var(--nextui--navbarContainerMaxWidth)",
+              }}
+            >
               {children ? children : <Outlet />}
             </Container>
           </div>
@@ -339,7 +347,7 @@ export const Layout = ({ children }: { children?: any }) => {
                   </Grid>
                   <Spacer y={0.4} css={{ "@sm": { display: "none" } }} />
                   <Grid xs={12} sm={7} md={5}>
-                    <Grid.Container justify="flex-start">
+                    <Grid.Container justify="space-between">
                       <Grid>
                         <Text size={18}>{t("learnMore")}</Text>
                         <ul style={{ margin: 0 }}>

@@ -7,6 +7,7 @@ export * from "./Layout";
 export * from "./SVG";
 export * from "./TelegramLogin";
 export * from "./Theme";
-export * from "./Ton";
 export * from "./Badge";
 export * from "./Promote";
+export * from "./Search";
+export * from "./Language";

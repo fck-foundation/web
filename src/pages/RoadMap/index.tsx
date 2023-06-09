@@ -13,6 +13,7 @@ import {
   Row,
   Table,
   Text,
+  Tooltip,
 } from "@nextui-org/react";
 import { ARR01, ARR12, ARR02 } from "assets/icons";
 import { StyledBadge } from "components";
@@ -270,7 +271,9 @@ export const RoadMap = () => {
                                             textOverflow: "ellipsis",
                                           }}
                                         >
-                                          {item.title}
+                                          <Tooltip content={item.title}>
+                                            {item.title}
+                                          </Tooltip>
                                         </Col>
                                       </Row>
                                     </Table.Cell>

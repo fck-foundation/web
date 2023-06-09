@@ -37,3 +37,24 @@ export function normalize(number: string, decimals: number) {
 export const _ = (v) => {
   return parseFloat(parseFloat(v === 0 ? "0.000000001" : v).toFixed(9));
 };
+
+
+export function calculatePriceImpact(liquidityTON, liquidityJetton, amountTON, tradeFee) {
+
+  const price = liquidityTON / liquidityJetton;
+  const adjustedLiquidityTON = liquidityTON - amountTON;
+
+  const adjustedAmountJetton = amountTON * price * (2 - tradeFee);
+
+  const networkFee = 0.1;
+
+  const receivedJetton = adjustedAmountJetton - networkFee;
+
+  const receivedETH = receivedJetton / price;
+
+  const newTotalLiquidity = adjustedLiquidityTON + receivedETH;
+
+  const newPriceImpact = (amountTON / newTotalLiquidity) * 100; 
+
+  return parseFloat(newPriceImpact.toFixed(2));
+}

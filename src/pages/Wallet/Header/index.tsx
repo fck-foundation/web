@@ -147,29 +147,33 @@ const WalletHeader: React.FC<Props> = ({ selected, setSwaps }) => {
                               onChange={(e) => setValue(e.target.value)}
                             />
                           </Grid>
-                          <Spacer y={0.4} />
-                          <Grid>
-                            <Button
-                              flat
-                              size="sm"
-                              css={{ minWidth: "auto" }}
-                              onPress={() =>
-                                tonConnectUi.sendTransaction({
-                                  validUntil: Date.now() + 1000000,
-                                  messages: [
-                                    {
-                                      address: address.toRawString(),
-                                      amount: (
-                                        parseFloat(value) * 1000000000
-                                      ).toString(),
-                                    },
-                                  ],
-                                })
-                              }
-                            >
-                              {t("sendTransaction")}
-                            </Button>
-                          </Grid>
+                          {tonAddress && wallet !== tonAddress && (
+                            <>
+                              <Spacer y={0.4} />
+                              <Grid>
+                                <Button
+                                  flat
+                                  size="sm"
+                                  css={{ minWidth: "auto" }}
+                                  onPress={() =>
+                                    tonConnectUi.sendTransaction({
+                                      validUntil: Date.now() + 1000000,
+                                      messages: [
+                                        {
+                                          address: address.toRawString(),
+                                          amount: (
+                                            parseFloat(value) * 1000000000
+                                          ).toString(),
+                                        },
+                                      ],
+                                    })
+                                  }
+                                >
+                                  {t("sendTransaction")}
+                                </Button>
+                              </Grid>
+                            </>
+                          )}
                         </Grid.Container>
                       </Grid>
                     </Grid.Container>

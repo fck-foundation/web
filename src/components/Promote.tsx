@@ -9,7 +9,6 @@ import {
   Popover,
   Spacer,
   Text,
-  Tooltip,
   User,
 } from "@nextui-org/react";
 import {
@@ -107,7 +106,11 @@ export const Promote: React.FC<{
   };
   const onVote = () => {
     if (!address) {
-      document.getElementById("tc-connect-button")?.click();
+      (
+        Array.from(
+          document.getElementsByTagName("tc-root")[0]?.childNodes
+        )[0] as any
+      )?.click();
     } else {
       if (wallet) {
         const jetton = Address.parseRaw(whiteCoins["FCK"]);
@@ -268,6 +271,7 @@ export const Promote: React.FC<{
                           isPressable
                           isHoverable
                           onClick={() =>
+                            (item || selected.length < 4) &&
                             setSelected((prevState) =>
                               prevState.some(({ id }) => id === jetton.id)
                                 ? prevState.filter((i) => i.id !== jetton.id)
