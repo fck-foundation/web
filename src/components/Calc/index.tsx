@@ -334,7 +334,7 @@ export const Calc: React.FC = () => {
                         : "$success",
                   }}
                 >
-                  ≈ {priceImpact.priceImpact}%
+                  ≈ {priceImpact.priceImpact || 0}%
                 </Grid>
               </Grid.Container>
             </Grid>
