@@ -170,35 +170,28 @@ const AppProviderWrapper = ({
   }, [list]);
 
   useEffect(() => {
-    tonConnectUI.setConnectRequestParameters({ state: "loading" });
-    tonConnectUI.connectionRestored.then((restored) => {
-      if (restored) {
-        console.log(
-          "Connection restored. Wallet:",
-          JSON.stringify({
-            ...tonConnectUI.wallet,
-          })
-        );
-        setAuthorized(true);
-      } else {
-        tonConnectUI.disconnect();
-        localStorage.removeItem("access-token");
-        cookie.remove("access-token");
-        setAuthorized(false);
-        document
-          .getElementsByTagName("html")[0]
-          .classList.remove(`${theme.color}${enabled ? "" : "-light"}-theme`);
-        document
-          .getElementsByTagName("html")[0]
-          .classList.add(`${enabled ? "dark" : "light"}-theme`);
-        setTheme({ color: enabled ? "dark" : "light" });
-      }
-
-      tonConnectUI.setConnectRequestParameters({ state: "ready" as any });
-    });
+    fetch(`https://demo.tonconnect.dev/ton-proof/generatePayload`, {
+      method: "POST",
+    })
+      .then((response) => response.json())
+      .then((response) => {
+        tonConnectUI.setConnectRequestParameters({
+          state: "ready",
+          value: { tonProof: response.payload },
+        });
+      })
+      .finally(() => tonConnectUI.setConnectRequestParameters(null));
   }, []);
 
   useEffect(() => {
+    tonConnectUI.connectionRestored.then((restored) => {
+      if (restored) {
+        setAuthorized(true);
+      } else {
+        setAuthorized(false);
+      }
+    });
+
     tonConnectUI.onStatusChange(async (w) => {
       if (!w || w.account.chain === CHAIN.TESTNET) {
         TonProofApi.reset();
@@ -208,6 +201,13 @@ const AppProviderWrapper = ({
 
       if (w.connectItems?.tonProof && "proof" in w.connectItems.tonProof) {
         await TonProofApi.checkProof(w.connectItems.tonProof.proof, w.account);
+      }
+
+      if (!TonProofApi.accessToken) {
+        setAuthorized(false);
+        return;
+      } else {
+        setAuthorized(true);
       }
     });
   }, [tonConnectUI]);

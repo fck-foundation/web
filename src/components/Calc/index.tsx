@@ -9,6 +9,7 @@ import {
   Text,
   Badge,
   Loading,
+  Image,
 } from "@nextui-org/react";
 import cookie from "react-cookies";
 import { useQuery } from "@tanstack/react-query";
@@ -17,7 +18,7 @@ import axios from "axios";
 import { AppContext } from "contexts";
 import { TimeScale } from "pages";
 import { calculatePriceImpact, normalize } from "utils";
-import { ARR58 } from "assets/icons";
+import { ARR58, Ton } from "assets/icons";
 
 export const Calc: React.FC = () => {
   const { t } = useTranslation();
@@ -51,11 +52,11 @@ export const Calc: React.FC = () => {
     },
   });
 
+  const dedust = data?.find(
+    ({ address }) => address === jetton?.dedust_lp_address
+  );
+
   const priceImpact = useMemo(() => {
-    const dedust = data?.find(
-      ({ address }) => address === jetton?.dedust_lp_address
-    );
-    const tradeFee = parseFloat(dedust?.tradeFee) / 100;
     const liquidityTON = normalize(dedust?.reserves[0]?.toString(), 9);
     const liquidityJetton = normalize(
       dedust?.reserves[1]?.toString(),
@@ -63,6 +64,7 @@ export const Calc: React.FC = () => {
     );
 
     const amountTON = parseFloat(from === "TON" ? valueX : valueY);
+    const tradeFee = amountTON * parseFloat(dedust?.tradeFee) * 0.01;
 
     return {
       liquidityJetton,
@@ -75,7 +77,7 @@ export const Calc: React.FC = () => {
       ),
       tradeFee,
     };
-  }, [data, valueX, valueY, from, jetton]);
+  }, [data, valueX, valueY, from, jetton, dedust]);
 
   const displayCalcValue = useMemo(() => {
     const val = (
@@ -85,7 +87,9 @@ export const Calc: React.FC = () => {
 
     return parseFloat(
       (!isNaN(parseFloat(val))
-        ? parseFloat(val) - 0.01 * parseFloat(from === "TON" ? valueX : valueY)
+        ? parseFloat(val) -
+          (from === "TON" ? 0.1 : 0.15) -
+          0.01 * parseFloat(from === "TON" ? valueX : valueY)
         : 0
       ).toFixed(9)
     );
@@ -111,20 +115,48 @@ export const Calc: React.FC = () => {
 
   useEffect(() => {
     if (data) {
-      const val =
+      let val =
         to === "TON"
           ? parseInt(valueX) *
             (priceImpact.liquidityTON / priceImpact.liquidityJetton || 1)
           : parseInt(valueX) /
             (priceImpact.liquidityTON / priceImpact.liquidityJetton || 1);
 
-      setValueY((val - (val / 100) * priceImpact.priceImpact).toString());
+      val = val - (val / 100) * priceImpact.priceImpact;
+
+      setValueY(val.toString());
     }
-  }, [data, valueX, from, to, priceImpact]);
+  }, [data, from, to, priceImpact]);
+
+  const onXChange = (e) => {
+    const val = e.target.value
+      .replace(/[^0-9.]/g, "")
+      .replace(/(\..*?)\..*/g, "$1");
+    setValueX(val);
+    setValueY(
+      (to === "TON"
+        ? parseFloat(val) * (data[dataJettons[from].id]?.price || 1)
+        : parseFloat(val) / (data[dataJettons[to].id]?.price || 1)
+      ).toString()
+    );
+  };
+
+  const onYChange = (e) => {
+    const val = e.target.value
+      .replace(/[^0-9.]/g, "")
+      .replace(/(\..*?)\..*/g, "$1");
+    setValueY(val);
+    setValueX(
+      (from !== "TON"
+        ? parseFloat(valueY) * (data[dataJettons[from].id]?.price || 1)
+        : parseFloat(val) * (data[dataJettons[to].id]?.price || 1)
+      ).toString()
+    );
+  };
 
   return (
     <>
-      <Grid.Container direction="column">
+      <Grid.Container direction="column" className="dcalc">
         <Grid>
           <Grid.Container justify="space-between">
             <Grid>
@@ -134,7 +166,6 @@ export const Calc: React.FC = () => {
                   textGradient: "45deg, $primary -20%, $secondary 50%",
                   marginTop: -16,
                   lineHeight: 1,
-                  pr: 130,
                 }}
                 weight="bold"
               >
@@ -157,66 +188,97 @@ export const Calc: React.FC = () => {
         <Spacer y={1} />
         <Grid>
           <Grid.Container
-            wrap="nowrap"
             alignItems="center"
             justify="space-between"
+            css={{ width: "100%" }}
           >
-            <Grid>
-              <Grid.Container gap={1} wrap="wrap" css={{ width: "auto" }}>
-                <Grid>
+            <Grid xs={12} sm={5} css={{ position: "relative" }}>
+              <Grid.Container wrap="wrap" css={{ width: "100%" }}>
+                <Grid xs={12}>
                   <Input
                     value={!isNaN(parseFloat(valueX)) ? valueX : ""}
                     clearable
-                    underlined
+                    bordered
+                    width="100%"
                     color="primary"
                     labelPlaceholder={t("send") || ""}
-                    width="75px"
-                    size="sm"
-                    onChange={(e) => {
-                      setValueX(e.target.value);
-                      setValueY(
-                        (to === "TON"
-                          ? parseInt(e.target.value) *
-                            (data[dataJettons[from].id]?.price || 1)
-                          : parseInt(e.target.value) /
-                            (data[dataJettons[to].id]?.price || 1)
-                        ).toString()
-                      );
-                    }}
+                    onChange={onXChange}
+                    contentRight={
+                      <>
+                        {from === "TON" ? (
+                          <Badge
+                            isSquared
+                            color="primary"
+                            size="lg"
+                            variant="bordered"
+                            css={{
+                              border: "none",
+                              minHeight: 40,
+                              mr: 2,
+                              borderRadius: "var(--nextui--inputBorderRadius)",
+                            }}
+                          >
+                            TON
+                          </Badge>
+                        ) : (
+                          <Dropdown>
+                            <Dropdown.Button
+                              color="gradient"
+                              size="xs"
+                              css={{
+                                height: 40,
+                                borderRadius:
+                                  "var(--nextui--inputBorderRadius)",
+                              }}
+                            >
+                              {jetton?.image && (
+                                <>
+                                  <Image
+                                    src={jetton?.image}
+                                    height={24}
+                                    width={24}
+                                    alt=""
+                                    css={{
+                                      borderRadius: 100,
+                                      minHeight: 24,
+                                      minWidth: 24,
+                                    }}
+                                  />
+                                  <Spacer x={0.4} />
+                                </>
+                              )}
+                              {from}
+                            </Dropdown.Button>
+                            <Dropdown.Menu
+                              aria-label="Static Actions"
+                              onAction={setFrom}
+                            >
+                              {[
+                                ...(to !== "TON" && from !== "TON"
+                                  ? [{ symbol: "TON" }]
+                                  : []),
+                                ...(listVerified || []),
+                              ]
+                                ?.filter(({ symbol }) => symbol !== from)
+                                ?.map(({ symbol }) => (
+                                  <Dropdown.Item key={symbol}>
+                                    {symbol}
+                                  </Dropdown.Item>
+                                ))}
+                            </Dropdown.Menu>
+                          </Dropdown>
+                        )}
+                      </>
+                    }
                   />
-                </Grid>
-
-                <Grid>
-                  {from === "TON" ? (
-                    <Badge isSquared color="primary" variant="bordered">
-                      {from}
-                    </Badge>
-                  ) : (
-                    <Dropdown>
-                      <Dropdown.Button color="gradient" size="sm">
-                        {from}
-                      </Dropdown.Button>
-                      <Dropdown.Menu
-                        aria-label="Static Actions"
-                        onAction={setFrom}
-                      >
-                        {[
-                          ...(to !== "TON" && from !== "TON"
-                            ? [{ symbol: "TON" }]
-                            : []),
-                          ...(listVerified || []),
-                        ]
-                          ?.filter(({ symbol }) => symbol !== from)
-                          ?.map(({ symbol }) => (
-                            <Dropdown.Item key={symbol}>{symbol}</Dropdown.Item>
-                          ))}
-                      </Dropdown.Menu>
-                    </Dropdown>
-                  )}
                 </Grid>
               </Grid.Container>
             </Grid>
-            <Grid>
+            <Grid
+              xs={12}
+              sm={2}
+              css={{ display: "flex", justifyContent: "center", padding: "$8" }}
+            >
               <Button
                 flat
                 size="sm"
@@ -231,57 +293,111 @@ export const Calc: React.FC = () => {
                 />
               </Button>
             </Grid>
-            <Grid>
+            <Grid xs={12} sm={5} css={{ position: "relative" }}>
               <Grid.Container
-                gap={1}
                 wrap="wrap"
-                css={{ display: "flex", justifyContent: "flex-end" }}
+                css={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  width: "100%",
+                }}
               >
-                <Grid>
+                <Grid xs={12}>
                   {isLoading ? (
                     <Loading />
                   ) : (
                     <Input
                       value={!isNaN(parseFloat(valueY)) ? valueY : ""}
                       clearable
-                      underlined
+                      bordered
+                      width="100%"
                       color="primary"
                       labelPlaceholder={t("get") || ""}
-                      width="75px"
-                      size="sm"
-                      onChange={(e) => {
-                        setValueY(e.target.value);
-                      }}
+                      onChange={onYChange}
+                      contentRight={
+                        <>
+                          {to === "TON" ? (
+                            <Badge
+                              isSquared
+                              color="primary"
+                              size="lg"
+                              variant="bordered"
+                              css={{
+                                border: "none",
+                                minHeight: 40,
+                                mr: 2,
+                                borderRadius:
+                                  "var(--nextui--inputBorderRadius)",
+                              }}
+                            >
+                              TON
+                            </Badge>
+                          ) : (
+                            <Dropdown>
+                              <Dropdown.Button
+                                color="gradient"
+                                size="xs"
+                                css={{
+                                  height: 40,
+                                  borderRadius:
+                                    "var(--nextui--inputBorderRadius)",
+                                }}
+                              >
+                                {jetton?.image && (
+                                  <>
+                                    <Image
+                                      src={jetton?.image}
+                                      height={24}
+                                      width={24}
+                                      alt=""
+                                      css={{
+                                        borderRadius: 100,
+                                        minHeight: 24,
+                                        minWidth: 24,
+                                      }}
+                                    />
+                                    <Spacer x={0.4} />
+                                  </>
+                                )}
+                                {to}
+                              </Dropdown.Button>
+                              <Dropdown.Menu
+                                aria-label="Static Actions"
+                                onAction={setTo}
+                              >
+                                {[
+                                  ...(to !== "TON" && from !== "TON"
+                                    ? [{ symbol: "TON", image: "" }]
+                                    : []),
+                                  ...(listVerified || []),
+                                ]
+                                  ?.filter(({ symbol }) => symbol !== to)
+                                  ?.map(({ symbol, image }) => (
+                                    <Dropdown.Item key={symbol}>
+                                      <Grid.Container alignItems="center">
+                                        <Grid>
+                                          <Image
+                                            src={image}
+                                            height={18}
+                                            width={18}
+                                            alt=""
+                                            css={{
+                                              borderRadius: 100,
+                                              minHeight: 18,
+                                            }}
+                                          />
+                                        </Grid>
+                                        <Spacer x={0.4} />
+                                        <Grid>{symbol}</Grid>
+                                      </Grid.Container>
+                                    </Dropdown.Item>
+                                  ))}
+                              </Dropdown.Menu>
+                            </Dropdown>
+                          )}
+                        </>
+                      }
                     />
-                  )}
-                </Grid>
-
-                <Grid>
-                  {to === "TON" ? (
-                    <Badge isSquared color="primary" variant="bordered">
-                      {to}
-                    </Badge>
-                  ) : (
-                    <Dropdown>
-                      <Dropdown.Button color="gradient" size="sm">
-                        {to}
-                      </Dropdown.Button>
-                      <Dropdown.Menu
-                        aria-label="Static Actions"
-                        onAction={setTo}
-                      >
-                        {[
-                          ...(to !== "TON" && from !== "TON"
-                            ? [{ symbol: "TON" }]
-                            : []),
-                          ...(listVerified || []),
-                        ]
-                          ?.filter(({ symbol }) => symbol !== to)
-                          ?.map(({ symbol }) => (
-                            <Dropdown.Item key={symbol}>{symbol}</Dropdown.Item>
-                          ))}
-                      </Dropdown.Menu>
-                    </Dropdown>
                   )}
                 </Grid>
               </Grid.Container>
@@ -310,13 +426,13 @@ export const Calc: React.FC = () => {
             <Grid xs={12}>
               <Grid.Container justify="space-between">
                 <Grid>{t("networkFee")}</Grid>
-                <Grid>⋜ {0.01} TON</Grid>
+                <Grid>⋜ {from === "TON" ? 0.1 : 0.15} TON</Grid>
               </Grid.Container>
             </Grid>
             <Grid xs={12}>
               <Grid.Container justify="space-between">
                 <Grid>{t("exchangeFee")}</Grid>
-                <Grid>≈ {priceImpact.tradeFee} TON</Grid>
+                <Grid>≈ {priceImpact.tradeFee || 0} TON</Grid>
               </Grid.Container>
             </Grid>
             <Grid xs={12}>
@@ -345,8 +461,7 @@ export const Calc: React.FC = () => {
           <Grid.Container alignItems="center" justify="flex-end">
             <Grid xs={12}>
               <Button
-                flat
-                color="secondary"
+                color="gradient"
                 css={{
                   minWidth: "100%",
                   overflow: "visible",

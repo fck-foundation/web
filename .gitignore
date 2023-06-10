@@ -13,7 +13,7 @@ dist-ssr
 *.local
 
 dev-dist
-# docs
+docs
 
 # Editor directories and files
 .vscode/*

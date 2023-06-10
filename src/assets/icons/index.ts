@@ -175,3 +175,6 @@ export { ReactComponent as Arrowright } from "./material/arrowRight.svg";
 export { ReactComponent as Android } from "./material/android.svg";
 export { ReactComponent as Announcement } from "./material/announcement.svg";
 export { ReactComponent as Copy } from "./material/copy.svg";
+
+export { ReactComponent as Arrowtechart } from "./arrowtechart.svg";
+export { ReactComponent as Ton } from "./ton.svg";

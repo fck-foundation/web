@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" id="OBJECTS" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="1em" height="1em" viewBox="0 0 500 500" enable-background="new 0 0 500 500" xml:space="preserve">
+	<polygon fill="var(--nextui-colors-secondary)" points="174.1,417.6 459.6,250 459.6,250 174.1,82.4 251.9,234.3 385.4,250 251.9,265.7 " />
+	<polygon fill="transparent" points="429.9,253.8 261,279.8 211.3,376.1 " />
+	<polygon fill="transparent" points="429.9,246.2 211.3,123.9 261,220.2 " />
+	<polygon fill="var(--nextui-colors-secondary)" points="130.2,399.3 226.3,250 130.2,100.7 218.2,145.8 214.5,153 153.3,121.7 235.9,250 153.3,378.3 
+	214.5,347 218.2,354.2 " />
+	<polygon fill="var(--nextui-colors-secondary)" points="99.8,184.9 116.9,202 199.8,202 189.1,184.9 " />
+	<polygon fill="var(--nextui-colors-secondary)" points="189.1,315.1 199.8,298 116.9,298 99.8,315.1 " />
+	<polygon fill="var(--nextui-colors-secondary)" points="209.1,283.6 222.6,266 58,266 40.4,283.6 " />
+	<polygon fill="var(--nextui-colors-secondary)" points="222.6,234 209.1,216.4 40.4,216.4 58,234 " />
+</svg>

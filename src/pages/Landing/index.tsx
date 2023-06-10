@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 import cookie from "react-cookies";
 import { Calc, FCard, Promote } from "components";
 import { fck } from "api/fck";
-import { ARR07, GEN02, GEN11, GEN20 } from "assets/icons";
+import { ARR07, Arrowtechart, GEN02, GEN11, GEN20 } from "assets/icons";
 import { getList } from "utils/analytics";
 
 import { AppContext } from "../../contexts";
@@ -97,14 +97,15 @@ export function Home() {
   });
 
   useEffect(() => {
+    const verify = setInterval(refetchJettons, 15000);
+
     if (processing.wait > 0) {
-      const verify = setInterval(refetchJettons, 15000);
       const curr = jettons
         ?.map(({ stats }) => stats?.promoting_points || 0)
         ?.reduce((acc, curr) => (acc += curr), 0);
 
       if (processing.wait <= curr) {
-        setProcessing({ wait: 0, curr });
+        setProcessing({ wait: 0, curr: 0 });
         cookie.remove("processing");
 
         toast.success(t("voteSuccess"), {
@@ -114,6 +115,8 @@ export function Home() {
 
         clearInterval(verify);
       }
+    } else {
+      clearInterval(verify);
     }
   }, [processing, jettons]);
 
@@ -146,7 +149,7 @@ export function Home() {
         justify="center"
         css={{ minHeight: "70vh" }}
       >
-        <Grid xs={12} sm={6} md={7}>
+        <Grid xs={12} sm={6}>
           <Grid.Container gap={2} direction="column">
             <Grid>
               <Text size={16} color="success" weight="bold">
@@ -208,7 +211,7 @@ export function Home() {
             </Grid>
           </Grid.Container>
         </Grid>
-        <Grid xs={12} sm={6} md={5}>
+        <Grid xs={12} sm={6}>
           <Card css={{ height: "fit-content" }}>
             <Card.Body>
               <Grid.Container gap={2} justify="space-between" css={{ pb: 0 }}>

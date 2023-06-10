@@ -69,6 +69,7 @@ export const Header: React.FC<Props> = ({ isDrag, setIsDrag }) => {
         ?.reduce((acc, curr) => (acc += curr), 0);
 
       if (processing.wait <= curr) {
+        clearInterval(verify);
         setProcessing({ wait: 0, curr });
         cookie.remove("processing");
 
@@ -76,11 +77,9 @@ export const Header: React.FC<Props> = ({ isDrag, setIsDrag }) => {
           position: toast.POSITION.TOP_RIGHT,
           theme: enabled ? "dark" : "light",
         });
-
-        clearInterval(verify);
       }
     }
-  }, [processing, jettons]);
+  }, [processing]);
 
   const onSuccess = (value: number) => {
     const curr = jettons

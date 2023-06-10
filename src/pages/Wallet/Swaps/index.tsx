@@ -73,7 +73,7 @@ const WalletSwaps: React.FC<Props> = ({
     } else {
       setLoading(false);
     }
-  }, [tonAddress, selected, wallet]);
+  }, [tonAddress, selected, wallet, TonProofApi.accessToken]);
 
   return (
     <Card variant="bordered">

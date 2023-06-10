@@ -20,20 +20,20 @@ class TonProofApiService {
     this.accessToken = cookie.load(this.storageKey) as string;
 
     if (!this.accessToken) {
-      this.generatePayload();
+      // this.generatePayload();
     }
   }
 
-  generatePayload() {
-    this.connectWalletRequest = new Promise(async (resolve) => {
-      const response = await (
-        await fetch(`${this.host}/ton-proof/generatePayload`, {
-          method: "POST",
-        })
-      ).json();
-      resolve({ tonProof: response.payload as string });
-    });
-  }
+  // generatePayload() {
+  //   this.connectWalletRequest = new Promise(async (resolve) => {
+  //     const response = await (
+  //       await fetch(`${this.host}/ton-proof/generatePayload`, {
+  //         method: "POST",
+  //       })
+  //     ).json();
+  //     resolve({ tonProof: response.payload as string });
+  //   });
+  // }
 
   async checkProof(proof: TonProofItemReplySuccess["proof"], account: Account) {
     try {
@@ -85,7 +85,7 @@ class TonProofApiService {
   reset() {
     this.accessToken = undefined;
     cookie.remove(this.storageKey);
-    this.generatePayload();
+    // this.generatePayload();
   }
 }
 

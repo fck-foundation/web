@@ -261,7 +261,7 @@ export const Price: React.FC<{
           toolTip.innerHTML = `<div style="background: var(--nextui--navbarBlurBackgroundColor);backdrop-filter: saturate(180%) blur(var(--nextui--navbarBlur));" role="section" tabindex="-1" class="nextui-c-BDLTQ nextui-c-jMTBsW nextui-c-gulvcB nextui-c-BDLTQ-jzLLYn-variant-flat nextui-c-BDLTQ-fmlsco-borderWeight-light nextui-c-BDLTQ-cuwTXc-disableAnimation-false nextui-c-BDLTQ-ieFObHQ-css"><div class="nextui-c-eFfoBo" style="padding-top: 8px; padding-bottom: 8px;"><div class="nextui-c-kRHeuF nextui-c-kRHeuF-ijDEIix-css nextui-grid-item nextui-grid-container"><div class="nextui-c-kRHeuF nextui-c-kRHeuF-igNCIse-css nextui-grid-item chart-table"><div class="nextui-c-kRHeuF nextui-c-kRHeuF-iebUeoS-css nextui-grid-item nextui-grid-container" style="flex-direction: column"><div class="nextui-c-kRHeuF nextui-c-kRHeuF-idJnZoH-css nextui-grid-item xs sm" style="padding: 0; flex-basics: 100%; max-width: 100%;"><div class="nextui-c-kRHeuF nextui-c-kRHeuF-iiwAayw-css nextui-grid-item nextui-grid-container"><div class="nextui-c-kRHeuF nextui-c-kRHeuF-igNCIse-css nextui-grid-item" style="font-size: 12px"><p class="nextui-c-PJLV nextui-c-PJLV-ikeegJh-css chart-label" style="font-size: 12px;"><svg width="14px" height="14px" id="General" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="fill: currentcolor; font-size: 14px !important;"><defs><style>.cls-1{opacity:0.3;}</style></defs><g id="gen011-020"><g id="gen020"><polygon points="14 18 14 16 10 16 10 18 9 20 15 20 14 18"></polygon><path class="cls-1" d="M20,4H17V3a1,1,0,0,0-1-1H8A1,1,0,0,0,7,3V4H4A1,1,0,0,0,3,5V9a4,4,0,0,0,4,4H7l3,3h4l3-3h0a4,4,0,0,0,4-4V5A1,1,0,0,0,20,4ZM5,9V6H7v5A2,2,0,0,1,5,9ZM19,9a2,2,0,0,1-2,2V6h2ZM17,21v1H7V21a1,1,0,0,1,1-1h8A1,1,0,0,1,17,21ZM10,9A1,1,0,0,1,9,8V5a1,1,0,0,1,2,0V8A1,1,0,0,1,10,9Zm0,4a1,1,0,0,1-1-1V11a1,1,0,0,1,2,0v1A1,1,0,0,1,10,13Z"></path></g></g></svg> 1 ${
             jetton.symbol
           }</p></div><span aria-hidden="true" class="nextui-c-gNVTSf nextui-c-gNVTSf-hakyQ-inline-false nextui-c-gNVTSf-ijSsVeB-css"></span><div class="nextui-c-kRHeuF nextui-c-kRHeuF-iajzRv-css nextui-grid-item" style="font-size: 12px">${parseFloat(
-            selectedInfo?.price?.toFixed(9)
+            (selectedInfo?.price || 0)?.toFixed(9)
           )}</div></div></div><div class="nextui-c-kRHeuF nextui-c-kRHeuF-idJnZoH-css nextui-grid-item xs sm" style="padding: 0; flex-basics: 100%; max-width: 100%;"><div class="nextui-c-kRHeuF nextui-c-kRHeuF-iiwAayw-css nextui-grid-item nextui-grid-container"><div class="nextui-c-kRHeuF nextui-c-kRHeuF-igNCIse-css nextui-grid-item" style="font-size: 12px"><p class="nextui-c-PJLV nextui-c-PJLV-ikeegJh-css chart-label" style="font-size: 12px;"><svg width="14px" height="14px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="fill: currentcolor; font-size: 14px !important;"><defs><style>.cls-1{opacity:0.3;}</style></defs><g id="Charts_Dashboards_and_Graphs" data-name="Charts, Dashboards and Graphs"><g id="gra001-010"><g id="gra004"><g class="cls-1"><path d="M11,11h2a1,1,0,0,1,1,1v9H10V12A1,1,0,0,1,11,11Zm5-8V21h4V3a1,1,0,0,0-1-1H17A1,1,0,0,0,16,3Z"></path></g><path d="M21,20H8V16a1,1,0,0,0-1-1H5a1,1,0,0,0-1,1v4H3a1,1,0,0,0,0,2H21a1,1,0,0,0,0-2Z"></path></g></g></g></svg>Покупка</p></div><span aria-hidden="true" class="nextui-c-gNVTSf nextui-c-gNVTSf-hakyQ-inline-false nextui-c-gNVTSf-ijSsVeB-css"></span><div class="nextui-c-kRHeuF nextui-c-kRHeuF-iajzRv-css nextui-grid-item" style="font-size: 12px">${toFixed(
             (selectedInfo?.buy || 0).toFixed(9)
           )} TON</div></div></div><div class="nextui-c-kRHeuF nextui-c-kRHeuF-idJnZoH-css nextui-grid-item xs sm" style="padding: 0; flex-basics: 100%; max-width: 100%;"><div class="nextui-c-kRHeuF nextui-c-kRHeuF-iiwAayw-css nextui-grid-item nextui-grid-container"><div class="nextui-c-kRHeuF nextui-c-kRHeuF-igNCIse-css nextui-grid-item" style="font-size: 12px"><p class="nextui-c-PJLV nextui-c-PJLV-ikeegJh-css chart-label" style="font-size: 12px;"><svg width="14px" height="14px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="fill: currentcolor; font-size: 14px !important;"><defs><style>.cls-1{opacity:0.3;}</style></defs><g id="Arrows"><g id="arr051-059"><g id="arr059"><path d="M6.84,15.83a1,1,0,0,1,1.23.7A2,2,0,0,0,10,18h8a2,2,0,0,0,2-2V8a2,2,0,0,0-2-2H10A2,2,0,0,0,8,8V9.41H6V8a4,4,0,0,1,4-4h8a4,4,0,0,1,4,4v8a4,4,0,0,1-4,4H10a4,4,0,0,1-3.86-2.94A1,1,0,0,1,6.84,15.83Z"></path><path class="cls-1" d="M12,9.41H2l4.29,4.3a1,1,0,0,0,1.42,0Z"></path></g></g></g></svg> Продажа</p></div><span aria-hidden="true" class="nextui-c-gNVTSf nextui-c-gNVTSf-hakyQ-inline-false nextui-c-gNVTSf-ijSsVeB-css"></span><div class="nextui-c-kRHeuF nextui-c-kRHeuF-iajzRv-css nextui-grid-item" style="font-size: 12px">${parseFloat(
@@ -615,7 +615,7 @@ export const Price: React.FC<{
                                   fontSize: "0.65rem",
                                 }}
                               >
-                                {parseFloat(info?.price?.toFixed(9))}
+                                {parseFloat((info?.price || 0)?.toFixed(9))}
                               </Grid>
                             </Grid.Container>
                           </Grid>
@@ -1022,43 +1022,60 @@ export const Price: React.FC<{
                 <Table.Column>{jetton.symbol}</Table.Column>
               </Table.Header>
               <Table.Body>
-                {results?.holders?.map((result, i) => {
-                  return (
-                    <Table.Row key={i}>
-                      <Table.Cell>
-                        <Link href={`/wallet/${result.holder_address}`}>
-                          {infoAddress[result.holder_address] ? (
-                            <Badge
-                              placement="bottom-left"
-                              content={infoAddress[result.holder_address].text}
-                              color={infoAddress[result.holder_address].color}
-                              css={{ ml: 25 }}
-                            >
+                {results?.holders
+                  ?.map((result, i) => {
+                    return (
+                      <Table.Row key={i}>
+                        <Table.Cell>
+                          <Link href={`/wallet/${result.holder_address}`}>
+                            {infoAddress[result.holder_address] ? (
+                              <Badge
+                                placement="bottom-left"
+                                content={
+                                  infoAddress[result.holder_address].text
+                                }
+                                color={infoAddress[result.holder_address].color}
+                                css={{ ml: 25 }}
+                              >
+                                <div className="holder-address">
+                                  {result.holder_address.slice(0, 4)}
+                                  ...
+                                  {result.holder_address.slice(-4)}
+                                </div>
+                              </Badge>
+                            ) : result.holder_address ===
+                              jetton?.dedust_swap_address ? (
+                                <Badge
+                                placement="bottom-left"
+                                content={t('addressLP')}
+                                color="primary"
+                                css={{ ml: 25 }}
+                              >
+                                <div className="holder-address">
+                                  {result.holder_address.slice(0, 4)}
+                                  ...
+                                  {result.holder_address.slice(-4)}
+                                </div>
+                              </Badge>
+                            ) : (
                               <div className="holder-address">
                                 {result.holder_address.slice(0, 4)}
                                 ...
                                 {result.holder_address.slice(-4)}
                               </div>
-                            </Badge>
-                          ) : (
-                            <div className="holder-address">
-                              {result.holder_address.slice(0, 4)}
-                              ...
-                              {result.holder_address.slice(-4)}
-                            </div>
-                          )}
-                        </Link>
-                      </Table.Cell>
-                      <Table.Cell>
-                        {parseFloat(
-                          normalize(result.balance, jetton?.decimals).toFixed(
-                            jetton?.decimals
-                          )
-                        ).toLocaleString()}
-                      </Table.Cell>
-                    </Table.Row>
-                  );
-                })}
+                            )}
+                          </Link>
+                        </Table.Cell>
+                        <Table.Cell>
+                          {parseFloat(
+                            normalize(result.balance, jetton?.decimals).toFixed(
+                              jetton?.decimals
+                            )
+                          ).toLocaleString()}
+                        </Table.Cell>
+                      </Table.Row>
+                    );
+                  })}
               </Table.Body>
               <Table.Pagination
                 shadow
