@@ -29,11 +29,12 @@ export function Home() {
 
   const { data: dataRecently, isLoading: isLoadingRecently } = useQuery({
     queryKey: ["new-jettons"],
-    queryFn: async () =>
+    queryFn: async ({ signal }) =>
       await fck.getRecentlyAdded(
         9,
         Math.floor(Date.now() / 1000 - pagination[timescale] * 7),
-        pagination[timescale]
+        pagination[timescale],
+        signal
       ),
     refetchOnMount: false,
     refetchOnReconnect: false,
@@ -52,11 +53,12 @@ export function Home() {
 
   const { data: dataPromo, isLoading: isLoadingPromo } = useQuery({
     queryKey: ["promo-jettons"],
-    queryFn: async () =>
+    queryFn: async ({ signal }) =>
       await fck.getPromoting(
         9,
         Math.floor(Date.now() / 1000 - pagination[timescale] * 7),
-        pagination[timescale]
+        pagination[timescale],
+        signal
       ),
     refetchOnMount: false,
     refetchOnReconnect: false,
@@ -75,11 +77,12 @@ export function Home() {
 
   const { data: dataTrending, isLoading: isLoadingTrending } = useQuery({
     queryKey: ["trending-jettons"],
-    queryFn: async () =>
+    queryFn: async ({ signal }) =>
       await fck.getTrending(
         9,
         Math.floor(Date.now() / 1000 - pagination[timescale] * 7),
-        pagination[timescale]
+        pagination[timescale],
+        signal
       ),
     refetchOnMount: false,
     refetchOnReconnect: false,

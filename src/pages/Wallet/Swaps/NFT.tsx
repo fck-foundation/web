@@ -10,7 +10,7 @@ import {
   Spacer,
 } from "@nextui-org/react";
 import { useQuery } from "@tanstack/react-query";
-import { TonProofApi } from "TonProofApi";
+import TonProofApi, {  } from "TonProofApi";
 import { ARR16 } from "assets/icons";
 import axios from "axios";
 import { AppContext } from "contexts";
@@ -113,7 +113,6 @@ export const NFT = () => {
                   <Image
                     src={nft.previews[1].url}
                     width="100%"
-                    height={175}
                     objectFit="cover"
                   />
                 </Card.Body>

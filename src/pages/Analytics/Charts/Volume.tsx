@@ -15,7 +15,7 @@ import { _ } from "utils";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AppContext } from "contexts";
-import { TonProofApi } from "TonProofApi";
+import TonProofApi, {  } from "TonProofApi";
 import { useTonAddress } from "@tonconnect/ui-react";
 import { pagination } from "..";
 import { GEN15 } from "assets/icons";

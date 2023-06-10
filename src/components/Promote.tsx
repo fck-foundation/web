@@ -49,8 +49,8 @@ export const Promote: React.FC<{
 
   const { data: dataFCK, isLoading: isLoadingJettons } = useQuery({
     queryKey: ["wallet-jettons", address],
-    queryFn: async () =>
-      await axios.get(`https://tonapi.io/v2/accounts/${address}/jettons`),
+    queryFn: async ({ signal }) =>
+      await axios.get(`https://tonapi.io/v2/accounts/${address}/jettons`, { signal }),
     enabled: !!address,
     refetchOnMount: false,
     refetchOnReconnect: false,

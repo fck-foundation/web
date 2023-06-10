@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useTonAddress } from "@tonconnect/ui-react";
-import { TonProofApi } from "TonProofApi";
+import TonProofApi from "TonProofApi";
 import { Button, Card } from "@nextui-org/react";
 import { ARR09, ARR10, ARR25, ARR28 } from "assets/icons";
 import axios from "axios";
@@ -11,6 +11,7 @@ import { _ } from "utils";
 import { Dex } from "./Dex";
 import { Transactions } from "./Transactions";
 import { NFT } from "./NFT";
+import { useQuery } from "@tanstack/react-query";
 
 const actions = {
   buy: <ARR09 style={{ fill: "#1ac964", fontSize: 24 }} />,
@@ -29,51 +30,40 @@ const colorType = {
 interface Props {
   selected?: number;
   isLoading?: boolean;
+  tab: string;
   swaps?: Record<string, any>[];
   setSwaps: React.Dispatch<Record<string, any>[]>;
+  setTab: React.Dispatch<string>;
 }
 
 const WalletSwaps: React.FC<Props> = ({
+  tab,
   isLoading,
   selected,
   swaps,
+  setTab,
   setSwaps,
 }) => {
   const location = useLocation();
   const tonAddress = useTonAddress();
   const { t } = useTranslation();
   const { authorized, jettons, ton } = useContext(AppContext);
-  const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<"dex" | "transactions" | "nft">("dex");
 
   const wallet = location.pathname?.split("/").pop();
 
-  useEffect(() => {
-    if (TonProofApi.accessToken) {
-      if (selected && tonAddress) {
-        setLoading(true);
-        axios
-          .get(
-            `https://api.fck.foundation/api/v2/user/swaps?address=${wallet}&jetton_id=${selected}&count=100`,
-            {
-              headers: {
-                Authorization: `Bearer ${TonProofApi.accessToken}`,
-              },
-            }
-          )
-          .then((response) => {
-            setSwaps(response.data.data.sources.DeDust.jettons[selected].swaps);
-          })
-          .finally(() => {
-            setLoading(false);
-          });
-      } else {
-        setLoading(false);
-      }
-    } else {
-      setLoading(false);
-    }
-  }, [tonAddress, selected, wallet, TonProofApi.accessToken]);
+  const { isLoading: isLoadingSwaps, isFetching } = useQuery({
+    queryKey: ["selected-jetton", selected],
+    queryFn: async ({ signal }) =>
+      await axios.get(
+        `https://api.fck.foundation/api/v2/user/swaps?address=${wallet}&jetton_id=${selected}&count=100`,
+        { signal }
+      ),
+    enabled: !!selected && !!tonAddress && !!TonProofApi.accessToken,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    onSuccess: (response) =>
+      setSwaps(response.data.data.sources.DeDust.jettons[selected!].swaps),
+  });
 
   return (
     <Card variant="bordered">
@@ -96,7 +86,12 @@ const WalletSwaps: React.FC<Props> = ({
       <Card.Body css={{ pt: "$0", pb: "$2", overflow: "hidden" }}>
         {tab === "dex" && (
           <Dex
-            isLoading={isLoading || loading}
+            isLoading={
+              isLoading ||
+              isLoadingSwaps ||
+              isFetching ||
+              (!!TonProofApi.accessToken && (!tonAddress || !selected))
+            }
             selected={selected}
             swaps={swaps}
             setSwaps={setSwaps}

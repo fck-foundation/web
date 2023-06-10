@@ -120,18 +120,27 @@ export const Layout = ({ children }: { children?: any }) => {
     { title: t("roadMap"), href: "/roadmap" },
   ];
 
-  const onScroll = () => {
-    if (ref.current) {
-      const { scrollTop, scrollHeight, clientHeight } = ref.current;
+  useEffect(() => {
+    const root = document.getElementById("root");
+    const handleScroll = () => {
+      setIsBottom(
+        (root?.scrollHeight || 0) - window.innerHeight - 500 <
+          (root?.scrollTop || 0)
+      );
+    };
 
-      setIsBottom(scrollTop + clientHeight >= scrollHeight);
-    }
-  };
+    root?.addEventListener("scroll", handleScroll);
+
+    return () => {
+      const root = document.getElementById("root");
+      root?.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   const isLoadingWallet = typeof authorized === "undefined";
 
   return (
-    <div className={"ton-background"}>
+    <>
       {typeof nftItems === "undefined" ? (
         <Loading
           css={{
@@ -302,7 +311,7 @@ export const Layout = ({ children }: { children?: any }) => {
             </Navbar.Collapse>
           </Navbar>
 
-          <div className="flayout" ref={ref} onScroll={onScroll}>
+          <div className="flayout">
             <Container
               gap={0}
               css={{
@@ -511,6 +520,6 @@ export const Layout = ({ children }: { children?: any }) => {
           </Card>
         </>
       )}
-    </div>
+    </>
   );
 };

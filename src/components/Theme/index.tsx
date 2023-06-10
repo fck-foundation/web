@@ -64,7 +64,7 @@ export const ThemeSwitcher: React.FC<Props> = ({ loading, isLogo }) => {
         </Grid>
       )}
       {nftItems?.map((item, i) => {
-        const color = item.metadata.attributes.find(
+        const color = item.metadata?.attributes?.find(
           ({ trait_type }) => trait_type === "Color"
         )?.value;
 
@@ -73,7 +73,7 @@ export const ThemeSwitcher: React.FC<Props> = ({ loading, isLogo }) => {
             <Badge
               placement="top-left"
               css={{
-                backgroundColor: item.metadata.theme.main,
+                backgroundColor: item?.metadata?.theme?.main,
                 left: "50%",
                 marginTop: "$5",
               }}

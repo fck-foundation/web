@@ -19,7 +19,7 @@ import { _, normalize } from "utils";
 import { useTranslation } from "react-i18next";
 import { Address, address } from "ton-core";
 import Skeleton from "react-loading-skeleton";
-import { TonProofApi } from "TonProofApi";
+import TonProofApi, {  } from "TonProofApi";
 
 interface Props {
   isBalance: boolean;
@@ -51,8 +51,8 @@ const WalletSwaps: React.FC<Props> = ({
 
   const { data, isLoading: isLoadingJettons } = useQuery({
     queryKey: ["wallet-jettons", wallet],
-    queryFn: async () =>
-      await axios.get(`https://tonapi.io/v2/accounts/${wallet}/jettons`),
+    queryFn: async ({ signal }) =>
+      await axios.get(`https://tonapi.io/v2/accounts/${wallet}/jettons`, { signal }),
     enabled: !!wallet,
     refetchOnMount: false,
     refetchOnReconnect: false,
