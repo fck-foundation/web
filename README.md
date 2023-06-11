@@ -18,7 +18,7 @@ The project is currently under development and is undergoing beta testing to gat
 - Wallet page statistics with swaps, transactions and NFT.
 - More coming soon
 
-## Prerequisites:
+## Prerequisites
 - Make sure you have Node.js version >= 16 installed on your computer.
 You can download it from the official website (https://nodejs.org/en/download).
 - Clone the repository:
@@ -33,9 +33,9 @@ You can download it from the official website (https://nodejs.org/en/download).
 - Once the dependencies are installed, run the command:
 `yarn dev`
 
-Libraries
+This will start the project in development mode and automatically open it in your browser at https://dev.fck.foundation.
 
-### Important libraries that the user needs to familiarize themselves with to work with the project:
+### Libraries
 | Library  | Description |
 | ------------- | ------------- |
 | [@nextui-org/react](https://www.npmjs.com/package/@nextui-org/react) | UI library for building React components with a modern design  |
