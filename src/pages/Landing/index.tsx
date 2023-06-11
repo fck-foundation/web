@@ -230,7 +230,7 @@ export function Home() {
             isLoading={loading}
             title={
               <Grid.Container justify="space-between" wrap="nowrap">
-                <Grid.Container css={{ minWidth: "auto" }}>
+                <Grid.Container wrap="nowrap" css={{ minWidth: "auto" }}>
                   <GEN20
                     style={{ fill: "var(--nextui-colors-link)", fontSize: 24 }}
                   />
