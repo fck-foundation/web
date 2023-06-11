@@ -9,17 +9,18 @@ import {
   Spacer,
   Text,
 } from "@nextui-org/react";
-import { Tonscan, Tonviewer } from "assets/icons";
+import { Copy, Tonscan, Tonviewer } from "assets/icons";
 import axios from "axios";
 import { useTonAddress, useTonConnectUI } from "@tonconnect/ui-react";
 import { AppContext } from "contexts";
 import qrcode from "qrcode-generator";
 import { useQuery } from "@tanstack/react-query";
-import { _, normalize } from "utils";
+import { _, copyTextToClipboard, normalize } from "utils";
 import { useTranslation } from "react-i18next";
 import { Address } from "ton-core";
 import Skeleton from "react-loading-skeleton";
-import { TonProofApi } from "TonProofApi";
+import TonProofApi from "TonProofApi";
+import { toast } from "react-toastify";
 
 interface Props {
   selected?: number;
@@ -30,7 +31,7 @@ const WalletHeader: React.FC<Props> = ({ selected, setSwaps }) => {
   const location = useLocation();
   const tonAddress = useTonAddress();
   const { t } = useTranslation();
-  const { jettons, ton } = useContext(AppContext);
+  const { jettons, ton, enabled } = useContext(AppContext);
   const [tonConnectUi] = useTonConnectUI();
   const [value, setValue] = useState("");
 
@@ -47,9 +48,10 @@ const WalletHeader: React.FC<Props> = ({ selected, setSwaps }) => {
 
   const { data: dataTON, isLoading: isLoadingTON } = useQuery({
     queryKey: ["wallet-ton", address],
-    queryFn: async () =>
+    queryFn: async ({ signal }) =>
       await axios.get(
-        `https://tonapi.io/v1/blockchain/getAccount?account=${address.toRawString()}`
+        `https://tonapi.io/v1/blockchain/getAccount?account=${address.toRawString()}`,
+        { signal }
       ),
     enabled: !!wallet,
     refetchOnMount: false,
@@ -64,32 +66,43 @@ const WalletHeader: React.FC<Props> = ({ selected, setSwaps }) => {
 
   const { data, isLoading } = useQuery({
     queryKey: ["wallet-jettons", wallet],
-    queryFn: async () =>
-      await axios.get(`https://tonapi.io/v2/accounts/${wallet}/jettons`),
+    queryFn: async ({ signal }) =>
+      await axios.get(`https://tonapi.io/v2/accounts/${wallet}/jettons`, {
+        signal,
+      }),
     enabled: !!wallet,
     refetchOnMount: false,
     refetchOnReconnect: false,
     select: (response) => response.data.balances,
   });
 
-  useEffect(() => {
-    if (TonProofApi.accessToken) {
-      if (selected && tonAddress) {
-        axios
-          .get(
-            `https://api.fck.foundation/api/v2/user/swaps?address=${wallet}&jetton_id=${selected}&count=100`,
-            {
-              headers: {
-                Authorization: `Bearer ${TonProofApi.accessToken}`,
-              },
-            }
-          )
-          .then((response) => {
-            setSwaps(response.data.data.sources.DeDust.jettons[selected].swaps);
-          });
-      }
-    }
-  }, [tonAddress, selected, wallet]);
+  const { isLoading: isLoadingSwaps } = useQuery({
+    queryKey: ["wallet-swaps", selected, TonProofApi.accessToken],
+    queryFn: ({ signal }) =>
+      axios.get(
+        `https://api.fck.foundation/api/v2/user/swaps?address=${wallet}&jetton_id=${selected}&count=100`,
+        {
+          signal,
+          headers: {
+            Authorization: `Bearer ${TonProofApi.accessToken}`,
+          },
+        }
+      ),
+    enabled: !!TonProofApi.accessToken && !!selected,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    onSuccess: (response) => {
+      setSwaps(response.data.data.sources.DeDust.jettons[selected!].swaps);
+    },
+  });
+
+  const onCopy = () => {
+    copyTextToClipboard(wallet);
+    toast.success(t("copied"), {
+      position: toast.POSITION.TOP_RIGHT,
+      theme: enabled ? "dark" : "light",
+    });
+  };
 
   return (
     <Card variant="bordered">
@@ -102,53 +115,82 @@ const WalletHeader: React.FC<Props> = ({ selected, setSwaps }) => {
                   <Grid>
                     <Grid.Container gap={1} css={{ m: "-$6", maxW: 300 }}>
                       <Grid>
-                        {wallet?.slice(0, 4)}...{wallet?.slice(-4)}
+                        <Grid.Container alignItems="center">
+                          <Grid>
+                            <Link
+                              href={`https://tonviewer.com/${wallet}`}
+                              target="_blank"
+                            >
+                              <Tonviewer
+                                style={{ color: "var(--nextui-colors-text)", zoom: 0.5 }}
+                              />
+                            </Link>
+                          </Grid>
+                          <Spacer x={0.4} />
+                          <Grid>
+                            <Link
+                              href={`https://tonscan.org/address/${wallet}`}
+                              target="_blank"
+                            >
+                              <Tonscan
+                                style={{ fill: "currentColor", fontSize: 20 }}
+                              />
+                              <Text size={12} css={{ fontWeight: "bold" }}>
+                                Tonscan
+                              </Text>
+                            </Link>
+                          </Grid>
+                        </Grid.Container>
                       </Grid>
                       <Grid>
-                        <Link
-                          href={`https://tonviewer.com/${wallet}`}
-                          target="_blank"
+                        <Text>{t("accountAddress")}</Text>
+                        <Grid.Container
+                          alignItems="center"
+                          css={{ color: "$primary", cursor: "pointer" }}
+                          onClick={onCopy}
                         >
-                          <Tonviewer
-                            style={{ fill: "currentColor", zoom: 0.5 }}
+                          {wallet?.slice(0, 4)}
+                          ...
+                          {wallet?.slice(-4)}
+                          <Spacer x={0.4} />
+                          <Copy
+                            style={{
+                              fill: "currentColor",
+                              fontSize: 18,
+                            }}
                           />
-                        </Link>
+                        </Grid.Container>
                       </Grid>
                       <Grid>
-                        <Link
-                          href={`https://tonscan.org/address/${wallet}`}
-                          target="_blank"
-                        >
-                          <Tonscan
-                            style={{ fill: "currentColor", fontSize: 20 }}
-                          />
-                          <Text size={12} css={{ fontWeight: "bold" }}>
-                            Tonscan
-                          </Text>
-                        </Link>
-                      </Grid>
-                      <Grid>
+                        <Text>{t("balance")}</Text>
                         {isLoadingTON ? (
                           <Skeleton width={100} height={18} />
                         ) : (
-                          `${dataTON?.ton} TON ≈ $${dataTON?.usd}`
+                          <>
+                            <b>{dataTON?.ton} TON</b>{" "}
+                            <b
+                              style={{ color: "var(--nextui-colors-primary)" }}
+                            >
+                              ≈ ${dataTON?.usd}
+                            </b>
+                          </>
                         )}
                       </Grid>
-                      <Spacer y={0.4} />
-                      <Grid>
-                        <Grid.Container wrap="nowrap">
+                      {tonAddress && wallet !== tonAddress && (
+                        <>
+                          <Spacer y={0.4} />
                           <Grid>
-                            <Input
-                              type="float"
-                              size="sm"
-                              placeholder="1 TON"
-                              css={{ w: 75 }}
-                              value={value}
-                              onChange={(e) => setValue(e.target.value)}
-                            />
-                          </Grid>
-                          {tonAddress && wallet !== tonAddress && (
-                            <>
+                            <Grid.Container wrap="nowrap">
+                              <Grid>
+                                <Input
+                                  type="float"
+                                  size="sm"
+                                  placeholder="1 TON"
+                                  css={{ w: 75 }}
+                                  value={value}
+                                  onChange={(e) => setValue(e.target.value)}
+                                />
+                              </Grid>
                               <Spacer y={0.4} />
                               <Grid>
                                 <Button
@@ -172,15 +214,16 @@ const WalletHeader: React.FC<Props> = ({ selected, setSwaps }) => {
                                   {t("sendTransaction")}
                                 </Button>
                               </Grid>
-                            </>
-                          )}
-                        </Grid.Container>
-                      </Grid>
+                            </Grid.Container>
+                          </Grid>
+                        </>
+                      )}
                     </Grid.Container>
                   </Grid>
 
                   <Spacer x={1} />
                   <Grid
+                    css={{ display: "none", "@xs": { display: "block" } }}
                     dangerouslySetInnerHTML={{
                       __html: qrSVG.replace('style="', 'style="width:130.5px;'),
                     }}

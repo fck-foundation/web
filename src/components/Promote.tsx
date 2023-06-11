@@ -49,8 +49,8 @@ export const Promote: React.FC<{
 
   const { data: dataFCK, isLoading: isLoadingJettons } = useQuery({
     queryKey: ["wallet-jettons", address],
-    queryFn: async () =>
-      await axios.get(`https://tonapi.io/v2/accounts/${address}/jettons`),
+    queryFn: async ({ signal }) =>
+      await axios.get(`https://tonapi.io/v2/accounts/${address}/jettons`, { signal }),
     enabled: !!address,
     refetchOnMount: false,
     refetchOnReconnect: false,
@@ -153,8 +153,8 @@ export const Promote: React.FC<{
   return (
     <>
       {!hideTrigger && (
-        <Button color="gradient" onPress={onPromote}>
-          <Grid.Container alignItems="center">
+        <Button color="gradient" size="sm" onPress={onPromote} css={{ minWidth: 'auto' }}>
+          <Grid.Container wrap="nowrap" alignItems="center">
             {!!processing?.wait ? (
               <>
                 <Grid css={{ display: "flex" }}>

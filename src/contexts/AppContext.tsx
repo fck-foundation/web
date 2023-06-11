@@ -5,6 +5,8 @@ import {
   useEffect,
   useState,
   Dispatch,
+  useRef,
+  useCallback,
 } from "react";
 import cookie from "react-cookies";
 import { useTranslation } from "react-i18next";
@@ -15,20 +17,17 @@ import {
   useTonConnectUI,
   useTonWallet,
 } from "@tonconnect/ui-react";
-import { CHAIN } from "@tonconnect/sdk";
+import TonConnect, { CHAIN } from "@tonconnect/sdk";
 import { useQuery } from "@tanstack/react-query";
 import { TonClient } from "ton";
 import { coingecko, fck } from "api";
-import {
-  NFTApi,
-  RawBlockchainApi,
-  Configuration,
-  NftItemRepr,
-} from "tonapi-sdk-js";
-import { TonProofApi } from "TonProofApi";
+import { NFTApi, BlockchainApi, Configuration, NftItem } from "tonapi-sdk-js";
+import TonProofApi, { connector, TonProofApiService } from "TonProofApi";
 import { getCookie } from "utils";
 
 import "react-toastify/dist/ReactToastify.css";
+import axios from "axios";
+import useInterval from "hooks/useInterval";
 
 const client = new TonClient({
   endpoint: "https://toncenter.com/api/v2/jsonRPC",
@@ -51,12 +50,14 @@ export type JType = {
 export type JScale = "1M" | "5M" | "30M" | "1H" | "4H" | "1D" | "7D" | "30D";
 
 interface AppProps {
+  connector: TonConnect;
+  TonProofApi: TonProofApiService;
   isBottom: boolean;
   open: boolean;
   authorized?: boolean;
   address: string;
   rawAddress: string;
-  nftItems?: NftItemRepr[];
+  nftItems?: NftItem[];
   jetton: Record<string, any>;
   theme: { color: string; id?: number };
   ton: Record<string, any>;
@@ -67,6 +68,8 @@ interface AppProps {
   timescale: JScale;
   list: string[];
   setList: Dispatch<any>;
+  hideList: string[];
+  setHideList: Dispatch<any>;
   page: number;
   setPage: Dispatch<any>;
   search?: string;
@@ -84,6 +87,8 @@ interface AppProps {
 }
 
 const defaultAppContext: AppProps = {
+  connector,
+  TonProofApi,
   isBottom: false,
   open: false,
   authorized: false,
@@ -100,6 +105,8 @@ const defaultAppContext: AppProps = {
   timescale: "1D",
   list: [],
   setList: () => null,
+  hideList: [],
+  setHideList: () => null,
   page: 2,
   setPage: () => null,
   search: "",
@@ -140,7 +147,7 @@ const AppProviderWrapper = ({
             : "light",
         }
   );
-  const [nftItems, setNFTItems] = useState<NftItemRepr[]>();
+  const [nftItems, setNFTItems] = useState<NftItem[]>();
   const [enabled, setEnabled] = useState(
     getCookie(key)
       ? JSON.parse(decodeURIComponent(getCookie(key) || ""))
@@ -156,10 +163,86 @@ const AppProviderWrapper = ({
   >((cookie.load("timescale") as any) || "1D");
 
   const tokens = cookie.load("tokens");
+  const hideTokens = cookie.load("hide-tokens");
   const [list, setList] = useState<string[]>(tokens || []);
+  const [hideList, setHideList] = useState<string[]>(hideTokens || []);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState<string | undefined>();
   const [jettons, setJettons] = useState<JType[]>([]);
+
+  useEffect(() => {
+    setHideList((prevList) => prevList.filter((val) => !list.includes(val)));
+  }, [list]);
+
+  const firstProofLoading = useRef<boolean>(true);
+
+  const recreateProofPayload = useCallback(async () => {
+    if (firstProofLoading.current) {
+      tonConnectUI.setConnectRequestParameters({ state: "loading" });
+      firstProofLoading.current = false;
+    }
+
+    if (!TonProofApi.accessToken) {
+      const payload = await TonProofApi.generatePayload();
+
+      if (payload) {
+        tonConnectUI.setConnectRequestParameters({
+          state: "ready",
+          value: payload,
+        });
+      } else {
+        tonConnectUI.setConnectRequestParameters(null);
+        setAuthorized(false);
+      }
+    }
+  }, [tonConnectUI, firstProofLoading]);
+
+  if (firstProofLoading.current) {
+    recreateProofPayload();
+  }
+
+  useInterval(recreateProofPayload, TonProofApi.refreshIntervalMs);
+
+  useEffect(
+    () =>
+      tonConnectUI.onStatusChange(async (w) => {
+        if (!w || w.account.chain === CHAIN.TESTNET) {
+          TonProofApi.reset();
+          return;
+        }
+
+        if (w.connectItems?.tonProof && "proof" in w.connectItems.tonProof) {
+          await TonProofApi.checkProof(
+            w.connectItems.tonProof.proof,
+            w.account
+          ).then(() => {
+            setAuthorized(true);
+          });
+        }
+      }),
+    [tonConnectUI]
+  );
+
+  useEffect(() => {
+    if (!localStorage.getItem("access-token")) {
+      setAuthorized(false);
+    } else if (tonConnectUI.wallet) {
+      setAuthorized(true);
+    }
+  }, [tonConnectUI.wallet]);
+
+  useEffect(() => {
+    const getWallet = async () => {
+      if (!wallet) {
+        return;
+      }
+      const response = await TonProofApi.getAccountInfo(wallet.account);
+
+      setData(response);
+    };
+
+    getWallet();
+  }, [wallet]);
 
   useEffect(() => {
     cookie.save("timescale", timescale, { path: "/" });
@@ -170,47 +253,8 @@ const AppProviderWrapper = ({
   }, [list]);
 
   useEffect(() => {
-    fetch(`https://demo.tonconnect.dev/ton-proof/generatePayload`, {
-      method: "POST",
-    })
-      .then((response) => response.json())
-      .then((response) => {
-        tonConnectUI.setConnectRequestParameters({
-          state: "ready",
-          value: { tonProof: response.payload },
-        });
-      })
-      .finally(() => tonConnectUI.setConnectRequestParameters(null));
-  }, []);
-
-  useEffect(() => {
-    tonConnectUI.connectionRestored.then((restored) => {
-      if (restored) {
-        setAuthorized(true);
-      } else {
-        setAuthorized(false);
-      }
-    });
-
-    tonConnectUI.onStatusChange(async (w) => {
-      if (!w || w.account.chain === CHAIN.TESTNET) {
-        TonProofApi.reset();
-        setAuthorized(false);
-        return;
-      }
-
-      if (w.connectItems?.tonProof && "proof" in w.connectItems.tonProof) {
-        await TonProofApi.checkProof(w.connectItems.tonProof.proof, w.account);
-      }
-
-      if (!TonProofApi.accessToken) {
-        setAuthorized(false);
-        return;
-      } else {
-        setAuthorized(true);
-      }
-    });
-  }, [tonConnectUI]);
+    cookie.save("hide-tokens", hideList, { path: "/" });
+  }, [hideList]);
 
   useEffect(() => {
     if (theme) {
@@ -246,7 +290,7 @@ const AppProviderWrapper = ({
 
   const { isLoading: isJLoading, refetch } = useQuery({
     queryKey: ["jettons"],
-    queryFn: fck.getJettons,
+    queryFn: ({ signal }) => fck.getJettons(signal),
     refetchOnMount: false,
     refetchOnReconnect: false,
     onSuccess: (response) => {
@@ -254,7 +298,10 @@ const AppProviderWrapper = ({
       today.setHours(today.getHours() - 24);
 
       const listVerified = response
-        .filter(({ verified, address }) => verified && !list.includes(address))
+        .filter(
+          ({ verified, address }) =>
+            verified && !list.includes(address) && !hideList.includes(address)
+        )
         .map(({ address }) => address);
       if (listVerified.length) {
         setList((prevState) => [...new Set([...listVerified, ...prevState])]);
@@ -268,7 +315,7 @@ const AppProviderWrapper = ({
     const getData = async () => {
       if (address) {
         // Get list of transactions
-        const blockchainApi = new RawBlockchainApi(
+        const blockchainApi = new BlockchainApi(
           new Configuration({
             headers: {
               // To get unlimited requests
@@ -278,25 +325,13 @@ const AppProviderWrapper = ({
           })
         );
 
-        // Receive typed array of transactions
-        const { transactions } = await blockchainApi.getTransactions({
-          account: address,
-          limit: 10,
-        });
+        axios
+          .get(
+            `https://tonapi.io/v2/accounts/${address}/nfts?limit=9&offset=${0}&indirect_ownership=true&collection=0:06d811f426598591b32b2c49f29f66c821368e4acb1de16762b04e0174532465`
+          )
+          .then(({ data }) => setNFTItems(data.nft_items));
 
-        // Get list of nfts by owner address
-        const nftApi = new NFTApi();
-        // Receive typed array of owner nfts
-        const { nftItems } = await nftApi.searchNFTItems({
-          owner: address,
-          includeOnSale: true,
-          limit: 27,
-          offset: 0,
-          collection:
-            "0:06d811f426598591b32b2c49f29f66c821368e4acb1de16762b04e0174532465",
-        });
-
-        setNFTItems(nftItems);
+        // setNFTItems(nftItems.);
       } else {
         setNFTItems([]);
       }
@@ -309,6 +344,8 @@ const AppProviderWrapper = ({
     <AppContext.Provider
       value={{
         client,
+        TonProofApi,
+        connector,
         isBottom,
         setIsBottom,
         open,
@@ -331,6 +368,8 @@ const AppProviderWrapper = ({
         setEnabled,
         list,
         setList,
+        hideList,
+        setHideList,
         page,
         setPage,
         search,
@@ -348,7 +387,7 @@ const AppProviderWrapper = ({
 export const AppProvider = ({ children }) => {
   return (
     <>
-      <TonConnectUIProvider manifestUrl="https://fck.foundation/tonconnect-manifest.json">
+      <TonConnectUIProvider manifestUrl="https://raw.githubusercontent.com/fck-foundation/web/master/public/tonconnect-manifest.json">
         <AppProviderWrapper>
           <ToastContainer />
           {children}

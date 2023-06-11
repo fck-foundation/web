@@ -90,8 +90,12 @@ html:not([class*="light-theme"]) body {
   background: transparent;
 
   .nextui-navbar-container {
-    background: unset;
     // max-width: 100%;
+
+    > div {
+      margin: 0;
+      max-width: 100%;
+    }
   }
 }
 
@@ -299,14 +303,7 @@ html:not([class*="light-theme"]) .diamond-item {
 }
 
 #tc-widget-root > tc-root > div {
-  z-index: 999999;  
-}
-
-.holder-address {
-  max-width: 20vw;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  z-index: 999999;
 }
 
 @media (min-width: 1400px) {
@@ -321,9 +318,35 @@ html:not([class*="light-theme"]) .diamond-item {
   }
 }
 
+div[role="section"] {
+  .nextui-grid-container {
+    padding: 16px;
+    margin: -16px;
+    width: calc(100% + 32px);
+  }
+
+  > div:first-child:not(:last-child) {
+    padding-top: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
 .card {
   transition: all 500ms;
   border: 1px solid var(--nextui--navbarBorderColor);
+
+  > div:first-child {
+    padding: 8px;
+  }
+
+  .jetton-chart {
+    opacity: 0.25;
+  }
+
+  &:hover .jetton-chart {
+    opacity: 1;
+  }
 
   &:hover {
     border-color: var(--nextui-colors-primary);
@@ -416,7 +439,14 @@ svg {
     align-items: center;
   }
 
+  @media (min-width: 600px) {
+    .findcheck__input {
+      margin-left: 16px;
+    }
+  }
+
   @media (max-width: 600px) {
+    max-width: 150px;
     // position: absolute;
     // left: 0;
     // top: 0;
@@ -471,4 +501,8 @@ svg {
   .nextui-input-wrapper--with-value {
     padding-right: 0;
   }
+}
+
+.nextui-image-container {
+  margin: 0;
 }

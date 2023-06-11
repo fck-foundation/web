@@ -159,6 +159,8 @@
   "source": "Source",
   "close": "Close",
   "open": "Open",
+  "closeF": "Close",
+  "openF": "Open",
   "high": "High",
   "low": "Low",
   "address": "Address",
@@ -195,7 +197,8 @@
   "notForSale": "Not for sale",
   "isBalance": "Balance",
   "home": "Home",
-  "promoteToken": "Vote for the token",
+  "empty": "Watchlist is empty",
+  "promoteToken": "Vote",
   "promoteInfo": "Select from the list or find by name the token you would like to vote for (will be valid 2 weeks, until $1). You can vote up to 4 tokens at a time",
   "notAvailable": "We are working on correcting the receipt of data, they are not available now.",
   "pay": "Pay",
@@ -217,5 +220,7 @@
   "voteDisclamer": "Votes for your favorite tokens will raise them to the first rows of the search list.",
   "insufficientFunds": "Insufficient funds",
   "addressLP": "Address LP",
+  "balance": "Balance",
+  "accountAddress": "Account address",
   "disclamer": "The analytics charts provided on this site are intended for informational purposes only. They are not to be construed as financial, investment, or trading advice. The information contained within these charts is derived from various sources, and while we strive to ensure its accuracy, we cannot guarantee its completeness or reliability."
 }

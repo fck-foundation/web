@@ -10,7 +10,7 @@ export const colors = {
     primarySolidHover: "$blue700",
     primarySolidContrast: "$white",
     primaryShadow: "$blue500",
-    secondary: `#1b3c51`,
+    secondary: `#94c7fd`,
     secondaryLight: "$blue400",
     secondaryLightHover: "$blue500",
     secondaryLightActive: "$blue600",

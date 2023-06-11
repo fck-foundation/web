@@ -31,10 +31,11 @@ import { toast } from "react-toastify";
 
 interface Props {
   isDrag: boolean;
+  percent: number;
   setIsDrag: Dispatch<SetStateAction<boolean>>;
 }
 
-export const Header: React.FC<Props> = ({ isDrag, setIsDrag }) => {
+export const Header: React.FC<Props> = ({ isDrag, percent, setIsDrag }) => {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
@@ -238,6 +239,24 @@ export const Header: React.FC<Props> = ({ isDrag, setIsDrag }) => {
                 {jetton?.stats?.promoting_points || 0}
               </Badge>
             </Grid>
+
+            <Badge
+              color={
+                !isNaN(percent) && percent !== 0
+                  ? percent > 0
+                    ? "success"
+                    : "error"
+                  : "default"
+              }
+              css={{
+                whiteSpace: "nowrap",
+              }}
+            >
+              {!isNaN(percent) && percent !== 0
+                ? parseFloat(Math.abs(percent).toFixed(2))
+                : 0}{" "}
+              %
+            </Badge>
 
             {!list.includes(jetton.address) && (
               <Grid>

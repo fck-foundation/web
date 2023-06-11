@@ -28,6 +28,7 @@ export const Analytics = () => {
   // const [present] = useIonActionSheet();
   const { timescale, jettons } = useContext(AppContext);
   const [isDrag, setIsDrag] = useState(false);
+  const [percent, setPercent] = useState(0);
 
   useEffect(() => {
     if (
@@ -113,12 +114,15 @@ export const Analytics = () => {
                 <Grid xs={12} sm={8} lg={9}>
                   <Grid.Container>
                     <Grid xs={12}>
-                      <Header isDrag={isDrag} setIsDrag={setIsDrag} />
+                      <Header percent={percent} isDrag={isDrag} setIsDrag={setIsDrag} />
                     </Grid>
                     <Grid xs={12}>
                       {location.pathname.includes("volume") ||
                       location.pathname.includes("price") ? (
-                        <Price timescale={timescale} />
+                        <Price
+                          timescale={timescale}
+                          onPercentChange={setPercent}
+                        />
                       ) : (
                         <Grid.Container justify="center">
                           <Grid

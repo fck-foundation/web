@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTonAddress } from "@tonconnect/ui-react";
 import axios from "axios";
 import { _, normalize } from "utils";
-import { TonProofApi } from "TonProofApi";
+import TonProofApi from "TonProofApi";
 import { AppContext } from "contexts";
 import { useTranslation } from "react-i18next";
 
@@ -24,6 +24,7 @@ export const Wallet = () => {
   const [selected, setSelected] = useState<number>();
   const [page, setPage] = useState(1);
   const [isBalance, setIsBalance] = useState(true);
+  const [tab, setTab] = useState("transactions");
 
   const wallet = location.pathname.split("/").pop();
 
@@ -33,8 +34,10 @@ export const Wallet = () => {
 
   const { data, isLoading } = useQuery({
     queryKey: ["wallet-jettons", wallet],
-    queryFn: async () =>
-      await axios.get(`https://tonapi.io/v2/accounts/${wallet}/jettons`),
+    queryFn: async ({ signal }) =>
+      await axios.get(`https://tonapi.io/v2/accounts/${wallet}/jettons`, {
+        signal,
+      }),
     enabled: !!wallet,
     refetchOnMount: false,
     refetchOnReconnect: false,
@@ -43,13 +46,14 @@ export const Wallet = () => {
 
   const { data: dataTON, isLoading: isLoadingTON } = useQuery({
     queryKey: ["wallet-ton", tonAddress],
-    queryFn: async () =>
+    queryFn: async ({ signal }) =>
       await axios.get(
         `https://tonapi.io/v1/blockchain/getAccount?account=${Address.parse(
           tonAddress
-        ).toRawString()}`
+        ).toRawString()}`,
+        { signal }
       ),
-    enabled: !!wallet,
+    enabled: !!tonAddress,
     refetchOnMount: false,
     refetchOnReconnect: false,
     select: (response) => ({
@@ -160,24 +164,25 @@ export const Wallet = () => {
     }
   }, [data, selected, jettons, dataChart]);
 
-  useEffect(() => {
-    if (TonProofApi.accessToken) {
-      if (selected && tonAddress) {
-        axios
-          .get(
-            `https://api.fck.foundation/api/v2/user/swaps?address=${wallet}&jetton_id=${selected}&count=100`,
-            {
-              headers: {
-                Authorization: `Bearer ${TonProofApi.accessToken}`,
-              },
-            }
-          )
-          .then((response) => {
-            setSwaps(response.data.data.sources.DeDust.jettons[selected].swaps);
-          });
-      }
-    }
-  }, [tonAddress, selected, wallet]);
+  const { isLoading: isLoadingSwaps } = useQuery({
+    queryKey: ["wallet-swaps", selected, TonProofApi.accessToken],
+    queryFn: ({ signal }) =>
+      axios.get(
+        `https://api.fck.foundation/api/v2/user/swaps?address=${wallet}&jetton_id=${selected}&count=100`,
+        {
+          signal,
+          headers: {
+            Authorization: `Bearer ${TonProofApi.accessToken}`,
+          },
+        }
+      ),
+    enabled: !!TonProofApi.accessToken && !!selected,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    onSuccess: (response) => {
+      setSwaps(response.data.data.sources.DeDust.jettons[selected!].swaps);
+    },
+  });
 
   const selectedValue = useMemo(
     () =>
@@ -207,21 +212,23 @@ export const Wallet = () => {
           <Grid xs={12}>
             <Header selected={selected} setSwaps={setSwaps} />
           </Grid>
-          <Grid xs={12} sm={4} css={{ h: "fit-content" }}>
-            {
-              <Jettons
-                isBalance={isBalance}
-                page={page}
-                isLoading={!!dataSelected?.length && isLoadingChart}
-                selected={selected}
-                setSelected={setSelected}
-                setSwaps={setSwaps}
-                setPage={setPage}
-                setIsBalance={setIsBalance}
-              />
-            }
-          </Grid>
-          <Grid xs={12} sm={8} css={{ h: "fit-content" }}>
+          {tab === "dex" && (
+            <Grid xs={12} sm={4} css={{ h: "fit-content" }}>
+              {
+                <Jettons
+                  isBalance={isBalance}
+                  page={page}
+                  isLoading={!!dataSelected?.length && isLoadingChart}
+                  selected={selected}
+                  setSelected={setSelected}
+                  setSwaps={setSwaps}
+                  setPage={setPage}
+                  setIsBalance={setIsBalance}
+                />
+              }
+            </Grid>
+          )}
+          <Grid xs={12} sm={tab === "dex" ? 8 : 12} css={{ h: "fit-content" }}>
             <Grid.Container>
               {/* {selected && (
               <Grid xs={12}>
@@ -270,6 +277,8 @@ export const Wallet = () => {
                   selected={selected}
                   swaps={swaps}
                   setSwaps={setSwaps}
+                  tab={tab}
+                  setTab={setTab}
                 />
               </Grid>
             </Grid.Container>

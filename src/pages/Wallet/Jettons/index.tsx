@@ -19,7 +19,7 @@ import { _, normalize } from "utils";
 import { useTranslation } from "react-i18next";
 import { Address, address } from "ton-core";
 import Skeleton from "react-loading-skeleton";
-import { TonProofApi } from "TonProofApi";
+import TonProofApi from "TonProofApi";
 
 interface Props {
   isBalance: boolean;
@@ -51,8 +51,10 @@ const WalletSwaps: React.FC<Props> = ({
 
   const { data, isLoading: isLoadingJettons } = useQuery({
     queryKey: ["wallet-jettons", wallet],
-    queryFn: async () =>
-      await axios.get(`https://tonapi.io/v2/accounts/${wallet}/jettons`),
+    queryFn: async ({ signal }) =>
+      await axios.get(`https://tonapi.io/v2/accounts/${wallet}/jettons`, {
+        signal,
+      }),
     enabled: !!wallet,
     refetchOnMount: false,
     refetchOnReconnect: false,
@@ -157,24 +159,25 @@ const WalletSwaps: React.FC<Props> = ({
       }),
   });
 
-  useEffect(() => {
-    if (TonProofApi.accessToken) {
-      if (selected && tonAddress) {
-        axios
-          .get(
-            `https://api.fck.foundation/api/v2/user/swaps?address=${wallet}&jetton_id=${selected}&count=100`,
-            {
-              headers: {
-                Authorization: `Bearer ${TonProofApi.accessToken}`,
-              },
-            }
-          )
-          .then((response) => {
-            setSwaps(response.data.data.sources.DeDust.jettons[selected].swaps);
-          });
-      }
-    }
-  }, [tonAddress, selected, wallet]);
+  const { isLoading: isLoadingSwaps } = useQuery({
+    queryKey: ["wallet-swaps", selected, TonProofApi.accessToken],
+    queryFn: ({ signal }) =>
+      axios.get(
+        `https://api.fck.foundation/api/v2/user/swaps?address=${wallet}&jetton_id=${selected}&count=100`,
+        {
+          signal,
+          headers: {
+            Authorization: `Bearer ${TonProofApi.accessToken}`,
+          },
+        }
+      ),
+    enabled: !!TonProofApi.accessToken && !!selected,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    onSuccess: (response) => {
+      setSwaps(response.data.data.sources.DeDust.jettons[selected!].swaps);
+    },
+  });
 
   return (
     <Card variant="bordered">
@@ -302,9 +305,11 @@ const WalletSwaps: React.FC<Props> = ({
                           name={balance.jetton.symbol}
                           description={
                             lastPrice &&
-                            `$${(
-                              lastPrice * ton?.market_data?.current_price?.usd
-                            ).toFixed(2)}`
+                            `$${parseFloat(
+                              (
+                                lastPrice * ton?.market_data?.current_price?.usd
+                              ).toFixed(2)
+                            )}`
                           }
                           css={{ p: 0, cursor: "pointer" }}
                           onClick={() => setSelected(info?.jetton.id)}
@@ -312,15 +317,21 @@ const WalletSwaps: React.FC<Props> = ({
                       </Table.Cell>
                       <Table.Cell>
                         <Grid.Container direction="column">
-                          <Grid>{jCount.toFixed(balance.jetton.decimals)}</Grid>
+                          <Grid>
+                            {parseFloat(
+                              jCount.toFixed(balance.jetton.decimals)
+                            )}
+                          </Grid>
                           <Grid>
                             <Text color="primary">
                               {lastPrice
-                                ? `≈ $${(
-                                    jCount *
-                                    lastPrice *
-                                    ton?.market_data?.current_price?.usd
-                                  ).toFixed(2)}`
+                                ? `≈ $${parseFloat(
+                                    (
+                                      jCount *
+                                      lastPrice *
+                                      ton?.market_data?.current_price?.usd
+                                    ).toFixed(2)
+                                  )}`
                                 : ""}
                             </Text>
                           </Grid>

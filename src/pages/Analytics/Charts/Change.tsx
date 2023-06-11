@@ -19,7 +19,7 @@ import { useQuery } from "@tanstack/react-query";
 import { pagination } from "..";
 import { arrayMoveImmutable } from "array-move";
 import cookie from "react-cookies";
-import { TonProofApi } from "TonProofApi";
+import TonProofApi, {  } from "TonProofApi";
 import { useTonAddress } from "@tonconnect/ui-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";

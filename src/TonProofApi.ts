@@ -1,39 +1,49 @@
+import cookie from "react-cookies";
 import {
   Account,
   ConnectAdditionalRequest,
+  TonConnect,
+  TonConnectOptions,
   TonProofItemReplySuccess,
 } from "@tonconnect/sdk";
 import "./patch-local-storage-for-github-pages";
-import cookie from "react-cookies";
 
-class TonProofApiService {
+const options: TonConnectOptions = {
+  manifestUrl:
+    "https://raw.githubusercontent.com/fck-foundation/web/master/public/tonconnect-manifest.json",
+};
+
+export const connector = new TonConnect(options);
+
+export class TonProofApiService {
   private storageKey = "access-token";
 
-  private host = "https://demo.tonconnect.dev";
+  host = "https://demo.tonconnect.dev";
 
-  public accessToken?: string;
+  accessToken: string | null = null;
 
-  public connectWalletRequest: Promise<ConnectAdditionalRequest> =
-    Promise.resolve({});
+  public readonly refreshIntervalMs = 9 * 60 * 1000;
 
   constructor() {
-    this.accessToken = cookie.load(this.storageKey) as string;
+    this.accessToken = localStorage.getItem(this.storageKey);
 
     if (!this.accessToken) {
-      // this.generatePayload();
+      this.generatePayload();
     }
   }
 
-  // generatePayload() {
-  //   this.connectWalletRequest = new Promise(async (resolve) => {
-  //     const response = await (
-  //       await fetch(`${this.host}/ton-proof/generatePayload`, {
-  //         method: "POST",
-  //       })
-  //     ).json();
-  //     resolve({ tonProof: response.payload as string });
-  //   });
-  // }
+  async generatePayload(): Promise<ConnectAdditionalRequest | null> {
+    try {
+      const response = await (
+        await fetch(`${this.host}/ton-proof/generatePayload`, {
+          method: "POST",
+        })
+      ).json();
+      return { tonProof: response.payload as string };
+    } catch {
+      return null;
+    }
+  }
 
   async checkProof(proof: TonProofItemReplySuccess["proof"], account: Account) {
     try {
@@ -83,10 +93,12 @@ class TonProofApiService {
   }
 
   reset() {
-    this.accessToken = undefined;
-    cookie.remove(this.storageKey);
-    // this.generatePayload();
+    this.accessToken = null;
+    localStorage.removeItem(this.storageKey);
+    this.generatePayload();
   }
 }
 
-export const TonProofApi = new TonProofApiService();
+const TonProofApi = new TonProofApiService();
+
+export default TonProofApi;

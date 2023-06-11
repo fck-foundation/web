@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { useTonAddress } from "@tonconnect/ui-react";
-import { TonProofApi } from "TonProofApi";
+import TonProofApi from "TonProofApi";
 import moment from "moment";
 import {
   Badge,
@@ -78,14 +78,20 @@ export const Dex: React.FC<Props> = ({
   );
 
   return authorized || !selected ? (
-    selected || !Array.isArray(swaps) || !tonAddress || isLoading ? (
+    selected || !Array.isArray(swaps) || isLoading ? (
       <Grid.Container>
-        {!tonAddress || isLoading ? (
-          new Array(10).fill(null).map((_, i) => (
-            <Grid key={i} xs={12}>
-              <Skeleton width="100%" />
-            </Grid>
-          ))
+        {isLoading ? (
+          <Grid
+            xs={12}
+            css={{
+              display: "flex",
+              justifyContent: "center",
+              minHeight: 150,
+              alignItems: "center",
+            }}
+          >
+            <Loading />
+          </Grid>
         ) : !swaps?.length ? (
           <Grid xs={12}>
             <Grid.Container gap={1} justify="center" alignItems="center">

@@ -31,7 +31,7 @@ import { GEN02, GEN15 } from "assets/icons";
 import { colors } from "colors";
 import { AppContext } from "contexts";
 import Skeleton from "react-loading-skeleton";
-import { TonProofApi } from "TonProofApi";
+import TonProofApi, {  } from "TonProofApi";
 import { useTonAddress } from "@tonconnect/ui-react";
 import { Promote } from "components";
 import { toast } from "react-toastify";

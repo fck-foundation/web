@@ -1,6 +1,6 @@
 import { Divider, Grid, Link, Spacer, Text } from "@nextui-org/react";
 import { useQuery } from "@tanstack/react-query";
-import { TonProofApi } from "TonProofApi";
+import TonProofApi from "TonProofApi";
 import { Announcement } from "assets/icons";
 import { ARR01, ARR36, Arrowright, Link as LinkIcon } from "assets/icons";
 import axios from "axios";
@@ -61,7 +61,7 @@ export const Transactions = () => {
   // "NftItemTransfer"
   // "SmartContractExec"
   // "JettonTransfer"
-
+  
   return (
     <Grid.Container>
       {data?.map((event, i) => (
@@ -106,10 +106,7 @@ export const Transactions = () => {
                     return (
                       <>
                         <Grid key={y}>
-                          <Grid.Container
-                            justify="center"
-                            alignItems="center"
-                          >
+                          <Grid.Container justify="center" alignItems="center">
                             <Grid>
                               <Grid.Container wrap="nowrap" alignItems="center">
                                 {item?.type === "SmartContractExec" && (
@@ -190,7 +187,9 @@ export const Transactions = () => {
                                 </Grid>
                               </>
                             )}
-                            {(item[item?.type as any]?.jetton || item[item?.type as any]?.nft) && (
+                            {(item[item?.type as any]?.amount ||
+                              item[item?.type as any]?.jetton ||
+                              item[item?.type as any]?.nft) && (
                               <>
                                 <Spacer x={1} />
                                 <Grid>
@@ -210,6 +209,19 @@ export const Transactions = () => {
                                                   ?.decimals
                                               : 9
                                           )
+                                        )}{" "}
+                                        {item[item?.type as any]?.jetton
+                                          ? item[item?.type as any]?.jetton
+                                              ?.symbol
+                                          : "TON"}
+                                      </>
+                                    ) : item[item?.type as any]?.amount ? (
+                                      <>
+                                        {parseFloat(
+                                          normalize(
+                                            item[item?.type as any]?.amount,
+                                            9
+                                          ).toFixed(9)
                                         )}{" "}
                                         {item[item?.type as any]?.jetton
                                           ? item[item?.type as any]?.jetton

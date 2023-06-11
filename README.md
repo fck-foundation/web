@@ -26,12 +26,14 @@ You can download it from the official website (https://nodejs.org/en/download).
 - Install dependencies:
 `cd web && yarn install`
 - Add the entries to the hosts file:
+
 ```127.0.0.1    dev.fck.foundation```
+
 ```127.0.0.1    www.dev.fck.foundation```
 - Once the dependencies are installed, run the command:
 `yarn dev`
 
-This will start the project in development mode and automatically open it in your browser at https://dev.fck.foundation.
+Libraries
 
 ### Important libraries that the user needs to familiarize themselves with to work with the project:
 | Library  | Description |
