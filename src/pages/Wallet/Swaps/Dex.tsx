@@ -78,9 +78,9 @@ export const Dex: React.FC<Props> = ({
   );
 
   return authorized || !selected ? (
-    selected || !Array.isArray(swaps) || !tonAddress || isLoading ? (
+    selected || !Array.isArray(swaps) || isLoading ? (
       <Grid.Container>
-        {!tonAddress || isLoading ? (
+        {isLoading ? (
           <Grid
             xs={12}
             css={{

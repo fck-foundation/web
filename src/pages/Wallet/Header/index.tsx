@@ -76,24 +76,25 @@ const WalletHeader: React.FC<Props> = ({ selected, setSwaps }) => {
     select: (response) => response.data.balances,
   });
 
-  useEffect(() => {
-    if (TonProofApi.accessToken) {
-      if (selected && tonAddress) {
-        axios
-          .get(
-            `https://api.fck.foundation/api/v2/user/swaps?address=${wallet}&jetton_id=${selected}&count=100`,
-            {
-              headers: {
-                Authorization: `Bearer ${TonProofApi.accessToken}`,
-              },
-            }
-          )
-          .then((response) => {
-            setSwaps(response.data.data.sources.DeDust.jettons[selected].swaps);
-          });
-      }
-    }
-  }, [tonAddress, selected, wallet]);
+  const { isLoading: isLoadingSwaps } = useQuery({
+    queryKey: ["wallet-swaps", selected, TonProofApi.accessToken],
+    queryFn: ({ signal }) =>
+      axios.get(
+        `https://api.fck.foundation/api/v2/user/swaps?address=${wallet}&jetton_id=${selected}&count=100`,
+        {
+          signal,
+          headers: {
+            Authorization: `Bearer ${TonProofApi.accessToken}`,
+          },
+        }
+      ),
+    enabled: !!TonProofApi.accessToken && !!selected,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    onSuccess: (response) => {
+      setSwaps(response.data.data.sources.DeDust.jettons[selected!].swaps);
+    },
+  });
 
   const onCopy = () => {
     copyTextToClipboard(wallet);
@@ -114,14 +115,14 @@ const WalletHeader: React.FC<Props> = ({ selected, setSwaps }) => {
                   <Grid>
                     <Grid.Container gap={1} css={{ m: "-$6", maxW: 300 }}>
                       <Grid>
-                        <Grid.Container>
+                        <Grid.Container alignItems="center">
                           <Grid>
                             <Link
                               href={`https://tonviewer.com/${wallet}`}
                               target="_blank"
                             >
                               <Tonviewer
-                                style={{ fill: "currentColor", zoom: 0.5 }}
+                                style={{ color: "var(--nextui-colors-text)", zoom: 0.5 }}
                               />
                             </Link>
                           </Grid>
@@ -222,6 +223,7 @@ const WalletHeader: React.FC<Props> = ({ selected, setSwaps }) => {
 
                   <Spacer x={1} />
                   <Grid
+                    css={{ display: "none", "@xs": { display: "block" } }}
                     dangerouslySetInnerHTML={{
                       __html: qrSVG.replace('style="', 'style="width:130.5px;'),
                     }}

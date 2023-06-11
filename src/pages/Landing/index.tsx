@@ -56,7 +56,7 @@ export function Home() {
     queryFn: async ({ signal }) =>
       await fck.getPromoting(
         9,
-        Math.floor(Date.now() / 1000 - pagination[timescale] * 7),
+        Math.floor(Date.now() / 1000 - pagination[timescale] * 2),
         pagination[timescale],
         signal
       ),
@@ -229,12 +229,22 @@ export function Home() {
           <FCard
             isLoading={loading}
             title={
-              <>
-                <GEN20
-                  style={{ fill: "var(--nextui-colors-link)", fontSize: 24 }}
-                />
-                <Spacer x={0.4} /> {t("topVoted")}
-              </>
+              <Grid.Container justify="space-between" wrap="nowrap">
+                <Grid.Container css={{ minWidth: "auto" }}>
+                  <GEN20
+                    style={{ fill: "var(--nextui-colors-link)", fontSize: 24 }}
+                  />
+                  <Spacer x={0.4} /> {t("topVoted")} <Spacer x={0.4} />
+                </Grid.Container>
+                <Grid>
+                  <Promote
+                    voteId={voteId}
+                    processing={processing}
+                    onSuccess={onSuccess}
+                    setVoteId={setVoteId}
+                  />
+                </Grid>
+              </Grid.Container>
             }
             list={
               dataPromo
@@ -281,15 +291,7 @@ export function Home() {
             setVoteId={setVoteId}
           />
         </Grid>
-        <Grid>
-          <Promote
-            voteId={voteId}
-            processing={processing}
-            onSuccess={onSuccess}
-            setVoteId={setVoteId}
-          />
-          <Spacer y={1} />
-        </Grid>
+        <Spacer y={0.4} />
       </Grid.Container>
     </>
   );

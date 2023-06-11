@@ -35,7 +35,7 @@ export function normalize(number: string, decimals: number) {
   );
 }
 export const _ = (v) => {
-  return parseFloat(parseFloat(v === 0 ? "0.000000001" : v).toFixed(9));
+  return parseFloat(parseFloat(v).toFixed(9));
 };
 
 

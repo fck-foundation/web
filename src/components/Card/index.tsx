@@ -1,13 +1,6 @@
 import { Link } from "react-router-dom";
 import Skeleton from "react-loading-skeleton";
-import {
-  Card,
-  Grid,
-  Image,
-  Text,
-  Spacer,
-  Badge,
-} from "@nextui-org/react";
+import { Card, Grid, Image, Text, Spacer, Badge } from "@nextui-org/react";
 import { ARR20, GEN03 } from "assets/icons";
 
 import { FJetton } from "../Jetton";
@@ -143,7 +136,7 @@ export const FCard: React.FC<React.PropsWithChildren<Props>> = ({
                               ? chart.map((v) => ({ pv: v.value }))
                               : [{ pv: 0 }, { pv: 0 }]
                           }
-                          height={32}
+                          height={48}
                           color={color}
                         />
                         <Grid.Container
@@ -154,8 +147,11 @@ export const FCard: React.FC<React.PropsWithChildren<Props>> = ({
                         >
                           <Grid
                             css={{
-                              maxWidth: "60%",
-                              "@xs": { maxWidth: "80%" },
+                              position: "absolute",
+                              top: "0%",
+                              left: "0%",
+                              maxW: "65%",
+                              // transform: 'translate3d(-50%, 0, 0)'
                             }}
                           >
                             <Text
@@ -176,7 +172,16 @@ export const FCard: React.FC<React.PropsWithChildren<Props>> = ({
                               </div>
                             </Text>
                           </Grid>
-                          <Grid css={{ position: 'absolute', right: 0 }}>
+                          <Grid
+                            css={{
+                              position: "absolute",
+                              right: "-12px",
+                              top: "0%",
+                              "@xs": {
+                                right: "0",
+                              },
+                            }}
+                          >
                             <Badge
                               size="xs"
                               variant="flat"
@@ -185,6 +190,18 @@ export const FCard: React.FC<React.PropsWithChildren<Props>> = ({
                                 flexWrap: "nowrap",
                                 p: "$0 $4 $0 $1",
                                 cursor: "pointer",
+                                background: "transparent",
+                                borderColor: "$secondary",
+                                color: "$primary",
+
+                                borderTopRightRadius: "0%",
+                                borderBottomRightRadius: "0%",
+                                "@xs": {
+                                  borderTopRightRadius:
+                                    "var(--nextui-radii-pill)",
+                                  borderBottomRightRadius:
+                                    "var(--nextui-radii-pill)",
+                                },
                               }}
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -195,10 +212,10 @@ export const FCard: React.FC<React.PropsWithChildren<Props>> = ({
                               <GEN03
                                 style={{
                                   fill: "currentColor",
-                                  fontSize: 18,
+                                  fontSize: 14,
                                 }}
                               />
-                              <Spacer x={0.4} />
+                              <Spacer x={0.2} />
                               {stats?.promoting_points || 0}
                             </Badge>
                           </Grid>

@@ -153,8 +153,8 @@ export const Promote: React.FC<{
   return (
     <>
       {!hideTrigger && (
-        <Button color="gradient" onPress={onPromote}>
-          <Grid.Container alignItems="center">
+        <Button color="gradient" size="sm" onPress={onPromote} css={{ minWidth: 'auto' }}>
+          <Grid.Container wrap="nowrap" alignItems="center">
             {!!processing?.wait ? (
               <>
                 <Grid css={{ display: "flex" }}>

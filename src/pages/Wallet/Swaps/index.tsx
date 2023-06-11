@@ -52,31 +52,37 @@ const WalletSwaps: React.FC<Props> = ({
   const wallet = location.pathname?.split("/").pop();
 
   const { isLoading: isLoadingSwaps, isFetching } = useQuery({
-    queryKey: ["selected-jetton", selected],
-    queryFn: async ({ signal }) =>
-      await axios.get(
+    queryKey: ["wallet-swaps", selected, TonProofApi.accessToken],
+    queryFn: ({ signal }) =>
+      axios.get(
         `https://api.fck.foundation/api/v2/user/swaps?address=${wallet}&jetton_id=${selected}&count=100`,
-        { signal }
+        {
+          signal,
+          headers: {
+            Authorization: `Bearer ${TonProofApi.accessToken}`,
+          },
+        }
       ),
-    enabled: !!selected && !!tonAddress && !!TonProofApi.accessToken,
+    enabled: !!TonProofApi.accessToken && !!selected,
     refetchOnMount: false,
     refetchOnReconnect: false,
-    onSuccess: (response) =>
-      setSwaps(response.data.data.sources.DeDust.jettons[selected!].swaps),
+    onSuccess: (response) => {
+      setSwaps(response.data.data.sources.DeDust.jettons[selected!].swaps);
+    },
   });
 
   return (
     <Card variant="bordered">
       <Card.Header>
         <Button.Group size="sm">
-          <Button flat={tab !== "dex"} onPress={() => setTab("dex")}>
-            {t("swaps")}
-          </Button>
           <Button
             flat={tab !== "transactions"}
             onPress={() => setTab("transactions")}
           >
             {t("transactions")}
+          </Button>
+          <Button flat={tab !== "dex"} onPress={() => setTab("dex")}>
+            {t("tokens")}
           </Button>
           <Button flat={tab !== "nft"} onPress={() => setTab("nft")}>
             {t("nft")}

@@ -53,7 +53,7 @@ export const Wallet = () => {
         ).toRawString()}`,
         { signal }
       ),
-    enabled: !!wallet,
+    enabled: !!tonAddress,
     refetchOnMount: false,
     refetchOnReconnect: false,
     select: (response) => ({
@@ -164,24 +164,25 @@ export const Wallet = () => {
     }
   }, [data, selected, jettons, dataChart]);
 
-  useEffect(() => {
-    if (TonProofApi.accessToken) {
-      if (selected && tonAddress) {
-        axios
-          .get(
-            `https://api.fck.foundation/api/v2/user/swaps?address=${wallet}&jetton_id=${selected}&count=100`,
-            {
-              headers: {
-                Authorization: `Bearer ${TonProofApi.accessToken}`,
-              },
-            }
-          )
-          .then((response) => {
-            setSwaps(response.data.data.sources.DeDust.jettons[selected].swaps);
-          });
-      }
-    }
-  }, [tonAddress, selected, wallet]);
+  const { isLoading: isLoadingSwaps } = useQuery({
+    queryKey: ["wallet-swaps", selected, TonProofApi.accessToken],
+    queryFn: ({ signal }) =>
+      axios.get(
+        `https://api.fck.foundation/api/v2/user/swaps?address=${wallet}&jetton_id=${selected}&count=100`,
+        {
+          signal,
+          headers: {
+            Authorization: `Bearer ${TonProofApi.accessToken}`,
+          },
+        }
+      ),
+    enabled: !!TonProofApi.accessToken && !!selected,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    onSuccess: (response) => {
+      setSwaps(response.data.data.sources.DeDust.jettons[selected!].swaps);
+    },
+  });
 
   const selectedValue = useMemo(
     () =>

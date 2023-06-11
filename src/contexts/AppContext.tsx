@@ -68,6 +68,8 @@ interface AppProps {
   timescale: JScale;
   list: string[];
   setList: Dispatch<any>;
+  hideList: string[];
+  setHideList: Dispatch<any>;
   page: number;
   setPage: Dispatch<any>;
   search?: string;
@@ -103,6 +105,8 @@ const defaultAppContext: AppProps = {
   timescale: "1D",
   list: [],
   setList: () => null,
+  hideList: [],
+  setHideList: () => null,
   page: 2,
   setPage: () => null,
   search: "",
@@ -159,10 +163,16 @@ const AppProviderWrapper = ({
   >((cookie.load("timescale") as any) || "1D");
 
   const tokens = cookie.load("tokens");
+  const hideTokens = cookie.load("hide-tokens");
   const [list, setList] = useState<string[]>(tokens || []);
+  const [hideList, setHideList] = useState<string[]>(hideTokens || []);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState<string | undefined>();
   const [jettons, setJettons] = useState<JType[]>([]);
+
+  useEffect(() => {
+    setHideList((prevList) => prevList.filter((val) => !list.includes(val)));
+  }, [list]);
 
   const firstProofLoading = useRef<boolean>(true);
 
@@ -182,6 +192,7 @@ const AppProviderWrapper = ({
         });
       } else {
         tonConnectUI.setConnectRequestParameters(null);
+        setAuthorized(false);
       }
     }
   }, [tonConnectUI, firstProofLoading]);
@@ -197,7 +208,6 @@ const AppProviderWrapper = ({
       tonConnectUI.onStatusChange(async (w) => {
         if (!w || w.account.chain === CHAIN.TESTNET) {
           TonProofApi.reset();
-          setAuthorized(false);
           return;
         }
 
@@ -205,19 +215,21 @@ const AppProviderWrapper = ({
           await TonProofApi.checkProof(
             w.connectItems.tonProof.proof,
             w.account
-          );
+          ).then(() => {
+            setAuthorized(true);
+          });
         }
-
-        if (!TonProofApi.accessToken) {
-          tonConnectUI.disconnect();
-          setAuthorized(false);
-          return;
-        }
-
-        setAuthorized(true);
       }),
     [tonConnectUI]
   );
+
+  useEffect(() => {
+    if (!localStorage.getItem("access-token")) {
+      setAuthorized(false);
+    } else if (tonConnectUI.wallet) {
+      setAuthorized(true);
+    }
+  }, [tonConnectUI.wallet]);
 
   useEffect(() => {
     const getWallet = async () => {
@@ -239,6 +251,10 @@ const AppProviderWrapper = ({
   useEffect(() => {
     cookie.save("tokens", list, { path: "/" });
   }, [list]);
+
+  useEffect(() => {
+    cookie.save("hide-tokens", hideList, { path: "/" });
+  }, [hideList]);
 
   useEffect(() => {
     if (theme) {
@@ -282,7 +298,10 @@ const AppProviderWrapper = ({
       today.setHours(today.getHours() - 24);
 
       const listVerified = response
-        .filter(({ verified, address }) => verified && !list.includes(address))
+        .filter(
+          ({ verified, address }) =>
+            verified && !list.includes(address) && !hideList.includes(address)
+        )
         .map(({ address }) => address);
       if (listVerified.length) {
         setList((prevState) => [...new Set([...listVerified, ...prevState])]);
@@ -308,7 +327,7 @@ const AppProviderWrapper = ({
 
         axios
           .get(
-            `https://tonapi.io/v2/accounts/${address}/nfts?limit=27&offset=${0}&indirect_ownership=true&collection=0:06d811f426598591b32b2c49f29f66c821368e4acb1de16762b04e0174532465`
+            `https://tonapi.io/v2/accounts/${address}/nfts?limit=9&offset=${0}&indirect_ownership=true&collection=0:06d811f426598591b32b2c49f29f66c821368e4acb1de16762b04e0174532465`
           )
           .then(({ data }) => setNFTItems(data.nft_items));
 
@@ -349,6 +368,8 @@ const AppProviderWrapper = ({
         setEnabled,
         list,
         setList,
+        hideList,
+        setHideList,
         page,
         setPage,
         search,
