@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 
 export const LanguageSwitcher = () => {
   const { i18n } = useTranslation();
-  const [value, setValue] = useState(i18n.language.split("-")[0].toLowerCase());
+  const [value, setValue] = useState(i18n.language && i18n.language.split("-")[0].toLowerCase());
 
   useEffect(() => {
     i18n.changeLanguage(value);
@@ -13,15 +13,16 @@ export const LanguageSwitcher = () => {
   return (
     <Button
       icon={value.toUpperCase()}
-      size="sm"
       flat
+      size="sm"
       css={{
-        minWidth: 35,
         padding: "$4",
         background: "transparent",
         border: "1px solid $blue100",
       }}
-      auto
+      style={{
+        minWidth: "auto",
+      }}
       onPress={() => setValue(value === "en" ? "ru" : "en")}
     />
   );

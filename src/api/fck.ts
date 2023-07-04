@@ -1,4 +1,6 @@
+import TonProofApi from "TonProofApi";
 import axios from "libs/axios";
+import { CurrentPrice, Order, OrderData } from "types";
 
 export const fck = {
   getJettons: async (signal: any) => {
@@ -12,36 +14,56 @@ export const fck = {
     jetton_ids: string,
     time: number,
     timescale: number,
-    signal: any
+    signal: any,
+    currency: string
   ) => {
     const { data } = await axios.get(
-      `https://api.fck.foundation/api/v2/analytics?jetton_ids=${jetton_ids}&time_min=${time}&timescale=${timescale}`,
+      `https://api.fck.foundation/api/v2/analytics?jetton_ids=${jetton_ids}&time_min=${time}&timescale=${timescale}&currency=${currency}`,
       { signal }
     );
     return data;
   },
   getRecentlyAdded: async (
-    count,
+    page,
     time: number,
     timescale: number,
+    currency = "",
     signal: any
   ) => {
     const { data } = await axios.get(
-      `https://api.fck.foundation/api/v2/analytics/preview/recentlyAdded?onlyJettons=false&count=${count}&time_min=${time}&timescale=${timescale}`,
+      `https://api.fck.foundation/api/v2/analytics/preview/recentlyAdded?onlyJettons=false&count=${25}&time_min=${time}&timescale=${timescale}&currency=${(
+        currency || "ton"
+      ).toLowerCase()}`,
       { signal }
     );
     return data;
   },
-  getPromoting: async (count, time: number, timescale: number, signal: any) => {
+  getPromoting: async (
+    page,
+    time: number,
+    timescale: number,
+    currency = "",
+    signal: any
+  ) => {
     const { data } = await axios.get(
-      `https://api.fck.foundation/api/v2/analytics/preview/promoting?onlyJettons=false&count=${count}&time_min=${time}&timescale=${timescale}`,
+      `https://api.fck.foundation/api/v2/analytics/preview/promoting?onlyJettons=false&count=${25}&time_min=${time}&timescale=${timescale}&currency=${(
+        currency || "ton"
+      ).toLowerCase()}`,
       { signal }
     );
     return data;
   },
-  getTrending: async (count, time: number, timescale: number, signal: any) => {
+   getTrending: async (
+    page,
+    time: number,
+    timescale: number,
+    currency = "",
+    signal: any
+  ) => {
     const { data } = await axios.get(
-      `https://api.fck.foundation/api/v2/analytics/preview/trending?onlyJettons=false&count=${count}&time_min=${time}&timescale=${timescale}`,
+      `https://api.fck.foundation/api/v2/analytics/preview/trending?onlyJettons=false&count=${25}&time_min=${time}&timescale=${timescale}&currency=${(
+        currency || "ton"
+      ).toLowerCase()}`,
       { signal }
     );
     return data;
@@ -50,6 +72,36 @@ export const fck = {
     const { data } = await axios.get(
       `https://api.fck.foundation/api/v2/analytics/swaps/count?jetton_ids=${jetton_ids}&time_min=${time}`,
       { signal }
+    );
+    return data;
+  },
+  generateOrder: async (order: any): Promise<Order> => {
+    const { data } = await axios.post(
+      `https://api.fck.foundation/api/v2/rating/generateVoiceOrder`,
+      order,
+      {
+        headers: {
+          Authorization: `Bearer ${TonProofApi.accessToken}`,
+        },
+      }
+    );
+    return data;
+  },
+  getOrder: async ({ signal, id }: any): Promise<OrderData> => {
+    const { data } = await axios.get(
+      `https://api.fck.foundation/api/v2/payments/order?uuid=${id}`,
+      {
+        signal,
+      }
+    );
+    return data.data;
+  },
+  getPrice: async ({ signal }: any): Promise<CurrentPrice> => {
+    const { data } = await axios.get(
+      `https://api.fck.foundation/api/v2/rating/currentPrice`,
+      {
+        signal,
+      }
     );
     return data;
   },

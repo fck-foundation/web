@@ -4,13 +4,15 @@ import { AppContext } from "contexts/AppContext";
 import { ABS13, ABS14 } from "assets/icons";
 import { ReactComponent as Logo } from "assets/logo.svg";
 
+import "./index.scss";
+
 interface Props {
   loading?: boolean;
   isLogo?: boolean;
 }
 
 export const ThemeSwitcher: React.FC<Props> = ({ loading, isLogo }) => {
-  const { nftItems, enabled, theme, setEnabled, setTheme } =
+  const { privateKey, nftItems, enabled, theme, setEnabled, setTheme } =
     useContext(AppContext);
 
   return isLogo ? (
@@ -27,8 +29,19 @@ export const ThemeSwitcher: React.FC<Props> = ({ loading, isLogo }) => {
         height={50}
         alt=""
       />
-    ) : (
-      <Logo style={{ width: 50, padding: 9 }} />
+    ) 
+    // : privateKey?.previews ? (
+    //   <Image
+    //     showSkeleton
+    //     src={privateKey?.previews[privateKey?.previews?.length - 1]?.url}
+    //     width={50}
+    //     css={{
+    //       borderRadius: "100%",
+    //     }}
+    //   />
+    // )
+    : (
+      <Logo className="h-10 w-10" />
     )
   ) : (
     <Grid.Container css={{ maxWidth: 300 }}>
@@ -41,7 +54,8 @@ export const ThemeSwitcher: React.FC<Props> = ({ loading, isLogo }) => {
             onPress={() => setEnabled(false)}
           >
             <ABS14
-              style={{ fill: "var(--nextui-colors-link)", fontSize: 24 }}
+              className="text-2xl"
+              style={{ fill: "var(--nextui-colors-link)" }}
             />
             <Spacer x={0.4} />
             Switch to light
@@ -56,7 +70,8 @@ export const ThemeSwitcher: React.FC<Props> = ({ loading, isLogo }) => {
             onPress={() => setEnabled(true)}
           >
             <ABS13
-              style={{ fill: "var(--nextui-colors-link)", fontSize: 24 }}
+              className="text-2xl"
+              style={{ fill: "var(--nextui-colors-link)" }}
             />
             <Spacer x={0.4} />
             Switch to dark
@@ -93,7 +108,7 @@ export const ThemeSwitcher: React.FC<Props> = ({ loading, isLogo }) => {
               >
                 <Image
                   showSkeleton
-                  src={item.metadata.image}
+                  src={item?.previews ? item?.previews[0]?.url : ""}
                   width={85}
                   height={85}
                   alt=""

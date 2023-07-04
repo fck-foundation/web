@@ -11,14 +11,14 @@ import {
   Loading,
   Image,
 } from "@nextui-org/react";
-import cookie from "react-cookies";
 import { useQuery } from "@tanstack/react-query";
 import { Address } from "ton-core";
 import axios from "axios";
 import { AppContext } from "contexts";
-import { TimeScale } from "pages";
 import { calculatePriceImpact, normalize } from "utils";
-import { ARR58, Ton } from "assets/icons";
+import { ARR58 } from "assets/icons";
+
+import "./index.scss";
 
 export const Calc: React.FC = () => {
   const { t } = useTranslation();
@@ -35,7 +35,7 @@ export const Calc: React.FC = () => {
       [...(jettons || [])]
         ?.filter((i) => i.verified)
         ?.sort((x, y) => y.stats.promoting_points - x.stats.promoting_points)
-        .slice(0, 14),
+        ?.slice(0, 14),
     [jettons]
   );
 
@@ -57,11 +57,11 @@ export const Calc: React.FC = () => {
   );
 
   const priceImpact = useMemo(() => {
-    const liquidityTON = normalize(dedust?.reserves[0]?.toString(), 9);
-    const liquidityJetton = normalize(
-      dedust?.reserves[1]?.toString(),
-      jetton?.decimals || 9
-    );
+    const liquidityTON =
+      dedust?.reserves && normalize(dedust?.reserves[0]?.toString(), 9);
+    const liquidityJetton =
+      dedust?.reserves &&
+      normalize(dedust?.reserves[1]?.toString(), jetton?.decimals || 9);
 
     const amountTON = parseFloat(from === "TON" ? valueX : valueY);
     const tradeFee = amountTON * parseFloat(dedust?.tradeFee) * 0.01;
@@ -104,7 +104,7 @@ export const Calc: React.FC = () => {
     () =>
       jettons
         ?.filter((i) => i.verified)
-        .slice(0, 14)
+        ?.slice(0, 14)
         ?.reduce((acc, curr) => {
           acc[curr.symbol] = curr;
 
@@ -161,11 +161,10 @@ export const Calc: React.FC = () => {
           <Grid.Container justify="space-between">
             <Grid>
               <Text
-                size={32}
+                className="text-3xl"
                 css={{
                   textGradient: "45deg, $primary -20%, $secondary 50%",
                   marginTop: -16,
-                  lineHeight: 1,
                 }}
                 weight="bold"
               >
@@ -173,7 +172,7 @@ export const Calc: React.FC = () => {
               </Text>
               <Spacer y={0.5} />
               <Text
-                size={32}
+                className="text-3xl"
                 color="light"
                 weight="bold"
                 css={{
@@ -192,7 +191,7 @@ export const Calc: React.FC = () => {
             justify="space-between"
             css={{ width: "100%" }}
           >
-            <Grid xs={12} sm={5} css={{ position: "relative" }}>
+            <Grid xs={12} css={{ position: "relative" }}>
               <Grid.Container wrap="wrap" css={{ width: "100%" }}>
                 <Grid xs={12}>
                   <Input
@@ -276,7 +275,6 @@ export const Calc: React.FC = () => {
             </Grid>
             <Grid
               xs={12}
-              sm={2}
               css={{ display: "flex", justifyContent: "center", padding: "$8" }}
             >
               <Button
@@ -285,15 +283,10 @@ export const Calc: React.FC = () => {
                 css={{ minWidth: "auto", p: 4 }}
                 onPress={onSwap}
               >
-                <ARR58
-                  style={{
-                    fill: "currentColor",
-                    fontSize: 32,
-                  }}
-                />
+                <ARR58 className="text-current text-2xl" />
               </Button>
             </Grid>
-            <Grid xs={12} sm={5} css={{ position: "relative" }}>
+            <Grid xs={12} css={{ position: "relative" }}>
               <Grid.Container
                 wrap="wrap"
                 css={{
@@ -489,9 +482,7 @@ export const Calc: React.FC = () => {
                 <img
                   src="/img/dedust.webp"
                   alt="DeDust.io"
-                  style={{
-                    height: 24,
-                  }}
+                  className="h-24"
                 />
               </Button>
             </Grid>

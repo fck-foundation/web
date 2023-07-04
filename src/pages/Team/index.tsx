@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 import { useTranslation } from "react-i18next";
 import { Helmet } from "react-helmet";
 import {
@@ -11,6 +10,8 @@ import {
   Card,
 } from "@nextui-org/react";
 import { GEN16 } from "assets/icons";
+
+import "./index.scss";
 
 export const OurTeam = () => {
   const { t } = useTranslation();
@@ -112,9 +113,9 @@ export const OurTeam = () => {
                                 size="xs"
                                 icon={
                                   <GEN16
+                                    className="text-base"
                                     style={{
                                       fill: "var(--nextui-colors-link)",
-                                      fontSize: 16,
                                     }}
                                   />
                                 }

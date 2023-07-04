@@ -1,0 +1,52 @@
+.flayout {
+  // overflow: auto;
+  // height: 100vh;
+}
+
+.navbar {
+  z-index: 999 !important;
+  background: transparent;
+
+  .nextui-navbar-container {
+    justify-content: center;
+    max-width: calc(var(--nextui-breakpoints-md) - var(--nextui-space-md));
+    // margin: var(--nextui-space-xs) var(--nextui-space-md) !important;
+    padding: var(--nextui-space-sm);
+    max-width: 100%;
+
+    > div {
+      margin: 0;
+      // max-width: 100%;
+    }
+  }
+}
+
+.tlogin-button {
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+}
+
+.tconnect-button,
+.tlogin-button {
+  display: none;
+}
+
+#tc-widget-root > tc-root > div {
+  z-index: 999999;
+}
+
+@media (max-width: 480px) {
+  #ton-connect-button > div {
+    display: none;
+  }
+}
+
+.nextui-collapse-view {
+  padding: 8px 0 !important;
+}
+
+.Toastify {
+  z-index: 99999;
+  position: absolute;
+}

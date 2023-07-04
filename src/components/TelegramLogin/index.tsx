@@ -77,7 +77,7 @@ export class TLoginButton extends Component<TLoginButtonProps> {
     }
 
     // componentDidMount will only be called once after the first render.
-    this._containerRef.current!.appendChild(script);
+    this._containerRef.current?.appendChild(script);
   }
 
   override render(): ReactNode {

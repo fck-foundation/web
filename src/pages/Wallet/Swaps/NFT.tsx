@@ -2,7 +2,6 @@ import {
   Badge,
   Button,
   Card,
-  Dropdown,
   Grid,
   Image,
   Link,
@@ -10,20 +9,16 @@ import {
   Spacer,
 } from "@nextui-org/react";
 import { useQuery } from "@tanstack/react-query";
-import TonProofApi, {  } from "TonProofApi";
 import { ARR16 } from "assets/icons";
 import axios from "axios";
 import { AppContext } from "contexts";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
 import { Address } from "ton-core";
 import { normalize } from "utils";
 
 export const NFT = () => {
   const { t } = useTranslation();
-  const ref = useRef(null);
-  const navigate = useNavigate();
   const wallet = location.pathname?.split("/").pop();
   const { isBottom, setIsBottom } = useContext(AppContext);
   const [page, setPage] = useState(1);
@@ -118,17 +113,12 @@ export const NFT = () => {
                 </Card.Body>
                 <Card.Header>
                   <Grid.Container wrap="nowrap" justify="space-between">
-                    <Grid css={{ maxW: nft?.sale ? '50%' : '100%' }}>
+                    <Grid css={{ maxW: nft?.sale ? "50%" : "100%" }}>
                       <Grid.Container wrap="nowrap" alignItems="center">
                         {!!nft?.verified && (
                           <>
                             <Grid>
-                              <ARR16
-                                style={{
-                                  fill: "currentColor",
-                                  fontSize: 18,
-                                }}
-                              />
+                              <ARR16 className="text-current text-lg" />
                             </Grid>
 
                             <Spacer x={0.4} />
@@ -136,11 +126,9 @@ export const NFT = () => {
                         )}
                         <Grid>
                           <div
+                            className="overflow-hidden whitespace-nowrap text-ellipsis"
                             style={{
-                              overflow: "hidden",
-                              whiteSpace: "nowrap",
-                              textOverflow: "ellipsis",
-                              maxWidth: nft?.sale ? '50%' : '100%',
+                              maxWidth: nft?.sale ? "50%" : "100%",
                             }}
                           >
                             {nft.metadata.name}

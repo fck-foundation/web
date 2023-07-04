@@ -1,23 +1,19 @@
-import { Divider, Grid, Link, Spacer, Text } from "@nextui-org/react";
+import { Divider, Grid, Link, Loading, Spacer, Text } from "@nextui-org/react";
 import { useQuery } from "@tanstack/react-query";
-import TonProofApi from "TonProofApi";
 import { Announcement } from "assets/icons";
-import { ARR01, ARR36, Arrowright, Link as LinkIcon } from "assets/icons";
+import { Arrowright, Link as LinkIcon } from "assets/icons";
 import axios from "axios";
 import { AppContext } from "contexts";
 import moment from "moment";
 import { useContext, useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
 import { Address } from "ton-core";
 import { normalize } from "utils";
 
 export const Transactions = () => {
   const wallet = location.pathname?.split("/").pop();
-  const { t } = useTranslation();
   const { isBottom, setIsBottom } = useContext(AppContext);
   const [page, setPage] = useState(1);
   const [data, setData] = useState<Record<string, any>[]>([]);
-  const [type, setType] = useState<"all" | "balance">("all");
 
   useEffect(() => {
     setData([]);
@@ -30,14 +26,14 @@ export const Transactions = () => {
     }
   }, [isBottom]);
 
-  const { isLoading } = useQuery({
+  const { isLoading, isFetching } = useQuery({
     queryKey: ["wallet-transactions", page],
     queryFn: ({ signal }) =>
       axios
         .get(
           `https://tonapi.io/v2/accounts/${wallet}/events?limit=1000&start_date=${
-            Math.ceil(Date.now() / 1000) - page * 86400
-          }&end_date=${Math.ceil(Date.now() / 1000) - (page - 1) * 86400}`, //(page - 1) * 28
+            Math.ceil(Date.now() / 1000) - page * 86400 * 7
+          }&end_date=${Math.ceil(Date.now() / 1000) - (page - 1) * 86400 * 7}`, //(page - 1) * 28
           {
             signal,
             headers: {
@@ -47,6 +43,8 @@ export const Transactions = () => {
           }
         )
         .then(({ data }) => data?.events),
+    refetchOnMount: false,
+    refetchOnReconnect: false,
     refetchOnWindowFocus: false,
     onSuccess: (reponse) => {
       setData((prevData) => [...prevData, ...(reponse || [])]);
@@ -61,7 +59,7 @@ export const Transactions = () => {
   // "NftItemTransfer"
   // "SmartContractExec"
   // "JettonTransfer"
-  
+
   return (
     <Grid.Container>
       {data?.map((event, i) => (
@@ -76,9 +74,7 @@ export const Transactions = () => {
                       target="_blank"
                       css={{ display: "flex" }}
                     >
-                      <LinkIcon
-                        style={{ fill: "currentColor", fontSize: 18 }}
-                      />
+                      <LinkIcon className="text-current text-lg" />
                     </Link>
                   </Grid>
                   <Spacer x={1} />
@@ -122,10 +118,10 @@ export const Transactions = () => {
                                     >
                                       {item[item?.type as any]?.sender?.name
                                         ? item[item?.type as any]?.sender?.name
-                                        : `${sender.slice(
+                                        : `${sender?.slice(
                                             0,
                                             4
-                                          )}...${sender.slice(-4)}`}
+                                          )}...${sender?.slice(-4)}`}
                                     </Link>
                                   </Grid>
                                 )}
@@ -133,12 +129,7 @@ export const Transactions = () => {
                                   <>
                                     <Spacer x={1} />
                                     <Grid>
-                                      <Arrowright
-                                        style={{
-                                          fill: "currentColor",
-                                          fontSize: 24,
-                                        }}
-                                      />
+                                      <Arrowright className="text-current text-2xl" />
                                     </Grid>
                                     <Spacer x={1} />
                                     <Grid>
@@ -169,12 +160,7 @@ export const Transactions = () => {
                                     alignItems="center"
                                   >
                                     <Grid>
-                                      <Announcement
-                                        style={{
-                                          fill: "currentColor",
-                                          fontSize: 18,
-                                        }}
-                                      />
+                                      <Announcement className="text-current text-lg" />
                                     </Grid>
                                     <Spacer x={0.4} />
                                     <Grid>
@@ -261,6 +247,20 @@ export const Transactions = () => {
           )}
         </>
       ))}
+
+      {(isLoading || isFetching) && (
+        <Grid
+          xs={12}
+          css={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            h: 100,
+          }}
+        >
+          <Loading />
+        </Grid>
+      )}
     </Grid.Container>
   );
 };

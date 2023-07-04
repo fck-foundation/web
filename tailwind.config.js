@@ -1,16 +1,20 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable no-undef */
 /** @type {import('tailwindcss').Config} */
 const colors = require('tailwindcss/colors')
 
 module.exports = {
-  content: ["./public/index.html", "./src/**/*.{html,js,tsx}"],
+  content: ["./index.html", "./src/**/*.{html,js,tsx}"],
   theme: {
     fontFamily: {
-      sans: ['Roboto Flex', 'sans-serif'],
+      sans: ['Onest-Regular'],
+    },
+    colors: {
+      ...colors,
+      transparent: 'transparent',
+      current: 'currentColor',
     },
     extend: {
-      colors: {
-        'primary': colors.emerald
-      },
       spacing: {
         '8xl': '96rem',
         '9xl': '128rem',

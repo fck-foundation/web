@@ -7,8 +7,9 @@ import svgr from "vite-plugin-svgr";
 import viteCompression from "vite-plugin-compression";
 import { ViteMinifyPlugin } from "vite-plugin-minify";
 import { NodeGlobalsPolyfillPlugin } from "@esbuild-plugins/node-globals-polyfill";
+import pluginRewriteAll from "vite-plugin-rewrite-all";
 import { resolve } from "path";
-import path from "path";
+import { fileURLToPath } from "url";
 
 export default defineConfig({
   plugins: [
@@ -16,16 +17,18 @@ export default defineConfig({
     react(),
     mkcert(),
     tsconfigPaths(),
-    // viteCompression(),
+    viteCompression(),
     ViteMinifyPlugin(),
+    pluginRewriteAll(),
     VitePWA({
+      base: "/",
       injectRegister: "auto",
       registerType: "autoUpdate",
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
       },
       devOptions: {
-        enabled: true,
+        // enabled: true,
         type: "module",
       },
       includeAssets: [
@@ -96,20 +99,26 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "src"),
+      "./runtimeConfig": "./runtimeConfig.browser",
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
+    // alias: {
+    //   // find: /^~(.*)$/,
+    //   "./runtimeConfig": "./runtimeConfig.browser",
+    //   "#": fileURLToPath(new URL("./src", import.meta.url)),
+    //   // "@": path.resolve(__dirname, "src"),
+    // },
   },
   build: {
     outDir: "docs",
-    rollupOptions: {
-      input: {
-        main: resolve(__dirname, "index.html"),
-        nested: resolve(__dirname, "./index.html"),
-      },
-    },
+    // rollupOptions: {
+    //   input: {
+    //     main: resolve(__dirname, "index.html"),
+    //     nested: resolve(__dirname, "./index.html"),
+    //   },
+    // },
   },
-  // @ts-ignore
-  base: "./",
+  base: "/",
   server: {
     fs: {
       allow: ["../sdk", "./"],

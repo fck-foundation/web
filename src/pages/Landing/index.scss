@@ -1,0 +1,75 @@
+.main-search {
+  position: relative;
+  width: 100%;
+
+  input {
+    padding-left: 36px;
+  }
+}
+
+.floating-coin {
+  transform: translatey(0px);
+  animation: float 6s ease-in-out infinite;
+  box-shadow: none !important;
+  margin: 0 !important;
+}
+
+.floating-arrow {
+  transform: translatey(0px);
+  animation: arrow 1.5s ease-in-out infinite;
+  z-index: -1;
+  box-shadow: none !important;
+  margin: 0 !important;
+}
+
+.key-animation {
+  animation: float 6s ease-in-out infinite;
+  box-shadow: none !important;
+  overflow: visible !important;
+
+  img {
+    zoom: 0.25;
+  }
+}
+
+.section-landing {
+  background-color: var(--nextui-colors-accents0);
+  backdrop-filter: saturate(180%) blur(var(--nextui--navbarBlur));
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+
+  .stone {
+    position: absolute;
+    z-index: -1;
+  }
+
+  .stone-1 {
+    bottom: 118px;
+    right: 0;
+    height: 128px;
+    width: 128px;
+    bottom: -25%;
+  }
+
+  .stone-2 {
+    left: 20px;
+    width: 162px;
+    height: 162px;
+    bottom: -50%
+  }
+
+  .stone-3 {
+    height: 134px;
+    width: 134px;
+    top: -53px;
+    right: 15%;
+  }
+
+  .stone-4 {
+    top: 25%;
+    height: 100px;
+    width: 100px;
+    left: 15%;
+    transform: translate3d(-50%, -50%, 0);
+  }
+}

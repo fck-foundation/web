@@ -1,0 +1,33 @@
+
+.chart-table,
+.nextui-table-container {
+  width: 100%;
+  border-radius: 0 !important;
+}
+
+.chart-table {
+  td:last-child * {
+    display: flex;
+    justify-content: flex-end;
+    text-align: right;
+  }
+
+  th:last-child .chart-label {
+    justify-content: flex-end;
+  }
+
+  thead {
+    display: none;
+  }
+
+  @media (max-width: 600px) {
+  }
+}
+
+.chart-label {
+  display: flex;
+  white-space: nowrap;
+  gap: 4px;
+  align-items: center;
+  font-size: 16px;
+}

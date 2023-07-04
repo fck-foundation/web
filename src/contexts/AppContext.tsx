@@ -19,15 +19,18 @@ import {
 } from "@tonconnect/ui-react";
 import TonConnect, { CHAIN } from "@tonconnect/sdk";
 import { useQuery } from "@tanstack/react-query";
-import { TonClient } from "ton";
+import { Address, TonClient } from "ton";
 import { coingecko, fck } from "api";
-import { NFTApi, BlockchainApi, Configuration, NftItem } from "tonapi-sdk-js";
+import { NftItem } from "tonapi-sdk-js";
 import TonProofApi, { connector, TonProofApiService } from "TonProofApi";
-import { getCookie } from "utils";
+import { getCookie, normalize } from "utils";
 
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import useInterval from "hooks/useInterval";
+import { useJetton } from "hooks";
+import { CurrentPrice, OrderData } from "types";
+import { Button, Card, Grid, Image, Spacer } from "@nextui-org/react";
 
 const client = new TonClient({
   endpoint: "https://toncenter.com/api/v2/jsonRPC",
@@ -41,6 +44,7 @@ export type JType = {
   address: string;
   decimals: number;
   verified: number;
+  is_scam?: number;
   dedust_lp_address?: string;
   dedust_swap_address?: string;
   data?: any[];
@@ -66,6 +70,15 @@ interface AppProps {
   enabled: boolean;
   client: TonClient;
   timescale: JScale;
+  jettonCurrency?: JType;
+  isDebug: boolean;
+  isPrivate: boolean;
+  walletJettons: Record<string, any>;
+  isLoadingWalletJettons: boolean;
+  dex: string;
+  setDEX: Dispatch<string>;
+  currency: string;
+  setCurrency: Dispatch<string>;
   list: string[];
   setList: Dispatch<any>;
   hideList: string[];
@@ -83,12 +96,21 @@ interface AppProps {
   setJetton: Dispatch<any>;
   setAuthorized: Dispatch<any>;
   setIsBottom: Dispatch<any>;
+  orders: OrderData[];
+  setOrders: Dispatch<any>;
+  isMenuOpen: boolean;
+  setIsMenuOpen: Dispatch<boolean>;
+  price?: CurrentPrice;
+  setPrice: Dispatch<CurrentPrice>;
+  privateKey?: NftItem;
   refetchJettons: () => Promise<any>;
 }
 
 const defaultAppContext: AppProps = {
   connector,
   TonProofApi,
+  isDebug: false,
+  isPrivate: false,
   isBottom: false,
   open: false,
   authorized: false,
@@ -97,6 +119,12 @@ const defaultAppContext: AppProps = {
   theme: { color: "" },
   nftItems: [],
   ton: {},
+  orders: [],
+  setOrders: () => null,
+  dex: "DeDust",
+  setDEX: () => null,
+  currency: "",
+  setCurrency: () => null,
   isTLoading: false,
   isJLoading: false,
   enabled: false,
@@ -110,6 +138,8 @@ const defaultAppContext: AppProps = {
   page: 2,
   setPage: () => null,
   search: "",
+  walletJettons: [],
+  isLoadingWalletJettons: false,
   setSearch: () => null,
   jettons: [],
   setJettons: () => null,
@@ -120,9 +150,30 @@ const defaultAppContext: AppProps = {
   setJetton: () => null,
   setAuthorized: () => null,
   setIsBottom: () => null,
+  isMenuOpen: false,
+  setIsMenuOpen: () => null,
+  price: {
+    price: 0,
+    jetton: {
+      id: 1,
+      address:
+        "0:3a4d2191094e3a33d4601efa51bb52dc5baa354516e162b7706955385f8144a7",
+      symbol: "FCK",
+      name: "FragmentChecker",
+      image: "https://ton.beycoder.ru/token-logo.png",
+      verified: 1,
+      decimals: 5,
+      dedust_swap_address: "EQA0S8EuxAf5W8KtkATOM_GBAAodelXHlQw-wtGApj5JLODa",
+      dedust_lp_address: "EQDCewEw7Qck1B6c6MXlAeaG718dI_z8XSCPFKsJcEJYnD4Y",
+      is_scam: 0,
+      stats: { promoting_points: 42 },
+    },
+  },
+  setPrice: () => null,
   refetchJettons: () => Promise.resolve(null),
 };
 
+const isDebug = true;
 const key = "dark-mode";
 
 export const AppContext = createContext<AppProps>(defaultAppContext);
@@ -132,9 +183,9 @@ const AppProviderWrapper = ({
 }: {
   children: ReactNode;
 }): ReactElement => {
-  const { i18n } = useTranslation();
-  const wallet = useTonWallet();
+  const { t, i18n } = useTranslation();
   const address = useTonAddress();
+  const wallet = useTonWallet();
   const rawAddress = useTonAddress(false);
   const [tonConnectUI, setOptions] = useTonConnectUI();
   const [theme, setTheme] = useState(
@@ -154,21 +205,31 @@ const AppProviderWrapper = ({
       : globalThis?.window?.matchMedia("(prefers-color-scheme: dark)").matches
   );
   const [open, setOpen] = useState(false);
-  const [data, setData] = useState({});
   const [isBottom, setIsBottom] = useState(false);
   const [jetton, setJetton] = useState<Record<string, any>>({});
   const [authorized, setAuthorized] = useState<boolean>();
+  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
   const [timescale, setTimescale] = useState<
     "1M" | "5M" | "30M" | "1H" | "4H" | "1D" | "7D" | "30D"
   >((cookie.load("timescale") as any) || "1D");
 
   const tokens = cookie.load("tokens");
   const hideTokens = cookie.load("hide-tokens");
+  const defaultDEX = cookie.load("dex");
+  const defaultOrders = cookie.load("orders");
+  const defaultCurrency = cookie.load("currency");
   const [list, setList] = useState<string[]>(tokens || []);
   const [hideList, setHideList] = useState<string[]>(hideTokens || []);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState<string | undefined>();
   const [jettons, setJettons] = useState<JType[]>([]);
+  const [dex, setDEX] = useState(defaultDEX || "DeDust");
+  const [currency, setCurrency] = useState(defaultCurrency || "");
+  const [price, setPrice] = useState<CurrentPrice>();
+  const jettonCurrency = useJetton(currency, jettons);
+  const [orders, setOrders] = useState<OrderData[]>(defaultOrders || []);
+  const [isPrivate, setIsPrivate] = useState(true);
+  const [privateKey, setPrivateKey] = useState<NftItem>();
 
   useEffect(() => {
     setHideList((prevList) => prevList.filter((val) => !list.includes(val)));
@@ -232,19 +293,6 @@ const AppProviderWrapper = ({
   }, [tonConnectUI.wallet]);
 
   useEffect(() => {
-    const getWallet = async () => {
-      if (!wallet) {
-        return;
-      }
-      const response = await TonProofApi.getAccountInfo(wallet.account);
-
-      setData(response);
-    };
-
-    getWallet();
-  }, [wallet]);
-
-  useEffect(() => {
     cookie.save("timescale", timescale, { path: "/" });
   }, [timescale]);
 
@@ -257,7 +305,20 @@ const AppProviderWrapper = ({
   }, [hideList]);
 
   useEffect(() => {
-    if (theme) {
+    cookie.save("dex", dex, { path: "/" });
+  }, [dex]);
+
+  useEffect(() => {
+    cookie.save("orders", orders, { path: "/" });
+  }, [orders]);
+
+  useEffect(() => {
+    cookie.save("currency", currency, { path: "/" });
+    setPage(1);
+  }, [currency]);
+
+  useEffect(() => {
+    if (theme && document.getElementsByTagName("html")) {
       cookie.save("theme", JSON.stringify(theme), { path: "/" });
 
       if (enabled) {
@@ -280,6 +341,27 @@ const AppProviderWrapper = ({
   useEffect(() => {
     cookie.save(key, JSON.stringify(enabled), { path: "/" });
   }, [enabled]);
+
+  useQuery({
+    queryKey: ["price"],
+    queryFn: ({ signal }) => fck.getPrice({ signal }),
+    onSuccess: (response) => {
+      console.log("response", response);
+      setPrice(response);
+    },
+  });
+
+  const { data: walletJettons, isLoading: isLoadingWalletJettons } = useQuery({
+    queryKey: ["wallet-jettons", wallet],
+    queryFn: async ({ signal }) =>
+      await axios.get(`https://tonapi.io/v2/accounts/${address}/jettons`, {
+        signal,
+      }),
+    enabled: !!wallet,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    select: (response) => response.data.balances,
+  });
 
   const { data: ton, isLoading: isTLoading } = useQuery({
     queryKey: ["ton"],
@@ -314,31 +396,43 @@ const AppProviderWrapper = ({
   useEffect(() => {
     const getData = async () => {
       if (address) {
-        // Get list of transactions
-        const blockchainApi = new BlockchainApi(
-          new Configuration({
-            headers: {
-              // To get unlimited requests
-              Authorization:
-                "Bearer eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhdWQiOlsidGF0YWRldiJdLCJleHAiOjE4MzgwNDc0ODYsImlzcyI6IkB0b25hcGlfYm90IiwianRpIjoiMkFHREdMR09OSUMyVVo3MkNVS0lVUkJXIiwic2NvcGUiOiJjbGllbnQiLCJzdWIiOiJ0b25hcGkifQ.MzApNKLvc9ZHCquoCfXZ-3CXg2-DZLdRrTXjHqk2c1uZt4VPJeQTFvjFtHMtyWi59v1FTCWjYcRUr8viVpXZCA",
-            },
-          })
-        );
+        if (isPrivate && isDebug) {
+          setTimeout(() => {
+            axios
+              .get(
+                `https://tonapi.io/v2/accounts/${address}/nfts?limit=1&offset=${0}&indirect_ownership=true&collection=0:362f5299002f402d3f0119a0cc953267f8c114aaf77c745220cd641d4efd3d66`
+              )
+              .then(({ data }) => {
+                // setIsPrivate(!data.nft_items.length);
+                // setPrivateKey(data.nft_items[0]);
+                setIsPrivate(false);
+              });
+          }, 300);
+        }
 
-        axios
-          .get(
-            `https://tonapi.io/v2/accounts/${address}/nfts?limit=9&offset=${0}&indirect_ownership=true&collection=0:06d811f426598591b32b2c49f29f66c821368e4acb1de16762b04e0174532465`
-          )
-          .then(({ data }) => setNFTItems(data.nft_items));
+        if (isMenuOpen) {
+          // Get list of transactions
+          // const blockchainApi = new BlockchainApi(
+          //   new Configuration({
+          //     headers: {
+          //       // To get unlimited requests
+          //       Authorization:
+          //         "Bearer eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhdWQiOlsidGF0YWRldiJdLCJleHAiOjE4MzgwNDc0ODYsImlzcyI6IkB0b25hcGlfYm90IiwianRpIjoiMkFHREdMR09OSUMyVVo3MkNVS0lVUkJXIiwic2NvcGUiOiJjbGllbnQiLCJzdWIiOiJ0b25hcGkifQ.MzApNKLvc9ZHCquoCfXZ-3CXg2-DZLdRrTXjHqk2c1uZt4VPJeQTFvjFtHMtyWi59v1FTCWjYcRUr8viVpXZCA",
+          //     },
+          //   })
+          // );
 
-        // setNFTItems(nftItems.);
-      } else {
-        setNFTItems([]);
+          axios
+            .get(
+              `https://tonapi.io/v2/accounts/${address}/nfts?limit=9&offset=${0}&indirect_ownership=true&collection=0:06d811f426598591b32b2c49f29f66c821368e4acb1de16762b04e0174532465`
+            )
+            .then(({ data }) => setNFTItems(data.nft_items));
+        }
       }
     };
 
     getData();
-  }, [address]);
+  }, [address, isMenuOpen]);
 
   return (
     <AppContext.Provider
@@ -346,10 +440,19 @@ const AppProviderWrapper = ({
         client,
         TonProofApi,
         connector,
+        isDebug,
+        isPrivate,
+        orders,
+        setOrders,
         isBottom,
         setIsBottom,
         open,
         setOpen,
+        dex,
+        setDEX,
+        currency,
+        setCurrency,
+        jettonCurrency,
         jetton,
         setJetton,
         authorized,
@@ -376,6 +479,13 @@ const AppProviderWrapper = ({
         setSearch,
         jettons,
         setJettons,
+        isMenuOpen,
+        setIsMenuOpen,
+        price,
+        setPrice,
+        walletJettons,
+        isLoadingWalletJettons,
+        privateKey,
         refetchJettons: refetch,
       }}
     >

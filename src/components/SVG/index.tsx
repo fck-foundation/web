@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 
+import './index.scss';
+
 export const SvgInline = (props) => {
   const [svg, setSvg] = useState<any>(null);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -7,7 +9,7 @@ export const SvgInline = (props) => {
 
   useEffect(() => {
     setIsLoaded(false);
-    fetch(props.url)
+    props.url && fetch(props.url)
       .then((res) => res.text())
       .then(setSvg)
       .catch(setIsErrored)

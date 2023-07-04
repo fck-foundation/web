@@ -1,0 +1,15 @@
+.svgInline {
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  z-index: -1;
+  min-width: 175vw;
+  min-height: 100vh;
+  zoom: 2;
+
+  svg {
+    g > g:last-child {
+      display: none;
+    }
+  }
+}

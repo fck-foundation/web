@@ -24,10 +24,10 @@ export const getList = (data: Record<number, any>, jettons?: JType[]): Item[] =>
           ? value && value + 10 * 10
           : value && value - 10 * 2,
     }));
-    const volume = [...stats].reduce((acc, i) => (acc += i?.volume), 0);
-    const percent = !!stats[stats.length - 2]?.value
-      ? ((stats[stats.length - 1]?.value - stats[stats.length - 2]?.value) /
-          stats[stats.length - 2]?.value) *
+    const volume = [...(stats || [])].reduce((acc, i) => (acc += i?.volume), 0);
+    const percent = stats && !!stats[0]?.value
+      ? ((stats[stats.length - 1]?.value - stats[0]?.value) /
+          stats[0]?.value) *
         100
       : 0;
 

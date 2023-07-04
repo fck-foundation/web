@@ -1,0 +1,114 @@
+.card {
+  transition: all 500ms;
+  border: 1px solid var(--nextui--navbarBorderColor);
+
+  .jetton-chart {
+    height: 40px;
+    border-radius: 14px;
+    border-left: 1px solid var(--nextui-colors-border);
+    overflow: hidden;
+
+    svg {
+      zoom: 1.25;
+      margin: -6px;
+      // min-width: calc(100% + 20px) !important;
+    }
+  }
+
+  &-ido {
+    position: relative;
+    border: 2px solid var(--nextui--navbarBorderColor);
+    border-radius: var(--nextui-radii-lg);
+    margin-bottom: 1rem;
+
+    &__bg {
+      position: absolute;
+      z-index: -1;
+      filter: blur(100px) opacity(0.5);
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(
+        var(--nextui-colors-primary) 30%,
+        transparent 70%,
+      );
+    }
+
+    &__input {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 2px solid var(--nextui--navbarBorderColor);
+      border-radius: var(--nextui-radii-lg);
+      padding: var(--nextui-radii-md) var(--nextui-radii-lg);
+      width: 100%;
+
+      &-container.nextui-input-container {
+        // pointer-events: none;
+        min-height: 28px;
+        height: 28px;
+        min-width: 35px;
+        width: auto;
+
+        > label {
+          padding: 0;
+          box-shadow: none;
+          background: var(--nextui--navbarBlurBackgroundColor);
+          border-radius: var(--nextui-radii-xs);
+          backdrop-filter: saturate(180%) blur(var(--nextui--navbarBlur));
+        }
+
+        input {
+          padding: 0;
+          margin: 0;
+          text-align: center;
+        }
+      }
+    }
+  }
+
+  &:hover .jetton-chart {
+    opacity: 1;
+  }
+
+  &:hover {
+    border-color: var(--nextui-colors-primary);
+  }
+
+  &-body {
+    cursor: pointer;
+    padding: 0 !important;
+    overflow: hidden !important;
+
+    > div {
+      transition: 250ms;
+      margin: -5px;
+      width: calc(100% + 10px) !important;
+    }
+
+    > p:last-child {
+      opacity: 0;
+      transition: 500ms;
+
+      > div {
+        max-width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+
+  .nextui-badge {
+    border-color: transparent;
+  }
+
+  &:hover &-body > * {
+    // opacity: 0;
+  }
+
+  &:hover &-body > p:last-child {
+    opacity: 1;
+  }
+}

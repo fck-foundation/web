@@ -1,11 +1,8 @@
-/* eslint-disable @next/next/no-img-element */
 import {
   Dispatch,
   SetStateAction,
   useContext,
   useEffect,
-  useMemo,
-  useRef,
   useState,
 } from "react";
 import cookie from "react-cookies";
@@ -21,11 +18,9 @@ import {
 } from "@nextui-org/react";
 import { useTranslation } from "react-i18next";
 
-import { _ } from "utils";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ARR20, GEN03, GEN19, GRA12 } from "assets/icons";
 import { AppContext } from "contexts";
-import { useTonAddress } from "@tonconnect/ui-react";
 import { Promote } from "components";
 import { toast } from "react-toastify";
 
@@ -39,67 +34,11 @@ export const Header: React.FC<Props> = ({ isDrag, percent, setIsDrag }) => {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
-  const ref = useRef<HTMLDivElement>(null);
-  const address = useTonAddress();
   // const [present] = useIonActionSheet();
-  const {
-    jetton,
-    page,
-    jettons,
-    list,
-    timescale,
-    enabled,
-    setOpen,
-    setTimescale,
-    setList,
-    refetchJettons,
-  } = useContext(AppContext);
+  const { jetton, list, timescale, setOpen, setTimescale, setList } =
+    useContext(AppContext);
 
   const [voteId, setVoteId] = useState<number>();
-  const [processing, setProcessing] = useState(
-    cookie.load("processing")
-      ? (cookie.load("processing") as any)
-      : { before: 0, wait: 0 }
-  );
-
-  useEffect(() => {
-    if (processing.wait > 0) {
-      const verify = setInterval(refetchJettons, 15000);
-      const curr = jettons
-        ?.map(({ stats }) => stats?.promoting_points || 0)
-        ?.reduce((acc, curr) => (acc += curr), 0);
-
-      if (processing.wait <= curr) {
-        clearInterval(verify);
-        setProcessing({ wait: 0, curr });
-        cookie.remove("processing");
-
-        toast.success(t("voteSuccess"), {
-          position: toast.POSITION.TOP_RIGHT,
-          theme: enabled ? "dark" : "light",
-        });
-      }
-    }
-  }, [processing]);
-
-  const onSuccess = (value: number) => {
-    const curr = jettons
-      .map(({ stats }) => stats.promoting_points)
-      .reduce((acc, curr) => (acc += curr), 0);
-
-    setProcessing({ curr: curr, wait: curr + value });
-
-    cookie.save(
-      "processing",
-      JSON.stringify({ before: curr, wait: curr + value }),
-      { path: "/" }
-    );
-
-    toast.success(t("voteSent"), {
-      position: toast.POSITION.TOP_RIGHT,
-      theme: enabled ? "dark" : "light",
-    });
-  };
 
   return (
     <>
@@ -117,9 +56,9 @@ export const Header: React.FC<Props> = ({ isDrag, percent, setIsDrag }) => {
                 flat={!isDrag}
                 icon={
                   isDrag ? (
-                    <ARR20 style={{ fill: "currentColor", fontSize: 18 }} />
+                    <ARR20 className="text-lg fill-current" />
                   ) : (
-                    <GEN19 style={{ fill: "currentColor", fontSize: 18 }} />
+                    <GEN19 className="text-lg fill-current" />
                   )
                 }
                 css={{ minWidth: "auto" }}
@@ -139,7 +78,7 @@ export const Header: React.FC<Props> = ({ isDrag, percent, setIsDrag }) => {
                   color="secondary"
                   css={{ padding: 10 }}
                 >
-                  <GRA12 style={{ fill: "currentColor", fontSize: 18 }} />
+                  <GRA12 className="text-lg fill-current" />
                   <Spacer x={0.4} />
                   {timescale}
                 </Dropdown.Button>
@@ -149,19 +88,22 @@ export const Header: React.FC<Props> = ({ isDrag, percent, setIsDrag }) => {
                   selectedKeys={[timescale]}
                   selectionMode="single"
                   onSelectionChange={(key) =>
-                    setTimescale(Object.values(key)[0])
+                    key && setTimescale(Object.values(key)[0])
                   }
                   css={{ minWidth: 50 }}
                 >
                   {[
-                    // "1M",
-                    "5M",
-                    "30M",
+                    // "1M", FIX THIS
                     "1H",
                     "4H",
                     "1D",
+                    "3D",
                     "7D",
+                    "14D",
                     "30D",
+                    "90D",
+                    "180D",
+                    "1Y",
                   ].map((n) => (
                     <Dropdown.Item key={n}>{t(n)}</Dropdown.Item>
                   ))}
@@ -188,11 +130,9 @@ export const Header: React.FC<Props> = ({ isDrag, percent, setIsDrag }) => {
                         }}
                       >
                         <ARR20
+                          className="text-base rounded-full overflow-hidden"
                           style={{
                             fill: "var(--nextui-colors-primary)",
-                            fontSize: 16,
-                            borderRadius: 100,
-                            overflow: "hidden",
                           }}
                         />
                       </Badge>
@@ -203,13 +143,21 @@ export const Header: React.FC<Props> = ({ isDrag, percent, setIsDrag }) => {
               />
             </Grid>
 
-            {!!processing.wait && (
+            {/* {!!processing.wait && (
               <>
                 <Grid>
                   <Loading />
                 </Grid>
                 <Spacer x={0.4} />
               </>
+            )} */}
+
+            {!!jetton?.is_scam && (
+              <Grid>
+                <Badge variant="flat" color="error">
+                  SCAM
+                </Badge>
+              </Grid>
             )}
 
             <Grid>
@@ -227,14 +175,7 @@ export const Header: React.FC<Props> = ({ isDrag, percent, setIsDrag }) => {
                   setVoteId(jetton?.id);
                 }}
               >
-                {
-                  <GEN03
-                    style={{
-                      fill: "currentColor",
-                      fontSize: 18,
-                    }}
-                  />
-                }
+                {<GEN03 className="text-lg fill-current" />}
                 <Spacer x={0.4} />
                 {jetton?.stats?.promoting_points || 0}
               </Badge>
@@ -267,7 +208,7 @@ export const Header: React.FC<Props> = ({ isDrag, percent, setIsDrag }) => {
                     setList((prevList) => [jetton.address, ...prevList])
                   }
                 >
-                  <GEN03 style={{ fill: "currentColor", fontSize: 18 }} />
+                  <GEN03 className="text-lg fill-current" />
                   <Spacer x={0.4} />
                   {t("addToWatchList")}
                 </Button>
@@ -337,13 +278,7 @@ export const Header: React.FC<Props> = ({ isDrag, percent, setIsDrag }) => {
         </Grid>
       </Container>
 
-      <Promote
-        hideTrigger
-        voteId={voteId}
-        processing={processing}
-        onSuccess={onSuccess}
-        setVoteId={setVoteId}
-      />
+      <Promote hideTrigger voteId={voteId} setVoteId={setVoteId} />
     </>
   );
 };

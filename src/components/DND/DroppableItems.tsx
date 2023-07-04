@@ -12,7 +12,7 @@ interface Props {
 
 export const DroppableItems: React.FC<Props> = ({ column, id, data }) => {
   return (
-    <div style={{ width: "100%" }}>
+    <div className="w-full">
       <Droppable droppableId={column}>
         {(provided, snapshot) => (
           <div

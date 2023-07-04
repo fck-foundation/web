@@ -5,7 +5,7 @@ export const whiteCoins = {
 };
 
 const coins = {
-  FCK: Math.pow(10, 5),
+  FCK: 100000,
 };
 
 export const payJetton = ({
@@ -15,7 +15,7 @@ export const payJetton = ({
   coin,
   to,
 }: {
-  selected: { id: number; amount: number }[];
+  selected: { id: any; amount: number }[];
   address: Address;
   forward: string;
   coin: "FCK";
@@ -27,7 +27,7 @@ export const payJetton = ({
       const message = beginCell()
         .storeUint(0xf8a7ea5, 32)
         .storeUint(0, 64)
-        .storeCoins(amount * coins[coin])
+        .storeCoins(Math.ceil(amount * coins[coin]))
         .storeAddress(Address.parse(to))
         .storeAddress(Address.parse(forward))
         .storeUint(0, 1)
@@ -43,5 +43,38 @@ export const payJetton = ({
         payload: message.toBoc().toString("base64"),
       };
     }),
+  };
+};
+
+export const swapJetton = ({
+  value,
+  forward,
+  to,
+}: {
+  value: number;
+  forward: string;
+  to: string;
+}) => {
+  return {
+    validUntil: Date.now() + 1000000,
+    messages: [
+      {
+        address: to,
+        amount: toNano("0.1").toString(),
+        payload: beginCell()
+          .storeUint(0xf8a7ea5, 32)
+          .storeUint(0, 64)
+          .storeCoins(value * 10 ** 5)
+          .storeAddress(Address.parse(to))
+          .storeAddress(Address.parse(forward))
+          .storeUint(0, 1)
+          .storeCoins(toNano("0.1"))
+          .storeUint(0, 1)
+          .storeUint(0, 32)
+          .endCell()
+          .toBoc()
+          .toString("base64"),
+      },
+    ],
   };
 };

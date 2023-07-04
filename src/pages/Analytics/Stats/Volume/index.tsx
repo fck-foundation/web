@@ -1,12 +1,4 @@
-/* eslint-disable @next/next/no-img-element */
-import {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import cookie from "react-cookies";
 import { useTranslation } from "react-i18next";
 import { Grid, Loading, Spacer, Table, Text, Divider } from "@nextui-org/react";
@@ -16,20 +8,28 @@ import {
   DeepPartial,
   IChartApi,
   ISeriesApi,
-  Time,
 } from "lightweight-charts";
 import moment from "moment";
 import { AppContext } from "contexts/AppContext";
 import axios from "libs/axios";
 import { _ } from "utils";
-import {
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toFixed } from "utils/price";
 import { useLocation } from "react-router-dom";
 import { GEN13, GRA06, GRA09 } from "assets/icons";
-import { pagination } from "pages/Analytics";
+
+export const pagination = {
+  "1H": "h1",
+  "4H": "h4",
+  "1D": "d1",
+  "3D": "d3",
+  "7D": "w1",
+  "14D": "w2",
+  "30D": "m1",
+  "90D": "m3",
+  "180D": "m6",
+  "1Y": "y1",
+};
 
 export const Volume = ({ timescale }) => {
   const queryClient = useQueryClient();
@@ -41,13 +41,9 @@ export const Volume = ({ timescale }) => {
   const jettonsSeriesRef = useRef<ISeriesApi<"Area">>();
   const { jettons, enabled } = useContext(AppContext);
   const [data, setData] = useState<Record<string, any>[]>([]);
-  const [isFull, setIsFull] = useState(false);
-  const [page, setPage] = useState<number>(1);
-  const [loadingPage, setLoadingPage] = useState(1);
+  const [isFull] = useState(false);
   const [info, setInfo] = useState<Record<string, any>>();
   const [jetton, setJetton] = useState<Record<string, any>>({});
-  const [results, setResult] = useState<Record<string, any>>([]);
-  const [hasNextPage, setHasNextPage] = useState(true);
 
   useEffect(() => {
     if (jettons?.length) {
@@ -84,56 +80,39 @@ export const Volume = ({ timescale }) => {
   );
 
   const { data: dataVolume, isLoading } = useQuery({
-    queryKey: [
-      "jetton-analytics",
-      page,
-      location.pathname,
-      timescale,
-      jetton.id,
-    ],
+    queryKey: ["jetton-analytics"],
     queryFn: ({ signal }) => {
       return axios
         .get(
-          `https://api.fck.foundation/api/v2/analytics/liquidity?jetton_ids=${
-            jetton.id
-          }&time_min=${Math.floor(
-            Date.now() / 1000 - page * pagination[timescale] * 24
-          )}&time_max=${Math.floor(
-            Date.now() / 1000 - (page - 1) * pagination[timescale] * 24
-          )}&timescale=${pagination[timescale]}`,
+          `https://api.fck.foundation/api/v3/analytics/liquidity?pairs=${jetton.id}&period=${pagination[timescale]}`,
           { signal }
         )
-        .then(
-          ({ data: { data } }) =>
-            data.sources.DeDust.jettons[jetton.id].liquidity
-        );
+        .then(({ data: { data } }) => data[jetton.id]);
     },
     enabled: !!jetton?.id,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     onSuccess: (results) => {
       setData((prevData) => {
-        if (!results.length) {
-          setHasNextPage(false);
-        }
-
-        results = [...results, ...prevData].sort((x, y) => x.time - y.time);
+        results = [...(results || []), ...prevData].sort(
+          (x, y) => moment(x.period).unix() - moment(y.period).unix()
+        );
 
         cookie.save("timescale", timescale, { path: "/" });
 
         const list = results;
 
-        areaSeriesRef.current!.setData(
+        areaSeriesRef.current?.setData(
           [...list].map((item) => ({
-            time: Math.floor(item.time) as any,
-            value: _(item.ton_pool),
+            time: moment(item.period).unix() as any,
+            value: _(item.avg2_pool),
           }))
         );
 
-        jettonsSeriesRef.current!.setData(
+        jettonsSeriesRef.current?.setData(
           [...list].map((item) => ({
-            time: Math.floor(item.time) as any,
-            value: _(item.jetton_pool),
+            time: moment(item.period).unix() as any,
+            value: _(item.avg1_pool),
           }))
         );
 
@@ -162,40 +141,25 @@ export const Volume = ({ timescale }) => {
           const time = candle?.time ? new Date(candle.time * 1000) : new Date();
 
           setInfo({
-            time: moment(time).format("HH:mm"),
+            time: moment(time).format("DD.MM.YY HH:mm"),
             value: candle?.value || 0,
             jettons: jettons?.value || 0,
             color:
-              candle?.close > candle?.open
+              candle?.avg2_pool > candle?.min2_pool
                 ? "#26a69a"
-                : candle?.close === candle?.open
+                : candle?.avg2_pool === candle?.min2_pool
                 ? "#fff"
                 : "#ef5350",
           });
         };
 
-        chartRef.current!.subscribeCrosshairMove(updateLegend);
+        chartRef.current?.subscribeCrosshairMove(updateLegend);
         updateLegend(undefined);
 
-        if (!page || (page && page <= 2)) {
-          chartRef.current!.timeScale().fitContent();
-        }
+        chartRef.current?.timeScale().fitContent();
 
         return results;
       });
-
-      if (page && page <= 1) {
-        // chartRef.current!.timeScale().
-        chartRef.current!.timeScale().fitContent();
-        // .applyOptions({ rightOffset: globalThis.innerWidth / 20 });
-      }
-
-      chartRef.current
-        ?.timeScale()
-        .unsubscribeVisibleLogicalRangeChange(onVisibleLogicalRangeChanged);
-      chartRef.current
-        ?.timeScale()
-        .subscribeVisibleLogicalRangeChange(onVisibleLogicalRangeChanged);
     },
   });
 
@@ -204,80 +168,58 @@ export const Volume = ({ timescale }) => {
     [dataVolume]
   );
 
-  const onVisibleLogicalRangeChanged = useCallback(
-    (newVisibleLogicalRange) => {
-      if (areaSeriesRef.current) {
-        const barsInfo = areaSeriesRef.current.barsInLogicalRange(
-          newVisibleLogicalRange
-        );
-        if (hasNextPage && barsInfo !== null && barsInfo.barsBefore < 0) {
-          setLoadingPage(page + 1);
-        }
+  useEffect(() => {
+    if (ref.current) {
+      if (chartRef.current && "remove" in chartRef.current) {
+        chartRef.current?.remove();
       }
-    },
-    [page, loadingPage, isLoading, hasNextPage]
-  );
 
-  useEffect(() => {
-    if (page && page <= 2 && page !== loadingPage && !isLoading) {
-      setLoadingPage(page + 1);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page]);
+      chartRef.current = createChart(ref.current, chartOptions);
+      const date = new Date();
 
-  useEffect(() => {
-    chartRef.current = createChart(ref.current!, chartOptions);
-    const date = new Date();
+      if (chartRef.current) {
+        areaSeriesRef.current = chartRef.current.addAreaSeries({
+          lineColor: "#2962FF",
+          topColor: "transparent",
+          bottomColor: "transparent",
+        });
+        jettonsSeriesRef.current = chartRef.current.addAreaSeries({
+          lineColor: "#1ac964",
+          topColor: "transparent",
+          bottomColor: "transparent",
+        });
 
-    if (chartRef.current) {
-      areaSeriesRef.current = chartRef.current.addAreaSeries({
-        lineColor: "#2962FF",
-        topColor: "transparent",
-        bottomColor: "transparent",
-      });
-      jettonsSeriesRef.current = chartRef.current.addAreaSeries({
-        lineColor: "#1ac964",
-        topColor: "transparent",
-        bottomColor: "transparent",
-      });
-
-      areaSeriesRef.current.setMarkers([
-        {
-          time: {
-            year: date.getFullYear(),
-            month: date.getMonth(),
-            day: date.getDate(),
+        areaSeriesRef.current.setMarkers([
+          {
+            time: {
+              year: date.getFullYear(),
+              month: date.getMonth(),
+              day: date.getDate(),
+            },
+            position: "belowBar",
+            color: "#2962FF",
+            shape: "circle",
+            text: "TON",
           },
-          position: "belowBar",
-          color: "#2962FF",
-          shape: "circle",
-          text: "TON",
-        },
-      ]);
-      jettonsSeriesRef.current.setMarkers([
-        {
-          time: {
-            year: date.getFullYear(),
-            month: date.getMonth(),
-            day: date.getDate(),
+        ]);
+        jettonsSeriesRef.current.setMarkers([
+          {
+            time: {
+              year: date.getFullYear(),
+              month: date.getMonth(),
+              day: date.getDate(),
+            },
+            position: "aboveBar",
+            color: "#1ac964",
+            shape: "circle",
+            text: jetton?.symbol,
           },
-          position: "aboveBar",
-          color: "#1ac964",
-          shape: "circle",
-          text: jetton?.symbol,
-        },
-      ]);
+        ]);
+      }
+
+      queryClient.setQueryData(["jetton-analytics"], []);
     }
-
-    setPage(1);
-    setLoadingPage(1);
-    queryClient.setQueryData(["jetton-analytics"], { pages: [] });
-
-    return () => {
-      chartRef.current!.remove();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [jetton.id, timescale, chartOptions, location?.pathname]);
+  }, [chartOptions]);
 
   return (
     <Grid.Container>
@@ -292,15 +234,15 @@ export const Volume = ({ timescale }) => {
             top: "0",
             height: "100%",
             background: "var(--nextui--navbarBlurBackgroundColor)",
-            pointerEvents: 'none'
+            pointerEvents: "none",
           }}
         >
           <Grid>
-            <GEN13 style={{ fill: "currentColor", fontSize: 24 }} />
+            <GEN13 className="text-2xl " />
           </Grid>
           <Spacer x={0.4} />
           <Grid>
-            <Text size={16}>{t("notAvailable")}</Text>
+            <Text className="text-base">{t("notAvailable")}</Text>
           </Grid>
         </Grid.Container>
       )}
@@ -326,14 +268,12 @@ export const Volume = ({ timescale }) => {
           <Table.Header>
             <Table.Column>
               <div className="chart-label">
-                <GRA06 style={{ fill: "currentColor", fontSize: 24 }} />{" "}
-                {t("volumeJ")}
+                <GRA06 className="text-2xl " /> {t("volumeJ")}
               </div>
             </Table.Column>
             <Table.Column>
               <div className="chart-label">
-                <GRA09 style={{ fill: "currentColor", fontSize: 24 }} />{" "}
-                {t("volumeL")}
+                <GRA09 className="text-2xl " /> {t("volumeL")}
               </div>
             </Table.Column>
           </Table.Header>
@@ -348,8 +288,7 @@ export const Volume = ({ timescale }) => {
                       }}
                       className="chart-label"
                     >
-                      <GRA06 style={{ fill: "currentColor", fontSize: 24 }} />{" "}
-                      {t("volumeJ")}
+                      <GRA06 className="text-2xl fill-current" /> {t("volumeJ")}
                     </Text>
                   </Grid>
                   <Spacer x={0.4} />
@@ -372,8 +311,7 @@ export const Volume = ({ timescale }) => {
                       }}
                       className="chart-label"
                     >
-                      <GRA09 style={{ fill: "currentColor", fontSize: 24 }} />{" "}
-                      {t("volumeL")}
+                      <GRA09 className="text-2xl fill-current" /> {t("volumeL")}
                     </Text>
                   </Grid>
                   <Spacer x={0.4} />
@@ -398,15 +336,4 @@ export const Volume = ({ timescale }) => {
       </Grid>
     </Grid.Container>
   );
-};
-
-const infoAddress = {
-  "EQB-7nZY_Onatn-_s5J2Y9jDOxCjWFzwMOa4_MeuSbgPgnVO": {
-    color: "secondary",
-    text: "Development",
-  },
-  "EQDzIMlFI2-f-hWlVqoxFmFCo7nIA5YN0q3V6zg2DN2aEpmR": {
-    color: "secondary",
-    text: "Marketing",
-  },
 };

@@ -126,7 +126,7 @@
   "searchToken": "Search...",
   "infoMessage": "We have technical problems with displaying data for the last 24 hours, the problem will be solved as soon as possible. We apologize for the inconvenience.",
 
-  "footerDescription": " Our crypto project offers a unique set of analytics tools on the TON blockchain. With our platform, you can track real-time market data.",
+  "footerDescription": " Unlock your crypto potential with Find & Check: a unique, real-time analytics toolkit on the TON blockchain.",
   "joinCommunity": "Join community",
   "community": "Community",
   "more": "More",
@@ -155,7 +155,7 @@
   "disconnect": "Disconnect",
   "connect": "Connect wallet",
   "wallet": "Wallet",
-  "signIn": "Sign in",
+  "signIn": "Connect",
   "source": "Source",
   "close": "Close",
   "open": "Open",
@@ -222,5 +222,13 @@
   "addressLP": "Address LP",
   "balance": "Balance",
   "accountAddress": "Account address",
+  "toPay": "To pay",
+  "expires": "Expires",
+  "votes": "Votes",
+  "verified": "Verified",
+  "getAccess": "Get access",
+  "amount": "Amount",
+  "dashboard": "Dashboard",
+  "pairs": "Pairs",
   "disclamer": "The analytics charts provided on this site are intended for informational purposes only. They are not to be construed as financial, investment, or trading advice. The information contained within these charts is derived from various sources, and while we strive to ensure its accuracy, we cannot guarantee its completeness or reliability."
 }

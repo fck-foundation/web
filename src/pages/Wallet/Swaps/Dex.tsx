@@ -1,9 +1,5 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
-import { useLocation } from "react-router-dom";
+import React, { useContext, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useQuery } from "@tanstack/react-query";
-import { useTonAddress } from "@tonconnect/ui-react";
-import TonProofApi from "TonProofApi";
 import moment from "moment";
 import {
   Badge,
@@ -13,7 +9,6 @@ import {
   Link,
   Loading,
   Spacer,
-  Table,
   Text,
 } from "@nextui-org/react";
 import {
@@ -24,23 +19,20 @@ import {
   ARR33,
   ARR36,
   ARR37,
-  ARR42,
   GEN02,
   GEN04,
   GEN17,
   Tonscan,
-  Tonviewer,
 } from "assets/icons";
-import axios from "axios";
 import { AppContext } from "contexts";
-import { _ } from "utils";
-import Skeleton from "react-loading-skeleton";
 
 const actions = {
-  buy: <ARR09 style={{ fill: "#1ac964", fontSize: 24 }} />,
-  sell: <ARR10 style={{ fill: "#f31260", fontSize: 24 }} />,
-  liquidity_deposit: <ARR28 style={{ fill: "#1ac964", fontSize: 24 }} />,
-  liquidity_withdraw: <ARR25 style={{ fill: "#f31260", fontSize: 24 }} />,
+  buy: <ARR09 className="text-2xl" style={{ fill: "#1ac964" }} />,
+  sell: <ARR10 className="text-2xl" style={{ fill: "#f31260" }} />,
+  liquidity_deposit: <ARR28 className="text-2xl" style={{ fill: "#1ac964" }} />,
+  liquidity_withdraw: (
+    <ARR25 className="text-2xl" style={{ fill: "#f31260" }} />
+  ),
 };
 
 const colorType = {
@@ -57,15 +49,9 @@ interface Props {
   setSwaps: React.Dispatch<Record<string, any>[]>;
 }
 
-export const Dex: React.FC<Props> = ({
-  isLoading,
-  selected,
-  swaps,
-  setSwaps,
-}) => {
-  const tonAddress = useTonAddress();
+export const Dex: React.FC<Props> = ({ isLoading, selected, swaps }) => {
   const { t } = useTranslation();
-  const { authorized, jettons, ton } = useContext(AppContext);
+  const { authorized, jettons } = useContext(AppContext);
 
   const dataJettons = useMemo(
     () =>
@@ -96,7 +82,7 @@ export const Dex: React.FC<Props> = ({
           <Grid xs={12}>
             <Grid.Container gap={1} justify="center" alignItems="center">
               <Grid>
-                <GEN17 style={{ fill: "currentColor", fontSize: 24 }} />
+                <GEN17 className="text-current text-2xl" />
               </Grid>
               <Spacer x={0.4} />
               <Grid>
@@ -157,26 +143,11 @@ export const Dex: React.FC<Props> = ({
                           <Grid css={{ display: "flex" }}>
                             {parseFloat(swap.ton) ? (
                               ["sell", "buy"].includes(swap.type) ? (
-                                <ARR33
-                                  style={{
-                                    fill: "currentColor",
-                                    fontSize: 20,
-                                  }}
-                                />
+                                <ARR33 className="text-current text-xl" />
                               ) : swap.type === "liquidity_withdraw" ? (
-                                <ARR36
-                                  style={{
-                                    fill: "currentColor",
-                                    fontSize: 20,
-                                  }}
-                                />
+                                <ARR36 className="text-current text-xl" />
                               ) : (
-                                <ARR37
-                                  style={{
-                                    fill: "currentColor",
-                                    fontSize: 20,
-                                  }}
-                                />
+                                <ARR37 className="text-current text-xl" />
                               )
                             ) : null}
                           </Grid>
@@ -213,15 +184,8 @@ export const Dex: React.FC<Props> = ({
                             href={`https://tonscan.org/tx/${swap.hash}`}
                             target="_blank"
                           >
-                            <Tonscan
-                              style={{
-                                fill: "currentColor",
-                                fontSize: 20,
-                              }}
-                            />
-                            <Text size={12} css={{ fontWeight: "bold" }}>
-                              Tonscan
-                            </Text>
+                            <Tonscan className="text-current text-xl" />
+                            <Text className="text-sm font-bold">Tonscan</Text>
                           </Link>
                         </Link>
                       </Grid>
@@ -236,7 +200,7 @@ export const Dex: React.FC<Props> = ({
     ) : (
       <Grid.Container justify="center" alignItems="center">
         <Grid>
-          <GEN04 style={{ fill: "currentColor", fontSize: 20 }} />
+          <GEN04 className="text-current text-xl" />
         </Grid>
         <Spacer x={0.4} />
         <Grid>{t("emptySwaps")}</Grid>
@@ -247,8 +211,8 @@ export const Dex: React.FC<Props> = ({
       <Grid xs={12} css={{ height: "fit-content" }}>
         <Card>
           <Card.Header>
-            <GEN02 style={{ fill: "currentColor", fontSize: 24 }} />{" "}
-            <Spacer x={0.4} /> {t("walletInfo")}
+            <GEN02 className="text-current text-2xl" /> <Spacer x={0.4} />{" "}
+            {t("walletInfo")}
           </Card.Header>
           <Card.Body css={{ p: "$0" }}>
             <Button
