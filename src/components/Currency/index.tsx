@@ -7,7 +7,7 @@ export const Currency = () => {
 
   return (
     <div
-      className="flex place-items-center py-2"
+      className="flex place-items-center py-2 cursor-pointer"
       onClick={() => setCurrency(currency === "" ? "jUSDT" : "")}
     >
       {jettonCurrency?.image && (

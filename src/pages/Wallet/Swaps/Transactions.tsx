@@ -66,27 +66,7 @@ export const Transactions = () => {
         <>
           <Grid key={i} xs={12}>
             <Grid.Container alignItems="center">
-              <Grid>
-                <Grid.Container wrap="nowrap" alignItems="center">
-                  <Grid>
-                    <Link
-                      href={`https://tonscan.org/tx/${event?.event_id}`}
-                      target="_blank"
-                      css={{ display: "flex" }}
-                    >
-                      <LinkIcon className="text-current text-lg" />
-                    </Link>
-                  </Grid>
-                  <Spacer x={1} />
-                  <Grid>
-                    <Text css={{ whiteSpace: "nowrap" }}>
-                      {moment(event?.timestamp * 1000).format("DD.MM.YY HH:mm")}
-                    </Text>
-                  </Grid>
-                </Grid.Container>
-              </Grid>
-              <Spacer x={1} />
-              <Grid>
+              <Grid xs={12}>
                 <Grid.Container direction="column" justify="center">
                   {event?.actions?.map((item, y) => {
                     const sender =
@@ -102,7 +82,7 @@ export const Transactions = () => {
                     return (
                       <>
                         <Grid key={y}>
-                          <Grid.Container justify="center" alignItems="center">
+                          <Grid.Container justify="space-between" alignItems="center">
                             <Grid>
                               <Grid.Container wrap="nowrap" alignItems="center">
                                 {item?.type === "SmartContractExec" && (
@@ -110,8 +90,8 @@ export const Transactions = () => {
                                     <Text>{item.simple_preview?.name}</Text>
                                   </Grid>
                                 )}
-                                {sender && (
-                                  <Grid>
+                                <Grid className="flex flex-col">
+                                  {sender && (
                                     <Link
                                       href={`https://tonviewer.com/${sender}`}
                                       target="_blank"
@@ -123,32 +103,23 @@ export const Transactions = () => {
                                             4
                                           )}...${sender?.slice(-4)}`}
                                     </Link>
-                                  </Grid>
-                                )}
-                                {recipient && (
-                                  <>
-                                    <Spacer x={1} />
-                                    <Grid>
-                                      <Arrowright className="text-current text-2xl" />
-                                    </Grid>
-                                    <Spacer x={1} />
-                                    <Grid>
-                                      <Link
-                                        href={`https://tonviewer.com/${recipient}`}
-                                        target="_blank"
-                                      >
-                                        {item[item?.type as any]?.recipient
-                                          ?.name
-                                          ? item[item?.type as any]?.recipient
-                                              ?.name
-                                          : `${recipient?.slice(
-                                              0,
-                                              4
-                                            )}...${recipient?.slice(-4)}`}
-                                      </Link>
-                                    </Grid>
-                                  </>
-                                )}
+                                  )}
+                                  {recipient && (
+                                    <Link
+                                      href={`https://tonviewer.com/${recipient}`}
+                                      target="_blank"
+                                    >
+                                      {item[item?.type as any]?.recipient?.name
+                                        ? item[item?.type as any]?.recipient
+                                            ?.name
+                                        : `${recipient?.slice(
+                                            0,
+                                            4
+                                          )}...${recipient?.slice(-4)}`}
+                                    </Link>
+                                    //<Arrowright className="text-current text-2xl" />
+                                  )}
+                                </Grid>
                               </Grid.Container>
                             </Grid>
                             {item[item?.type as any]?.comment && (
@@ -184,7 +155,7 @@ export const Transactions = () => {
                                       <>
                                         {parseFloat(
                                           normalize(
-                                            item[item?.type as any]?.amount,
+                                            item[item?.type as any]?.amount?.value || item[item?.type as any]?.amount || 0,
                                             item[item?.type as any]?.jetton
                                               ? item[item?.type as any]?.jetton
                                                   ?.decimals
@@ -202,10 +173,10 @@ export const Transactions = () => {
                                           : "TON"}
                                       </>
                                     ) : item[item?.type as any]?.amount ? (
-                                      <>
+                                      <> 
                                         {parseFloat(
                                           normalize(
-                                            item[item?.type as any]?.amount,
+                                            item[item?.type as any]?.amount?.value || item[item?.type as any]?.amount || 0,
                                             9
                                           ).toFixed(9)
                                         )}{" "}
@@ -235,6 +206,26 @@ export const Transactions = () => {
                       </>
                     );
                   })}
+                </Grid.Container>
+              </Grid>
+              
+              <Grid>
+                <Grid.Container wrap="nowrap" alignItems="center">
+                  <Grid>
+                    <Link
+                      href={`https://tonscan.org/tx/${event?.event_id}`}
+                      target="_blank"
+                      css={{ display: "flex" }}
+                    >
+                      <LinkIcon className="text-current text-lg" />
+                    </Link>
+                  </Grid>
+                  <Spacer x={1} />
+                  <Grid>
+                    <Text className="text-sm" css={{ whiteSpace: "nowrap" }}>
+                      {moment(event?.timestamp * 1000).format("DD.MM.YY HH:mm")}
+                    </Text>
+                  </Grid>
                 </Grid.Container>
               </Grid>
             </Grid.Container>

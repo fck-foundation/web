@@ -44,7 +44,7 @@ export const getList = (data: Record<number, any>, jettons?: JType[]): Item[] =>
         !isNaN(percent) && percent !== 0
           ? percent > 0
             ? "#1ac964"
-            : "#f31260"
+            : "#F54244"
           : "gray",
       stats: jetton?.stats,
       verified: !!jetton?.verified,

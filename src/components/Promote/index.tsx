@@ -19,7 +19,7 @@ import {
   useTonWallet,
 } from "@tonconnect/ui-react";
 import { toast } from "react-toastify";
-import { ARR09, ARR10, ARR22, GEN03, Payment } from "assets/icons";
+import { ARR09, ARR10, ARR22, Heart, Payment } from "assets/icons";
 import { AppContext } from "contexts";
 import React, { useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -307,7 +307,7 @@ export const Promote: React.FC<{
               ) : (
                 <>
                   <Grid css={{ display: "flex" }}>
-                    <GEN03 className="text-lg fill-current" />
+                    <Heart className="text-lg text-current" />
                   </Grid>
                   <Spacer x={0.4} />
                 </>
@@ -369,16 +369,30 @@ export const Promote: React.FC<{
                 </Popover.Trigger>
                 <Popover.Content>
                   <div style={{ maxWidth: 400 }}>
-                    <Text css={{ p: "$4 $6 $0" }}>{t("voteDisclamer")}</Text>
-
                     <Collapse.Group>
-                      <Collapse
-                        title=""
-                        subtitle="How long will my voice be active?"
-                      >
+                      <Collapse title="" subtitle={t("promoteVote1")}>
+                        <Text>
+                          <Text className="text-base">
+                            {t("voteDisclamer")}
+                          </Text>
+                        </Text>
+                      </Collapse>
+                      <Collapse title="" subtitle={t("promoteVote2")}>
                         <Text>
                           <Text className="text-base">
                             {t("promoteInfo").replace(
+                              "$1",
+                              moment(Date.now() + 86400 * 30).format(
+                                "DD.MM.YY HH:mm"
+                              )
+                            )}
+                          </Text>
+                        </Text>
+                      </Collapse>
+                      <Collapse title="" subtitle={t("promoteVote3")}>
+                        <Text>
+                          <Text className="text-base">
+                            {t("promoteInfo2").replace(
                               "$1",
                               moment(Date.now() + 86400 * 7).format(
                                 "DD.MM.YY HH:mm"
@@ -387,25 +401,10 @@ export const Promote: React.FC<{
                           </Text>
                         </Text>
                       </Collapse>
-                      <Collapse
-                        title=""
-                        subtitle="How many votes can be sent at a time?"
-                      >
+                      <Collapse title="" subtitle={t("promoteVote3")}>
                         <Text>
                           <Text className="text-base">
-                            {t("promoteInfo").replace(
-                              "$1",
-                              moment(Date.now() + 86400 * 7).format(
-                                "DD.MM.YY HH:mm"
-                              )
-                            )}
-                          </Text>
-                        </Text>
-                      </Collapse>
-                      <Collapse title="" subtitle="Where do the funds go?">
-                        <Text>
-                          <Text className="text-base">
-                            {t("promoteInfo").replace(
+                            {t("promoteInfo3").replace(
                               "$1",
                               moment(Date.now() + 86400 * 7).format(
                                 "DD.MM.YY HH:mm"
@@ -626,7 +625,7 @@ export const Promote: React.FC<{
                                       color="primary"
                                       style={{ borderRadius: 8 }}
                                     >
-                                      <GEN03 className="text-lg fill-current" />
+                                      <Heart className="text-lg text-current" />
                                       <Spacer x={0.4} />
                                       {item?.amount
                                         ? item?.amount
@@ -668,7 +667,7 @@ export const Promote: React.FC<{
             </>
           )}
         </Modal.Body>
-        {!orders?.length && (
+        {(!!toPay || !!(dataFCK || 0)) && (
           <Modal.Footer
             css={{
               position: "sticky",
@@ -684,7 +683,7 @@ export const Promote: React.FC<{
                     <Grid.Container alignItems="center">
                       <Grid>
                         <Badge color="primary">
-                          <GEN03 className="text-lg fill-current" />
+                          <Heart className="text-lg text-current" />
                           <Spacer x={0.4} />
                           {toPay} {t("Points")}
                         </Badge>
@@ -702,42 +701,43 @@ export const Promote: React.FC<{
               )}
               <Grid></Grid>
               <Spacer x={0.4} />
+
               <Grid>
-                <Button
-                  size="sm"
-                  flat
-                  css={{ minWidth: "auto" }}
-                  onPress={() => (!processing?.wait ? onVote() : undefined)}
-                  disabled={!!wallet && (!toPay || !dataFCK || toPay > dataFCK)}
-                >
-                  <Grid.Container alignItems="center">
-                    {processing?.wait ? (
-                      <>
-                        <Grid css={{ display: "flex" }}>
-                          <Loading size="xs" />
-                        </Grid>
-                        <Spacer x={0.4} />
-                      </>
-                    ) : (
-                      <>
-                        <Grid>
-                          <Payment className="text-lg text-current" />
-                        </Grid>
-                        <Spacer x={0.4} />
-                      </>
-                    )}
-                    <Grid>
-                      {t(processing?.wait ? "voteProcessing" : "pay")}
-                    </Grid>
-                  </Grid.Container>
-                </Button>
+                {!isLoadingJettons && !(dataFCK || 0) ? (
+                  t("insufficientFunds")
+                ) : (
+                  <Button
+                    size="sm"
+                    flat
+                    css={{ minWidth: "auto" }}
+                    onPress={() => (!processing?.wait ? onVote() : undefined)}
+                    disabled={
+                      !!wallet && (!toPay || !dataFCK || toPay > dataFCK)
+                    }
+                  >
+                    <Grid.Container alignItems="center">
+                      {processing?.wait ? (
+                        <>
+                          <Grid css={{ display: "flex" }}>
+                            <Loading size="xs" />
+                          </Grid>
+                          <Spacer x={0.4} />
+                        </>
+                      ) : (
+                        <>
+                          <Grid>
+                            <Payment className="text-lg text-current" />
+                          </Grid>
+                          <Spacer x={0.4} />
+                        </>
+                      )}
+                      <Grid>
+                        {t(processing?.wait ? "voteProcessing" : "pay")}
+                      </Grid>
+                    </Grid.Container>
+                  </Button>
+                )}
               </Grid>
-              {!isLoadingJettons && !(dataFCK || 0) && (
-                <>
-                  <Spacer x={0.4} />
-                  <Grid>{t("insufficientFunds")}</Grid>
-                </>
-              )}
             </Grid.Container>
           </Modal.Footer>
         )}

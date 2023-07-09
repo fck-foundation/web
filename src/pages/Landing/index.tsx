@@ -32,6 +32,7 @@ import {
   GEN04,
   GEN16,
   GEN20,
+  Heart,
   Ton,
   Tools,
   Trophy,
@@ -39,13 +40,14 @@ import {
 } from "assets/icons";
 import { getList } from "utils/analytics";
 import { ReactComponent as FCK } from "assets/logo.svg";
-import Arrow from "assets/arrow.svg";
+import {ReactComponent as Arrow} from "assets/arrow.svg";
 
 import { AppContext } from "../../contexts";
 import { pagination } from "../Analytics";
 
 import "./index.scss";
 import { IDO, Swap } from "./components";
+import { copyTextToClipboard } from "utils";
 
 export type TimeScale = "1M" | "5M" | "30M" | "1H" | "4H" | "1D" | "30D";
 
@@ -84,7 +86,7 @@ const TCard = ({ type = "primary", value, amount, title }) => (
 
 export function Home() {
   const { t } = useTranslation();
-  const { jettons, currency, setIsMenuOpen } = useContext(AppContext);
+  const { jettons, currency, enabled, setIsMenuOpen } = useContext(AppContext);
   const [timescale] = useState<TimeScale>(cookie.load("timescale") || "1D");
   const [voteId, setVoteId] = useState<number>();
 
@@ -162,17 +164,26 @@ export function Home() {
     },
   });
 
+  
+  const onCopy = () => {
+    copyTextToClipboard("EQA6TSGRCU46M9RgHvpRu1LcW6o1RRbhYrdwaVU4X4FEp_Z2");
+    toast.success(t("copied"), {
+      position: toast.POSITION.TOP_RIGHT,
+      theme: enabled ? "dark" : "light",
+    });
+  };
+
   const loading = isLoadingPromo || isLoadingTrending;
 
   return (
     <>
-      <Container md css={{ p: 0 }}>
+      <Container md css={{ px: '$8' }}>
         <Grid.Container
           gap={1}
           justify="center"
           css={{ minHeight: "70vh", pt: 16, pb: 32, pl: 0, pr: 0 }}
         >
-          <Grid xs={12} sm={8} css={{ mb: "$8" }}>
+          <Grid xs={12} sm={6} css={{ mb: "$8" }}>
             <Grid.Container gap={2} className="text-center">
               <Grid xs={12}>
                 <Text
@@ -182,12 +193,12 @@ export function Home() {
                   }}
                   weight="bold"
                 >
-                  Bridging Blockchain Complexity with Analytical Simplicity.
+                  {t('bridgingBlockchain')}
                 </Text>
               </Grid>
               <Grid xs={12}>
                 <Text className="text-base w-full" css={{ mt: "-$8" }}>
-                  Unlock Insights, Empower Decisions with TON Analytics
+                  {t('bridgingBlockchainDescription')}
                 </Text>
               </Grid>
               <Spacer y={0.8} />
@@ -195,122 +206,15 @@ export function Home() {
                 <Grid.Container
                   gap={1}
                   className="main-search"
-                  css={{ m: "-$8 -$8 -$4 -$8", width: "calc(100% + $16)" }}
+                  css={{ m: "-$8 -$8 -$8 -$8", width: "calc(100% + $16)" }}
                 >
                   <Grid xs={12}>
                     <Search />
                   </Grid>
                 </Grid.Container>
-                {/* <Text className="text-base" color="success" weight="bold">
-                {t("signUpToday")}
-              </Text>
-              <Text className="text-2xl" color="light" weight="bold">
-                {t("header1")}
-              </Text>
-
-              <Text className="text-2xl" weight="bold">
-                {t("header2")}
-              </Text>
-              <Text className="text-2xl" color="light" weight="bold">
-                {t("header3")}
-              </Text>
-              <Text className="text-sm" color="light">
-                {t("headerDesc").replace(
-                  "$1",
-                  (jettons?.length || 0).toString()
-                )}
-              </Text> */}
               </Grid>
             </Grid.Container>
           </Grid>
-          {/* <Grid xs={12} css={{ maxW: "100%", "@xs": { minWidth: 400 } }}>
-          <Grid.Container
-            direction="column"
-            justify="center"
-            alignItems="center"
-          >
-            <Grid xs={12} sm={8} className="main-search">
-              <GEN04
-                style={{
-                  fill: "var(--nextui-colors-link)",
-                  fontSize: 24,
-                  position: "absolute",
-                  zIndex: 2,
-                  top: "50%",
-                  transform: "translate3d(50%, -50%, 0)",
-                }}
-              />
-              <Input placeholder="Search token or wallet" animated={false} type="search" width="100%" />
-              {/* <Text className="text-base" color="success" weight="bold">
-                {t("signUpToday")}
-              </Text>
-              <Text className="text-2xl" color="light" weight="bold">
-                {t("header1")}
-              </Text>
-
-              <Text className="text-2xl" weight="bold">
-                {t("header2")}
-              </Text>
-              <Text className="text-2xl" color="light" weight="bold">
-                {t("header3")}
-              </Text>
-              <Text className="text-sm" color="light">
-                {t("headerDesc").replace(
-                  "$1",
-                  (jettons?.length || 0).toString()
-                )}
-              </Text>
-            </Grid>
-            {/* <Grid>
-              <Grid.Container wrap="nowrap">
-                <Grid>
-                  <Button
-                    color="primary"
-                    css={{ minWidth: "auto" }}
-                    onPress={() => navigate("/analytics")}
-                  >
-                    {t("getStarted")}
-                    <Spacer x={0.4} />
-                    <ARR07
-                      style={{
-                        fill: "currentColor",
-                        fontSize: 24,
-                      }}
-                    />
-                  </Button>
-                </Grid>
-                {/* <Spacer x={1} />
-                <Grid>
-                  <Button
-                    color="primary"
-                    flat
-                    size="lg"
-                    css={{ minWidth: "auto" }}
-                  >
-                    <FIL21
-                      style={{
-                        fill: "var(--nextui-colors-link)",
-                        fontSize: 24,
-                      }}
-                    />
-                    <Spacer x={0.4} /> Download App
-                  </Button>
-                </Grid> 
-              </Grid.Container>
-            </Grid> 
-          </Grid.Container>
-        </Grid> */}
-          {/* <Grid css={{ maxW: '100%', "@xs": { maxW: 400 } }}>
-          <Card css={{ height: "fit-content" }}>
-            <Card.Body>
-              <Grid.Container gap={1} justify="space-between" css={{ pb: 0 }}>
-                <Grid xs={12}>
-                  <Calc />
-                </Grid>
-              </Grid.Container>
-            </Card.Body>
-          </Card>
-        </Grid> */}
           <Grid xs={12} sm={8}>
             <Grid.Container
               gap={1}
@@ -390,12 +294,13 @@ export function Home() {
           <Grid xs={12} sm={8} css={{ mt: "$8" }}>
             <Grid.Container justify="space-between">
               <Grid xs={12}>
-                <Card>
+                <Card variant="bordered" css={{ borderRadius: 'var(--nextui-radii-lg)' }}>
                   <Card.Body css={{ p: 0, overflow: "hidden" }}>
                     <Grid.Container gap={1} justify="space-between">
                       <Grid xs={12} sm={8} css={{ p: "$8" }}>
                         <Grid.Container
                           gap={4}
+                          direction="column"
                           css={{ h: "fit-content", px: "$4" }}
                         >
                           <Grid>
@@ -407,7 +312,7 @@ export function Home() {
                                   "45deg, $primary 25%, $secondary 125%",
                               }}
                             >
-                              Introducing FCK Token
+                              {t('introducingToken')}
                             </Text>
                           </Grid>
                           <Grid>
@@ -416,22 +321,17 @@ export function Home() {
                               weight="bold"
                               css={{ mt: -32 }}
                             >
-                              The cornerstone of the Find & Check initiative
-                              within the TON ecosystem.
+                              {t('introducingTokenSubtitle')}
                             </Text>
                           </Grid>
                           <Grid>
                             <Text css={{ mt: -32 }}>
-                              Serving as the fuel of our unique set of
-                              analytical tools, FCK Token empowers the TON
-                              network users, catalyzes our initiatives, and
-                              opens up new possibilities for interaction with
-                              the blockchain.
+                              {t('introducingTokenDescription')}
                             </Text>
                           </Grid>
                         </Grid.Container>
                       </Grid>
-                      <Grid xs={12} sm={4} css={{ bg: "#0088CC" }}>
+                      <Grid xs={12} sm={4} className="flex justify-center" css={{ bg: "#0088CC" }}>
                         <img src="/img/coin.png" className="floating-coin" />
                       </Grid>
                     </Grid.Container>
@@ -441,7 +341,7 @@ export function Home() {
               <Grid xs={12} css={{ mt: 32 }}>
                 <Grid.Container wrap="nowrap">
                   <Grid>
-                    <Card>
+                    <Card variant="bordered">
                       <Card.Body
                         css={{
                           width: "4rem",
@@ -460,21 +360,19 @@ export function Home() {
                   <Spacer x={1} />
                   <Grid>
                     <Text color="primary" weight="bold">
-                      User Empowerment:
+                      {t('userEmpowerment')}:
                     </Text>
                     <Text>
-                      FCK Token gives the power back to the users, allowing you
-                      to access premium features and gain influence over the
-                      platform&#39;s future direction.
+                      {t('userEmpowermentDescription')}
                     </Text>
                   </Grid>
                 </Grid.Container>
               </Grid>
-              <Spacer y={0.4} />
+              <Spacer y={1} />
               <Grid xs={12}>
                 <Grid.Container wrap="nowrap">
                   <Grid>
-                    <Card>
+                    <Card variant="bordered">
                       <Card.Body
                         css={{
                           width: "4rem",
@@ -493,12 +391,10 @@ export function Home() {
                   <Spacer x={1} />
                   <Grid>
                     <Text color="primary" weight="bold">
-                      Innovation and Development:
+                      {t('innovationDevelopment')}:
                     </Text>
                     <Text>
-                      The FCK Token supports continuous innovation and
-                      development, enabling us to stay ahead of market trends
-                      and meet our user&#39;s evolving needs.
+                      {t('innovationDevelopmentDescription')}
                     </Text>
                   </Grid>
                 </Grid.Container>
@@ -507,7 +403,7 @@ export function Home() {
               <Grid xs={12}>
                 <Grid.Container wrap="nowrap">
                   <Grid>
-                    <Card>
+                    <Card variant="bordered">
                       <Card.Body
                         css={{
                           width: "4rem",
@@ -526,12 +422,10 @@ export function Home() {
                   <Spacer x={1} />
                   <Grid>
                     <Text color="primary" weight="bold">
-                      Versatility:
+                      {t('versatility')}:
                     </Text>
                     <Text>
-                      FCK Token enables a range of operations including voting
-                      for tokens on our platform, trend analytics, wallet
-                      operations, and more.
+                      {t('versatilityDescription')}
                     </Text>
                   </Grid>
                 </Grid.Container>
@@ -540,7 +434,7 @@ export function Home() {
               <Grid xs={12}>
                 <Grid.Container wrap="nowrap">
                   <Grid>
-                    <Card>
+                    <Card variant="bordered">
                       <Card.Body
                         css={{
                           width: "4rem",
@@ -559,12 +453,10 @@ export function Home() {
                   <Spacer x={1} />
                   <Grid>
                     <Text color="primary" weight="bold">
-                      Rewarding Participation:
+                      {t('rewardingParticipation')}:
                     </Text>
                     <Text>
-                      FCK Token&#39;s model encourages active participation,
-                      offering unique incentives for community members who
-                      contribute to our growth and development.
+                      {t('rewardingParticipationDescription')}
                     </Text>
                   </Grid>
                 </Grid.Container>
@@ -576,7 +468,7 @@ export function Home() {
                     <Button flat className="min-w-auto">
                       <FCK className="fill-current w-8 h-8" />{" "}
                       <Spacer x={0.4} />
-                      <Text color="currentColor">Buy $FCK on DeDust</Text>
+                      <Text color="currentColor">{t('buyFCKDeDust')}</Text>
                     </Button>
                   </Grid>
                   <Grid>
@@ -589,18 +481,18 @@ export function Home() {
                           className="min-w-auto"
                           css={{ pointerEvents: "none" }}
                         >
-                          <GEN03 className="fill-current text-2xl" />
+                          <Heart className="text-2xl text-current" />
                           <Spacer x={0.4} />
-                          <Text color="currentColor">Vote using $FCK</Text>
+                          <Text color="currentColor">{t('voteFCK')}</Text>
                         </Button>
                       }
                     />
                   </Grid>
                   <Grid>
-                    <Button flat className="min-w-auto">
+                    <Button flat className="min-w-auto" onClick={onCopy}>
                       <Copy className="text-current text-2xl" />
                       <Spacer x={0.4} />
-                      <Text color="currentColor">Copy Token Contract</Text>
+                      <Text color="currentColor">{t('copyToken')}</Text>
                     </Button>
                   </Grid>
                 </Grid.Container>
@@ -608,10 +500,10 @@ export function Home() {
               <Grid xs={12} css={{ mt: "$16" }}>
                 <Grid.Container justify="center">
                   <Text size="$2xl" color="primary">
-                    Our Tokenomics:
+                    {t('ourTokenomics')}:
                   </Text>
                   <Spacer x={0.4} />
-                  <Text size="$2xl">The Find & Check Blueprint</Text>
+                  <Text size="$2xl">{t('ourBlueprint')}</Text>
                 </Grid.Container>
               </Grid>
               <Grid
@@ -619,26 +511,22 @@ export function Home() {
                 className="text-center"
                 css={{ display: "block !important" }}
               >
-                At Find & Check, we know that effective tokenomics drive a
-                successful decentralized network. That&#39;s why w&#39;ve
-                designed a robust tokenomics model with{" "}
+                {t('ourBlueprintDescription1')}{" "}
                 <text style={{ color: "var(--nextui-colors-primary)" }}>
-                  300,000 tokens
+                  300,000 FCK
                 </text>
-                , ensuring network stability and growth. With a thoughtful
-                distribution plan and an increase in swap fees, we are primed to
-                offer a balanced and sustainable ecosystem.
+                , {t('ourBlueprintDescription2')}
               </Grid>
               <Grid xs={12} sm={5} css={{ mt: "$16" }}>
-                <Card>
+                <Card variant="bordered">
                   <Card.Header
                     css={{ display: "flex", flexDirection: "column" }}
                   >
                     <Text color="primary" weight="bold" className="text-2xl">
-                      V1 {t("tokenomics")}
+                      V1 {t('tokenomics')}
                     </Text>
                     <Text color="primary" weight="bold" className="text-base">
-                      Fragment Checker Token
+                      Fragment Checker {t('token')}
                     </Text>
                     <Text color="$accents6" weight="bold" className="text-xs">
                       ({t("deprecated")})
@@ -651,7 +539,7 @@ export function Home() {
                           type="secondary"
                           value="35"
                           amount="105 000"
-                          title={"Sales Via DeDust.io DEX"}
+                          title={t('salesDEX')}
                         />
                       </Grid>
                       <Spacer y={0.5} />
@@ -660,7 +548,7 @@ export function Home() {
                           type="secondary"
                           value="25"
                           amount="75 000"
-                          title={"FCK Foundation Development"}
+                          title={t('development')}
                         />
                       </Grid>
                       <Spacer y={0.5} />
@@ -669,7 +557,7 @@ export function Home() {
                           type="secondary"
                           value="20"
                           amount="60 000"
-                          title={"Project Promotion"}
+                          title={t('projectPromotion')}
                         />
                       </Grid>
                       <Spacer y={0.5} />
@@ -678,7 +566,7 @@ export function Home() {
                           type="secondary"
                           value="20"
                           amount="60 000"
-                          title={"Team Shareholders"}
+                          title={t('teamShareholders')}
                         />
                       </Grid>
                     </Grid.Container>
@@ -691,35 +579,22 @@ export function Home() {
                 className="flex justify-center"
                 css={{ mt: "$8" }}
               >
-                <Image
-                  src={Arrow}
-                  width={32}
+                <Arrow
+                  height="auto"
                   className="floating-arrow"
-                  css={{ animationDelay: "1s" }}
-                />
-                <Image
-                  src={Arrow}
-                  width={48}
-                  className="floating-arrow"
-                  css={{ animationDelay: "500ms" }}
-                />
-                <Image
-                  src={Arrow}
-                  width={64}
-                  className="floating-arrow"
-                  css={{ animationDelay: "0ms" }}
+                  style={{ animationDelay: "2s", minWidth: 64 }}
                 />
               </Grid>
               <Grid xs={12} sm={5} css={{ mt: "$16" }}>
-                <Card>
+                <Card variant="bordered">
                   <Card.Header
                     css={{ display: "flex", flexDirection: "column" }}
                   >
                     <Text color="primary" weight="bold" className="text-2xl">
-                      V2 Tokenomics
+                      V2 {t('tokenomics')}
                     </Text>
                     <Text color="primary" weight="bold" className="text-base">
-                      Find & Check Token
+                      Find & Check {t('token')}
                     </Text>
                     <Text color="success" weight="bold" className="text-xs">
                       ({t("active")})
@@ -730,8 +605,8 @@ export function Home() {
                       <Grid>
                         <TCard
                           value="42"
-                          amount="126 000"
-                          title={"Current Holders"}
+                          amount="125 000"
+                          title={t('currentHolders')}
                         />
                       </Grid>
                       <Spacer y={0.5} />
@@ -739,20 +614,20 @@ export function Home() {
                         <TCard
                           value="16.67"
                           amount="50 000"
-                          title={"Funding"}
+                          title={t('funding')}
                         />
                       </Grid>
                       <Spacer y={0.5} />
                       <Grid>
                         <TCard
                           value="14.67"
-                          amount="44 000"
-                          title={"Team Shareholders/36 mo."}
+                          amount="45 000"
+                          title={`${t('teamShareholders')}/36 ${t('mo')}`}
                         />
                       </Grid>
                       <Spacer y={0.5} />
                       <Grid>
-                        <TCard value="16.67" amount="50 000" title={"IDO"} />
+                        <TCard value="16.67" amount="50 000" title={t('ido')} />
                       </Grid>
                     </Grid.Container>
                   </Card.Body>
@@ -774,55 +649,45 @@ export function Home() {
                   <Grid xs={12} sm={6}>
                     <Grid.Container>
                       <Grid xs={12}>
-                        <Card>
+                        <Card variant="bordered">
                           <Card.Header css={{ pb: 0 }}>
                             <Text className="text-2xl" color="primary">
-                              Swap Fee and Unsold Tokens
+                              {t('swapFee')}
                             </Text>
                           </Card.Header>
                           <Card.Body css={{ pt: 0 }}>
                             <Text>
-                              To facilitate a balanced ecosystem, we have raised
-                              our swap fee from 0.4% to 1%. Unsold tokens from
-                              the IDO will be reserved for mining, to reward and
-                              incentivize our token holders.
+                              {t('swapFeeDescription')}
                             </Text>
                           </Card.Body>
                         </Card>
                       </Grid>
                       <Spacer y={0.8} />
                       <Grid xs={12}>
-                        <Card>
+                        <Card variant="bordered">
                           <Card.Header css={{ pb: 0 }}>
                             <Text className="text-2xl" color="primary">
-                              Liquidity and Stability
+                              {t('liquidityStability')}
                             </Text>
                           </Card.Header>
                           <Card.Body css={{ pt: 0 }}>
                             <Text>
-                              We have assigned 10% of the total token supply
-                              (~30,000 tokens) for Liquidity Lock from the IDO
-                              as this is one of our primary objectives in
-                              constructing a robust tokenomics model is ensuring
-                              liquidity and price stability.
+                              {t('liquidityStabilityDescription')}
                             </Text>
                           </Card.Body>
                         </Card>
                       </Grid>
                       <Spacer y={0.8} />
                       <Grid xs={12}>
-                        <Card>
+                        <Card variant="bordered">
                           <Card.Header css={{ pb: 0 }}>
                             <Text className="text-2xl" color="primary">
-                              Future Development
+                              {t('futureDevelopment')}
                             </Text>
                           </Card.Header>
                           <Card.Body css={{ pt: 0 }}>
                             <Text>
-                              Our token model allocates a significant share
-                              (14.67%) for future development. These funds will
-                              fuel new features, enhancements, and the overall
-                              growth of the Find & Check ecosystem.
+                              {t('futureDevelopmentDescription')}
                             </Text>
                           </Card.Body>
                         </Card>
@@ -841,7 +706,7 @@ export function Home() {
       </Container>
 
       <Spacer y={0.4} />
-      <div className="w-full section-landing">
+      <div className="w-full section-landing" style={{ borderTop: '1px solid var(--nextui-colors-border)', borderBottom: '1px solid var(--nextui-colors-border)' }}>
         <Container md>
           <Grid.Container justify="center" alignItems="center">
             <Grid xs={12} sm={8}>
@@ -850,18 +715,17 @@ export function Home() {
                 justify="space-between"
                 alignItems="center"
               >
-                <Grid css={{ maxW: 250 }}>
+                <Grid css={{ maxW: 400 }}>
                   <Grid.Container direction="column">
                     <Grid>
                       <Text className="text-xl" weight="bold" color="primary">
-                        Make your choice count
+                        {t('makeChoice')}
                       </Text>
                     </Grid>
                     <Spacer y={0.8} />
                     <Grid>
                       <Text className="text-base">
-                        Use $FCK Token to vote for any token listed at Find &
-                        Check. Help your favourites stay at the top!
+                        {t('makeChoiceDescription')}
                       </Text>
                     </Grid>
                     <Spacer y={0.8} />
@@ -872,7 +736,7 @@ export function Home() {
                         trigger={
                           <Button flat auto css={{ pointerEvents: "none" }}>
                             <GEN03 className="text-lg fill-current" />{" "}
-                            <Spacer x={0.4} /> Cast a vote
+                            <Spacer x={0.4} /> {t('castVote')}
                           </Button>
                         }
                       />
@@ -891,15 +755,12 @@ export function Home() {
       <Container md className="py-8">
         <Grid.Container direction="column" justify="center" alignItems="center">
           <Grid>
-            <Text className="text-2xl">Our Mission</Text>
+            <Text className="text-2xl">{t('ourMission')}</Text>
           </Grid>
           <Spacer y={0.8} />
-          <Grid>
+          <Grid sm={8}>
             <Text className="text-base text-center">
-              Born on the TON blockchain, Find & Check began with a vision to
-              redefine user experiences within the network. Our journey revolves
-              around providing users with precise project data and improving
-              decentralized exchange functionalities.
+              {t('ourMissionDescription')}
             </Text>
           </Grid>
           <Spacer y={1} />
@@ -914,9 +775,9 @@ export function Home() {
                       className="font-bold"
                       style={{ color: "var(--nextui-colors-primary)" }}
                     >
-                      Explore Blockchain:
+                      {t('exploreBlockchain')}:
                     </text>{" "}
-                    Dive into an enhanced TON network experience.
+                    {t('exploreBlockchainDescription')}
                   </Text>
                 </Grid>
                 <Grid xs={6} className="flex-col place-items-center">
@@ -927,9 +788,9 @@ export function Home() {
                       className="font-bold"
                       style={{ color: "var(--nextui-colors-primary)" }}
                     >
-                      Analyze Trends:
+                      {t('analyzeTrends')}:
                     </text>{" "}
-                    Leverage top-tier tools for TON market insight.
+                    {t('analyzeTrendsDescription')}
                   </Text>
                 </Grid>
                 <Grid xs={6} className="flex-col place-items-center">
@@ -940,9 +801,9 @@ export function Home() {
                       className="font-bold"
                       style={{ color: "var(--nextui-colors-primary)" }}
                     >
-                      Trustworthy Info:
+                      {t('trustworthyInfo')}:
                     </text>{" "}
-                    Rely on accurate project data within the TON network.
+                    {t('trustworthyInfoDescription')}
                   </Text>
                 </Grid>
                 <Grid xs={6} className="flex-col place-items-center">
@@ -953,9 +814,9 @@ export function Home() {
                       className="font-bold"
                       style={{ color: "var(--nextui-colors-primary)" }}
                     >
-                      Explore Blockchain:
+                      {t('engageNFT')}:
                     </text>{" "}
-                    Dive into an enhanced TON network experience.
+                    {t('engageNFTDescription')}
                   </Text>
                 </Grid>
               </Grid.Container>
@@ -976,13 +837,13 @@ export function Home() {
                   <Grid.Container direction="column">
                     <Grid>
                       <Text className="text-xl" weight="bold" color="primary">
-                        Engage FCK interface with TON Diamonds NFTs
+                        {t('engageNFTInterface')}
                       </Text>
                     </Grid>
                     <Spacer y={0.8} />
                     <Grid>
                       <Text className="text-base">
-                        Connect your wallet to apply TON Diamond theme.
+                        {t('engageNFTInterfaceDescription')}
                       </Text>
                     </Grid>
                     <Spacer y={0.8} />
@@ -991,7 +852,7 @@ export function Home() {
                         <Popover.Trigger>
                           <Button flat auto>
                             <Diamond className="text-lg fill-current" />{" "}
-                            <Spacer x={0.4} /> Change theme
+                            <Spacer x={0.4} /> {t('changeTheme')}
                           </Button>
                         </Popover.Trigger>
                         <Popover.Content>
@@ -1027,14 +888,14 @@ export function Home() {
         </Container>
       </div>
       <Spacer y={0.4} />
-      <Container md className="py-8" css={{ px: 0 }}>
+      <Container md className="py-8">
         <Grid.Container direction="column" justify="center" alignItems="center">
           <Grid>
-            <Text className="text-2xl">Explore our Telegram Bots</Text>
+            <Text className="text-2xl">{t('exploreBots')}</Text>
           </Grid>
           <Spacer y={1} />
           <Grid xs={12} sm={8} css={{ w: "100%" }}>
-            <Card>
+            <Card variant="bordered">
               <Card.Body>
                 <Grid.Container
                   // gap={2.6}
@@ -1061,7 +922,7 @@ export function Home() {
                         <Text className="text-xl">FCK Analytics</Text>
                         <Spacer y={0.4} />
                         <Text className="text-base">
-                          Get in-depth blockchain interaction insights.
+                          {t('FCKBotDescription')}
                         </Text>
                       </Grid>
                     </Grid.Container>
@@ -1084,7 +945,7 @@ export function Home() {
           <Grid xs={12} sm={8} css={{ w: "100%" }}>
             <Grid.Container gap={0} justify="center" alignItems="center">
               <Grid xs={12}>
-                <Card>
+                <Card variant="bordered">
                   <Card.Body>
                     <Grid.Container
                       // gap={2.6}
@@ -1113,7 +974,7 @@ export function Home() {
                             </Text>
                             <Spacer y={0.4} />
                             <Text className="text-base">
-                              Analytics bot with AI Telegram username generator.
+                              {t('FragmentBotDescription')}
                             </Text>
                           </Grid>
                         </Grid.Container>

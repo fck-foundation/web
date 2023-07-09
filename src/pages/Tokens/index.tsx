@@ -37,9 +37,7 @@ export function Tokens() {
     queryKey: ["new-jettons", currency, page],
     queryFn: async ({ signal }) =>
       await fck.getRecentlyAdded(
-        page,
-        Math.floor(Date.now() / 1000 - pagination[timescale]),
-        pagination[timescale] / 4,
+        pagination[timescale],
         currency,
         signal
       ),
@@ -59,66 +57,6 @@ export function Tokens() {
           jettons
         ),
       ].filter((v,i,a)=>a.findIndex(v2=>(v2.name===v.name))===i));
-      setIsBottom(false);
-    },
-  });
-
-  const { isLoading: isLoadingPromo } = useQuery({
-    queryKey: ["promo-jettons", currency, page],
-    queryFn: async ({ signal }) =>
-      await fck.getPromoting(
-        page,
-        Math.floor(Date.now() / 1000 - pagination[timescale]),
-        pagination[timescale] / 4,
-        currency,
-        signal
-      ),
-    refetchOnMount: false,
-    refetchOnReconnect: false,
-    enabled: tab === "top",
-    onSuccess: (results) => {
-      results = results.data.sources.DeDust.jettons;
-
-      setData((prevData) => [
-        ...prevData,
-        ...getList(
-          Object.keys(results).reduce((acc, curr) => {
-            acc[curr] = results[curr]?.prices || [];
-            return acc;
-          }, {}),
-          jettons
-        ),
-     ].filter((v,i,a)=>a.findIndex(v2=>(v2.name===v.name))===i));
-      setIsBottom(false);
-    },
-  });
-
-  const { data: dataTrending, isLoading: isLoadingTrending } = useQuery({
-    queryKey: ["trending-jettons", currency, page],
-    queryFn: async ({ signal }) =>
-      await fck.getTrending(
-        page,
-        Math.floor(Date.now() / 1000 - pagination[timescale]),
-        pagination[timescale] / 4,
-        currency,
-        signal
-      ),
-    refetchOnMount: false,
-    refetchOnReconnect: false,
-    enabled: tab === "trending",
-    onSuccess: (results) => {
-      results = results.data.sources.DeDust.jettons;
-
-      setData((prevData) => [
-        ...prevData,
-        ...getList(
-          Object.keys(results).reduce((acc, curr) => {
-            acc[curr] = results[curr]?.prices || [];
-            return acc;
-          }, {}),
-          jettons
-        ),
-     ].filter((v,i,a)=>a.findIndex(v2=>(v2.name===v.name))===i));
       setIsBottom(false);
     },
   });

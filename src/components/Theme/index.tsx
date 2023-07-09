@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { Button, Image, Grid, Badge, Spacer, Loading } from "@nextui-org/react";
+import { Button, Image, Grid, Badge, Spacer, Loading, Text } from "@nextui-org/react";
 import { AppContext } from "contexts/AppContext";
 import { ABS13, ABS14 } from "assets/icons";
 import { ReactComponent as Logo } from "assets/logo.svg";
@@ -29,18 +29,17 @@ export const ThemeSwitcher: React.FC<Props> = ({ loading, isLogo }) => {
         height={50}
         alt=""
       />
-    ) 
-    // : privateKey?.previews ? (
-    //   <Image
-    //     showSkeleton
-    //     src={privateKey?.previews[privateKey?.previews?.length - 1]?.url}
-    //     width={50}
-    //     css={{
-    //       borderRadius: "100%",
-    //     }}
-    //   />
-    // )
-    : (
+    ) : (
+      // : privateKey?.previews ? (
+      //   <Image
+      //     showSkeleton
+      //     src={privateKey?.previews[privateKey?.previews?.length - 1]?.url}
+      //     width={50}
+      //     css={{
+      //       borderRadius: "100%",
+      //     }}
+      //   />
+      // )
       <Logo className="h-10 w-10" />
     )
   ) : (
@@ -84,13 +83,14 @@ export const ThemeSwitcher: React.FC<Props> = ({ loading, isLogo }) => {
         )?.value;
 
         return (
-          <Grid key={i} xs={4}>
+          <Grid key={i} xs={4} className="nft-item">
             <Badge
               placement="top-left"
               css={{
                 backgroundColor: item?.metadata?.theme?.main,
                 left: "50%",
-                marginTop: "$5",
+                height: '$5',
+                marginTop: "$5"
               }}
               size="xs"
               content={theme.id === item.metadata.id && color}
@@ -109,8 +109,7 @@ export const ThemeSwitcher: React.FC<Props> = ({ loading, isLogo }) => {
                 <Image
                   showSkeleton
                   src={item?.previews ? item?.previews[0]?.url : ""}
-                  width={85}
-                  height={85}
+                  width="100%"
                   alt=""
                   onClick={() =>
                     setTheme({
@@ -118,19 +117,8 @@ export const ThemeSwitcher: React.FC<Props> = ({ loading, isLogo }) => {
                       id: item.metadata.id,
                     })
                   }
+                  css={{ objectFit: "cover" }}
                 />
-                {/* <Text
-                    color="rgb(77, 77, 77)"
-                    css={{
-                      position: 'absolute',
-                      bottom: 5,
-                      left: '50%',
-                      transform: 'translate3d(-50%, 0, 0)',
-                      transition: '350ms',
-                    }}
-                  >
-                    {item.metadata.attributes.find(({ trait_type }) => trait_type === 'Size')?.value}
-                  </Text> */}
               </div>
             </Badge>
           </Grid>

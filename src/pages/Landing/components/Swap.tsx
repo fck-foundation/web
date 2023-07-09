@@ -28,10 +28,11 @@ import {
   useTonConnectUI,
   useTonWallet,
 } from "@tonconnect/ui-react";
-import { normalize, swapJetton, whiteCoins } from "utils";
+import { normalize, getSwapJetton, whiteCoins } from "utils";
 import { JettonMaster } from "ton";
+import { SwapToV2Contract } from "../core/Swap";
 
-const targetTime = new Date("2023-07-10 7:00").getTime();
+const targetTime = new Date("2023-07-14 12:00").getTime();
 
 export const Swap = () => {
   const address = useTonAddress();
@@ -39,7 +40,10 @@ export const Swap = () => {
   const [tonConnectUi] = useTonConnectUI();
   const { t } = useTranslation();
   const { client, walletJettons } = useContext(AppContext);
-
+  const [stats, setStats] = useState({
+    new: 0,
+    old: 0
+  });
   const [currentTime, setCurrentTime] = useState(Date.now());
 
   const timeBetween = targetTime - currentTime;
@@ -49,6 +53,26 @@ export const Swap = () => {
   const days = Math.floor(timeBetween / (1000 * 60 * 60 * 24));
 
   useEffect(() => {
+    const getData = async () => {
+      setTimeout(async () => {
+        const master = client.open(
+          SwapToV2Contract.createFromAddress(
+            Address.parse("EQCEFIAX9z37LMSkulOPNu4l6l-rSSpUpuLj6wWtwg2lUSWz")
+          )
+        );
+        const getBalances = await master.getBalances();
+
+        setStats({
+          new: normalize(getBalances.new_jetton.toString(), 9),
+          old: normalize(getBalances.old_jetton.toString(), 5),
+        });
+      }, 1000);
+    };
+
+    getData();
+  }, []);
+
+  useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(Date.now());
     }, 1000);
@@ -56,7 +80,7 @@ export const Swap = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const onPay = () => {
+  const onPay = async () => {
     if (!address && document.getElementsByTagName("tc-root")) {
       (
         Array.from(
@@ -65,7 +89,7 @@ export const Swap = () => {
       )?.click();
     } else {
       if (wallet) {
-        const jetton = Address.parseRaw(whiteCoins["FCK"]);
+        const jetton = Address.parseRaw(whiteCoins["OLDFCK"]);
         const masterContract = JettonMaster.create(jetton);
         const master = client.open(masterContract);
 
@@ -73,10 +97,11 @@ export const Swap = () => {
           .getWalletAddress(Address.parseRaw(wallet.account.address))
           .then((addr) => {
             tonConnectUi.sendTransaction(
-              swapJetton({
+              getSwapJetton({
                 value,
                 forward: address,
-                to: "kQCEFIAX9z37LMSkulOPNu4l6l-rSSpUpuLj6wWtwg2lUZ45",
+                to: addr.toString(),
+                contract: "EQCEFIAX9z37LMSkulOPNu4l6l-rSSpUpuLj6wWtwg2lUSWz",
               })
             );
           });
@@ -90,7 +115,8 @@ export const Swap = () => {
         walletJettons?.find(
           ({ jetton }) =>
             jetton.address ===
-            "0:3a4d2191094e3a33d4601efa51bb52dc5baa354516e162b7706955385f8144a7"
+            // "0:3a4d2так191094e3a33d4601efa51bb52dc5baa354516e162b7706955385f8144a7"
+            "0:8a2f4c2cbee23cdde55e2971d180d36015404bb2f094a57d52144a0ec8ec44c7"
         )?.balance || 0,
         5
       ),
@@ -98,7 +124,7 @@ export const Swap = () => {
   );
 
   return (
-    <Card variant="shadow">
+    <Card variant="bordered">
       <Card.Body css={{ overflow: "visible", pt: 0, pb: 0 }}>
         <div className="flex flex-col justify-between place-items-center">
           <div className="card-ido__bg"></div>
@@ -106,9 +132,9 @@ export const Swap = () => {
             className="flex justify-between w-full max-w-[305px]"
             style={{ padding: "var(--nextui-space-sm)" }}
           >
-            <Badge color="default">125 000 total</Badge>
+            <Badge color="default">{125000/*stats.old + stats.new */} {t('total')}</Badge>
             <Badge color="primary">
-              {days}D. {hours}H. {minutes}M. {seconds}S.
+              {days}{t('D')}. {hours}{t('H')}. {minutes}{t('M')}. {seconds}{t('S')}.
             </Badge>
           </div>
           <div className="flex justify-between place-items-center">
@@ -127,11 +153,11 @@ export const Swap = () => {
               </Text>
             </div>
             <div className="text-center">
-              <Button flat css={{ minWidth: "auto" }} disabled>
+              <Button flat css={{ minWidth: "auto" }} onPress={onPay} disabled={!!address && value < 1}>
                 <ARR24 className="text-2xl fill-current" /> <Spacer x={0.4} />{" "}
-                Get new
+                {address ? 'Get new' : t('signIn')}
               </Button>
-              {value && (
+              {value > 0 && (
                 <Text
                   className="text-xs mt-2"
                   css={{ color: "var(--nextui-colors-primary)" }}
@@ -162,13 +188,13 @@ export const Swap = () => {
               maxWidth: "calc(305px - var(--nextui-space-sm) * 2)",
             }}
           >
-            <Text className="text-xs">0 exchanged</Text>
-            <Text className="text-xs">125 000 left</Text>
+            <Text className="text-xs">{stats.old} {t('exchanged')}</Text>
+            <Text className="text-xs">{125000 /*stats.old + stats.new */} {t('left')}</Text>
           </div>
           <Spacer y={0.2} />
           <Progress
             color="success"
-            value={(value / 50000) * 100}
+            value={(stats.old / (stats.old + stats.new)) * 100}
             style={{
               maxWidth: "calc(305px - var(--nextui-space-sm) * 2)",
             }}

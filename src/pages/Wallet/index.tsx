@@ -75,11 +75,9 @@ export const Wallet = () => {
     queryFn: ({ signal }) =>
       axios
         .get(
-          `https://api.fck.foundation/api/v2/analytics?jetton_ids=${pageList
+          `https://api.fck.foundation/api/v3/analytics?pairs=${pageList
             .map(({ id }) => id)
-            .join(",")}&time_min=${Math.floor(
-            Date.now() / 1000 - 86400 * 7
-          )}&timescale=${86400}&currency=${currency}`,
+            .join(",")}&period=d1&currency=${currency}`,
           { signal }
         )
         .then(({ data: { data } }) => data),
@@ -178,7 +176,7 @@ export const Wallet = () => {
         <meta property="og:title" content={t("wallet") || ""}></meta>
         <meta property="og:image" content="/img/wallet.png"></meta>
       </Helmet>
-      <Container css={{ minHeight: "70vh" }}>
+      <Container md css={{ minHeight: "70vh", py: '$2', px: '$4' }}>
         <Grid.Container gap={1}>
           <Grid xs={12}>
             <Header selected={selected} setSwaps={setSwaps} />

@@ -14,12 +14,13 @@ import {
   Grid,
   Loading,
   Spacer,
+  Text,
   User,
 } from "@nextui-org/react";
 import { useTranslation } from "react-i18next";
 
 import { useLocation, useNavigate } from "react-router-dom";
-import { ARR20, GEN03, GEN19, GRA12 } from "assets/icons";
+import { ARR12, ARR20, GEN03, GEN19, GRA12, Heart } from "assets/icons";
 import { AppContext } from "contexts";
 import { Promote } from "components";
 import { toast } from "react-toastify";
@@ -50,6 +51,42 @@ export const Header: React.FC<Props> = ({ isDrag, percent, setIsDrag }) => {
       >
         <Grid>
           <Grid.Container gap={1} alignItems="center">
+            {(!!jetton?.is_scam || !!jetton?.verified) && (
+              <>
+                {!!jetton?.is_scam ? (
+                  <>
+                    <Grid>
+                      <Badge variant="flat" color="error">
+                        {t("scam")}
+                      </Badge>
+                    </Grid>
+                    <Spacer x={0.4} />
+                  </>
+                ) : (
+                  <>
+                    <Grid>
+                      <Badge
+                        size="sm"
+                        variant="flat"
+                        color="primary"
+                        className="flex flex-nowrap"
+                      >
+                        <Text className="pl-1">{t("verify")}</Text>
+                        <Spacer x={0.4} />
+                        <Text className="flex text-2xl pr-1">
+                          <ARR12
+                            className="rounded-full overflow-hidden"
+                            style={{
+                              fill: "var(--nextui-colors-primary)",
+                            }}
+                          />
+                        </Text>
+                      </Badge>
+                    </Grid>
+                  </>
+                )}
+              </>
+            )}
             <Grid css={{ display: "none", "@xs": { display: "block" } }}>
               <Button
                 size="sm"
@@ -111,55 +148,6 @@ export const Header: React.FC<Props> = ({ isDrag, percent, setIsDrag }) => {
               </Dropdown>
             </Grid>
 
-            <Grid css={{ display: "flex" }}>
-              <User
-                size="sm"
-                bordered
-                src={jetton.image}
-                name={
-                  <div>
-                    {jetton.symbol}{" "}
-                    {!!jetton?.verified && (
-                      <Badge
-                        size="xs"
-                        css={{
-                          p: 0,
-                          background: "transparent",
-                          right: "unset",
-                          left: "$8",
-                        }}
-                      >
-                        <ARR20
-                          className="text-base rounded-full overflow-hidden"
-                          style={{
-                            fill: "var(--nextui-colors-primary)",
-                          }}
-                        />
-                      </Badge>
-                    )}
-                  </div>
-                }
-                css={{ padding: 0 }}
-              />
-            </Grid>
-
-            {/* {!!processing.wait && (
-              <>
-                <Grid>
-                  <Loading />
-                </Grid>
-                <Spacer x={0.4} />
-              </>
-            )} */}
-
-            {!!jetton?.is_scam && (
-              <Grid>
-                <Badge variant="flat" color="error">
-                  SCAM
-                </Badge>
-              </Grid>
-            )}
-
             <Grid>
               <Badge
                 variant="flat"
@@ -175,7 +163,7 @@ export const Header: React.FC<Props> = ({ isDrag, percent, setIsDrag }) => {
                   setVoteId(jetton?.id);
                 }}
               >
-                {<GEN03 className="text-lg fill-current" />}
+                {<Heart className="text-lg text-current" />}
                 <Spacer x={0.4} />
                 {jetton?.stats?.promoting_points || 0}
               </Badge>

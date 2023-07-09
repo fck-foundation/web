@@ -33,7 +33,7 @@ import { CurrentPrice, OrderData } from "types";
 import { Button, Card, Grid, Image, Spacer } from "@nextui-org/react";
 
 const client = new TonClient({
-  endpoint: "https://toncenter.com/api/v2/jsonRPC",
+  endpoint: `https://toncenter.com/api/v2/jsonRPC`,
 });
 
 export type JType = {
@@ -403,9 +403,9 @@ const AppProviderWrapper = ({
                 `https://tonapi.io/v2/accounts/${address}/nfts?limit=1&offset=${0}&indirect_ownership=true&collection=0:362f5299002f402d3f0119a0cc953267f8c114aaf77c745220cd641d4efd3d66`
               )
               .then(({ data }) => {
-                // setIsPrivate(!data.nft_items.length);
-                // setPrivateKey(data.nft_items[0]);
-                setIsPrivate(false);
+                setIsPrivate(!data.nft_items.length);
+                setPrivateKey(data.nft_items[0]);
+                // setIsPrivate(false);
               });
           }, 300);
         }

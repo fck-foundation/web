@@ -12,13 +12,19 @@ import { Header } from "./Header";
 import "./index.scss";
 
 export const pagination = {
-  "5M": 300,
-  "30M": 1800,
-  "1H": 3600,
-  "4H": 14400,
-  "1D": 86400,
-  "7D": 604800,
-  "30D": 2592000,
+  "5M": "min5",
+  "15M": "min15",
+  "30M": "min30",
+  "1H": "h1",
+  "4H": "h4",
+  "1D": "d1",
+  "3D": "d3",
+  "7D": "w1",
+  "14D": "w2",
+  "30D": "m1",
+  "90D": "m3",
+  "180D": "m6",
+  "1Y": "y1",
 };
 
 export const Analytics = () => {
@@ -46,12 +52,12 @@ export const Analytics = () => {
         <meta property="og:title" content={t("analytics") || ""}></meta>
         <meta property="og:image" content="/img/analytics.png"></meta>
       </Helmet>
-      <Container md className="py-2" css={{ px: 0 }}>
+      <Container md className="py-2" css={{ px: '$4' }}>
         {!jettons.length ? (
           <Grid.Container
             alignItems="center"
             justify="center"
-            css={{ height: "70vh", }}
+            css={{ height: "70vh" }}
           >
             <Grid>
               <Loading />
@@ -60,7 +66,7 @@ export const Analytics = () => {
         ) : (
           <>
             <Grid.Container
-              gap={0.4}
+              gap={0}
               css={{ minHeight: "70vh", display: "flex", pt: 0 }}
             >
               {/* <Grid xs={12}>
@@ -96,7 +102,10 @@ export const Analytics = () => {
                     <Jettons isDrag={isDrag} setIsDrag={setIsDrag} />
                   </Grid>
                   <Grid xs={12} sm={8} lg={9}>
-                    <Grid.Container>
+                    <Grid.Container
+                      alignItems="flex-start"
+                      style={{ height: "fit-content" }}
+                    >
                       <Grid xs={12}>
                         <Header
                           percent={percent}

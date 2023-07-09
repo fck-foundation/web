@@ -10,28 +10,13 @@ export const fck = {
     );
     return data.data;
   },
-  getAnalytics: async (
-    jetton_ids: string,
-    time: number,
-    timescale: number,
-    signal: any,
-    currency: string
-  ) => {
-    const { data } = await axios.get(
-      `https://api.fck.foundation/api/v2/analytics?jetton_ids=${jetton_ids}&time_min=${time}&timescale=${timescale}&currency=${currency}`,
-      { signal }
-    );
-    return data;
-  },
   getRecentlyAdded: async (
-    page,
-    time: number,
     timescale: number,
     currency = "",
     signal: any
   ) => {
     const { data } = await axios.get(
-      `https://api.fck.foundation/api/v2/analytics/preview/recentlyAdded?onlyJettons=false&count=${25}&time_min=${time}&timescale=${timescale}&currency=${(
+      `https://api.fck.foundation/api/v3/analytics/preview/recentlyAdded?onlyJettons=false&count=${10}&period=${timescale}&currency=${(
         currency || "ton"
       ).toLowerCase()}`,
       { signal }
@@ -39,29 +24,32 @@ export const fck = {
     return data;
   },
   getPromoting: async (
-    page,
-    time: number,
     timescale: number,
     currency = "",
     signal: any
   ) => {
     const { data } = await axios.get(
-      `https://api.fck.foundation/api/v2/analytics/preview/promoting?onlyJettons=false&count=${25}&time_min=${time}&timescale=${timescale}&currency=${(
+      `https://api.fck.foundation/api/v3/analytics/preview/promoting?onlyJettons=false&count=${10}&period=${timescale}&currency=${(
         currency || "ton"
       ).toLowerCase()}`,
       { signal }
     );
     return data;
   },
-   getTrending: async (
-    page,
-    time: number,
+  getPairs: async ({ signal, limit, offset }) => {
+    const { data } = await axios.get(
+      `https://api.fck.foundation/api/v3/jettons/pairs?limit=${limit}&offset=${offset}`,
+      { signal }
+    );
+    return data;
+  },
+  getTrending: async (
     timescale: number,
     currency = "",
     signal: any
   ) => {
     const { data } = await axios.get(
-      `https://api.fck.foundation/api/v2/analytics/preview/trending?onlyJettons=false&count=${25}&time_min=${time}&timescale=${timescale}&currency=${(
+      `https://api.fck.foundation/api/v3/analytics/preview/trending?onlyJettons=false&count=${10}&period=${timescale}&currency=${(
         currency || "ton"
       ).toLowerCase()}`,
       { signal }

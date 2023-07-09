@@ -179,9 +179,14 @@ export { ReactComponent as Copy } from "./material/copy.svg";
 
 export { ReactComponent as Arrowtechart } from "./arrowtechart.svg";
 export { ReactComponent as Ton } from "./ton.svg";
+export { ReactComponent as TransparentTon } from "./transparentton.svg";
 
 export { ReactComponent as Explore } from "./explore.svg";
 export { ReactComponent as Code } from "./code.svg";
 export { ReactComponent as Tools } from "./tools.svg";
 export { ReactComponent as Trust } from "./trust.svg";
 export { ReactComponent as Diamond } from "./diamond.svg";
+export { ReactComponent as Info } from "./info.svg";
+export { ReactComponent as Heart } from "./heart.svg";
+export { ReactComponent as Gmail } from "./gmail.svg";
+export { ReactComponent as Web } from "./web.svg";

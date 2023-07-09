@@ -82,7 +82,7 @@ export const Volume = () => {
       {
         name: "Sell",
         value: 25,
-        color: "#f31260",
+        color: "#F54244",
       },
       {
         name: "Sell",

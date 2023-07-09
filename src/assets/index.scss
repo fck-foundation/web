@@ -45,12 +45,14 @@ code {
     monospace;
 }
 
+.nextui-popover-content {
+  background: var(--nextui--navbarBackgroundColor);
+  border: 1px solid var(--nextui-colors-accents2);
+  border-radius: 16px;
+}
+
 html:not([class*="light-theme"]) {
   background-color: #121212;
-
-  .nextui-popover-content {
-    background: #121212;
-  }
 
   .react-loading-skeleton {
     --base-color: #121212;
@@ -144,31 +146,11 @@ div[role="button"],
 @keyframes arrow {
   0% {
     filter: saturate(0);
-    transform: translateX(-150px);
   }
   50% {
     filter: saturate(10);
-    transform: translateX(0);
   }
   100% {
     filter: saturate(0);
-    transform: translateX(150px);
-  }
-}
-
-@media (max-width: 959px) {
-  @keyframes arrow {
-    0% {
-      filter: saturate(0);
-      transform: translateX(-50vh);
-    }
-    50% {
-      filter: saturate(10);
-      transform: translateX(0);
-    }
-    100% {
-      filter: saturate(0);
-      transform: translateX(50vh);
-    }
   }
 }

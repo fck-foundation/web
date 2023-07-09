@@ -18,7 +18,7 @@ import { toFixed } from "utils/price";
 import { useLocation } from "react-router-dom";
 import { GEN13, GRA06, GRA09 } from "assets/icons";
 
-export const pagination = {
+export const paginationVolume = {
   "1H": "h1",
   "4H": "h4",
   "1D": "d1",
@@ -84,7 +84,7 @@ export const Volume = ({ timescale }) => {
     queryFn: ({ signal }) => {
       return axios
         .get(
-          `https://api.fck.foundation/api/v3/analytics/liquidity?pairs=${jetton.id}&period=${pagination[timescale]}`,
+          `https://api.fck.foundation/api/v3/analytics/liquidity?pairs=${jetton.id}&period=${paginationVolume[timescale]}`,
           { signal }
         )
         .then(({ data: { data } }) => data[jetton.id]);

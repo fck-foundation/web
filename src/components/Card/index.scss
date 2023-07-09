@@ -1,11 +1,14 @@
 .card {
   transition: all 500ms;
-  border: 1px solid var(--nextui--navbarBorderColor);
+  border-radius: 0 !important;
+  
+
+  &__item:not(:last-child) {
+    border-bottom: 1px solid var(--nextui--navbarBorderColor);
+  }
 
   .jetton-chart {
     height: 40px;
-    border-radius: 14px;
-    border-left: 1px solid var(--nextui-colors-border);
     overflow: hidden;
 
     svg {
@@ -17,7 +20,7 @@
 
   &-ido {
     position: relative;
-    border: 2px solid var(--nextui--navbarBorderColor);
+    // border: 2px solid var(--nextui--navbarBorderColor);
     border-radius: var(--nextui-radii-lg);
     margin-bottom: 1rem;
 
@@ -112,3 +115,14 @@
     opacity: 1;
   }
 }
+
+.highlight-1 > span {
+  background: #198346;
+  color: #1ac964;
+}
+
+.highlight--1 > span {
+  background: #9a1444;  
+  color: #F54244;
+}
+

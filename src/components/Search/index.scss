@@ -9,12 +9,11 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  
   &__input {
     // position: fixed;
-
-    padding: 0.4rem;
     align-items: center;
-    min-width: calc(100% + 1.6rem);
+    width: 100%;
     transform: translate3d(0%, -100%, 0);
   }
 
@@ -27,6 +26,7 @@
   }
 
   &__popup {
+    margin-top: 2px;
     background: var(--nextui--navbarBackgroundColor);
     backdrop-filter: saturate(180%) blur(var(--nextui--navbarBlur));
   }
@@ -34,6 +34,10 @@
   .findcheck__input {
     display: flex;
     align-items: center;
+  }
+
+  label:hover {
+    box-shadow: 0 0 0 var(--nextui--inputBorderWeight) var(--nextui-colors-primary);
   }
 }
 
@@ -43,14 +47,9 @@
   width: calc(100% + 100px);
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 4px;
 
   > div {
     width: 100%;
-  }
-
-  @media (max-width: 525px) {
-    gap: 0;
   }
 
   &.side {

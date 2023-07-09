@@ -19,7 +19,7 @@ import axios from "libs/axios";
 import { _, getList } from "utils";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ARR20, ARR24, GEN03, GEN04 } from "assets/icons";
+import { ARR12, ARR20, ARR24, GEN03, GEN04 } from "assets/icons";
 import { AppContext } from "contexts";
 import Skeleton from "react-loading-skeleton";
 import { pagination } from "pages";
@@ -30,7 +30,11 @@ import { FJetton } from "../Jetton";
 import "./index.scss";
 import { FCard } from "components/Card";
 
-export const Search: React.FC = () => {
+interface Props {
+  isCompact?: boolean;
+}
+
+export const Search: React.FC<Props> = ({ isCompact = false }) => {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
@@ -38,7 +42,7 @@ export const Search: React.FC = () => {
   const refLogo = useRef<HTMLDivElement>(null);
   const refJetton = useRef<HTMLDivElement>(null);
   // const [present] = useIonActionSheet();
-  const { authorized, jettons, timescale, currency, setOpen } =
+  const { authorized, jetton, jettons, timescale, currency, setOpen } =
     useContext(AppContext);
   const [widths, setWidths] = useState({
     logo: 0,
@@ -88,11 +92,9 @@ export const Search: React.FC = () => {
     queryFn: ({ signal }) =>
       axios
         .get(
-          `https://api.fck.foundation/api/v2/analytics?jetton_ids=${searchList
+          `https://api.fck.foundation/api/v3/analytics?pairs=${searchList
             ?.map(({ id }) => id)
-            ?.join(",")}&time_min=${Math.floor(
-            Date.now() / 1000 - pagination[timescale] * 7
-          )}&timescale=${pagination[timescale]}&currency=${currency}`,
+            ?.join(",")}&period=${pagination[timescale]}&currency=${currency}`,
           { signal }
         )
         .then(({ data }) => data),
@@ -192,56 +194,21 @@ export const Search: React.FC = () => {
       className={`findcheck ${active ? "active" : undefined}`}
       wrap="nowrap"
     >
-      <Grid
-        css={{
-          transition: "all 300ms",
-          overflow: "hidden",
-          minWidth: 0,
-        }}
-      >
-        {location.pathname.includes("price") ||
-        location.pathname.includes("volume") ? (
-          <Button
-            ref={refJetton}
-            flat
-            size="sm"
-            css={{
-              minWidth: "auto",
-              "@sm": { display: "none" },
-              padding: "$4",
-              width: "100%",
-            }}
-            onPress={() => setOpen(true)}
-          >
-            <div className="overflow-hidden text-ellipsis whitespace-nowrap">
-              {location.pathname.split("/").pop()}
-            </div>{" "}
-            <ARR24 className="text-lg fill-current" />
-          </Button>
-        ) : null}
-      </Grid>
-
       <Grid className={`findcheck__input ${active ? "active" : ""}`}>
-        <Grid.Container
-          gap={1}
-          wrap="nowrap"
-          alignContent="center"
-          justify="center"
-        >
-          <Grid xs={12}>
-            <GEN04
-              className="text-2xl"
-              style={{
-                fill: "var(--nextui-colors-link)",
-                position: "absolute",
-                zIndex: 2,
-                top: "50%",
-                transform: "translate3d(50%, -50%, 0)",
-              }}
-            />
+        <Grid.Container wrap="nowrap" alignContent="center" justify="center">
+          <Grid className="w-full">
             <Input
               animated={false}
-              size="lg"
+              labelLeft={
+                <GEN04
+                  className="text-2xl"
+                  style={{
+                    fill: "var(--nextui-colors-accents9)",
+                  }}
+                />
+              }
+              size={isCompact ? "md" : "xl"}
+              bordered
               className="search-input"
               inputMode="search"
               value={search as string}
@@ -251,13 +218,42 @@ export const Search: React.FC = () => {
               onChange={(e) => setSearch(e.target.value as any)}
             />
           </Grid>
+          <Spacer x={0.8} />
+          <Grid>
+            {location.pathname.includes("price") ||
+            location.pathname.includes("volume") ? (
+              <Button
+                ref={refJetton}
+                flat
+                css={{
+                  minWidth: "auto",
+                  "@sm": { display: "none" },
+                  padding: "$4",
+                  width: "100%",
+                }}
+                onPress={() => setOpen(true)}
+              >
+                <div className="flex place-items-center overflow-hidden text-ellipsis whitespace-nowrap">
+                <User
+                size="sm"
+                bordered
+                src={jetton.image}
+                name={<div className="flex place-items-center pl-2" style={{ paddingTop: 4 }}>{jetton.symbol}</div>}
+                css={{ padding: 0 }}
+              />
+                </div>
+                <Spacer x={0.4} />
+                <ARR24 className="text-lg fill-current" />
+              </Button>
+            ) : null}
+          </Grid>
         </Grid.Container>
       </Grid>
       <Grid xs={12} className="w-full">
         {!!(searchList?.length || dataWalletSearch?.length) && (
           <div className={`jettons-list findcheck__popup justify-center`}>
             <Grid xs={12}>
-              <Button.Group size="sm">
+              <Button.Group className="py-2" size="sm" css={{ m: 0 }}>
                 <Button flat={tab !== "all"} onPress={() => setTab("all")}>
                   {t("all")}
                 </Button>
@@ -277,28 +273,24 @@ export const Search: React.FC = () => {
             </Grid>
             {["all", "tokens"].includes(tab) && (
               <AnimatePresence>
-                {isLoadingStatsSearch ? (
-                  <Loading />
-                ) : (
-                  <FCard
-                    isLoading={false}
-                    title={undefined}
-                    list={
-                      dataStatsSearch
-                        ?.sort(
-                          (x, y) =>
-                            parseInt(y?.verified as any) -
-                            parseInt(x?.verified as any)
-                        )
-                        ?.sort(
-                          (x, y) =>
-                            (y?.stats?.promoting_points || 0) -
-                            (x?.stats?.promoting_points || 0)
-                        ) || []
-                    }
-                    setVoteId={console.log}
-                  />
-                )}
+                <FCard
+                  isLoading={isLoadingStatsSearch}
+                  title={undefined}
+                  list={
+                    dataStatsSearch
+                      ?.sort(
+                        (x, y) =>
+                          parseInt(y?.verified as any) -
+                          parseInt(x?.verified as any)
+                      )
+                      ?.sort(
+                        (x, y) =>
+                          (y?.stats?.promoting_points || 0) -
+                          (x?.stats?.promoting_points || 0)
+                      ) || []
+                  }
+                  setVoteId={console.log}
+                />
               </AnimatePresence>
             )}
             {["all", "wallets"].includes(tab) &&
@@ -306,7 +298,6 @@ export const Search: React.FC = () => {
                 <>
                   <Grid key={i} className="jetton-card" xs={12}>
                     <Card
-                      variant="bordered"
                       isPressable
                       onPress={() => {
                         setSearch("");

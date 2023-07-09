@@ -1,4 +1,11 @@
-import { Dispatch, SetStateAction, useContext, useMemo } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -7,6 +14,8 @@ import {
   Card,
   Grid,
   Image,
+  Link,
+  Loading,
   Pagination,
   Spacer,
   Text,
@@ -18,12 +27,26 @@ import axios from "libs/axios";
 import { useQuery } from "@tanstack/react-query";
 import { DroppableItems } from "components/DND/DroppableItems";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ARR10, ARR12, ARR20, GEN03 } from "assets/icons";
+import {
+  ARR01,
+  ARR02,
+  ARR10,
+  ARR12,
+  ARR20,
+  ARR58,
+  Copy,
+  GEN03,
+  Info,
+  Ton,
+  TransparentTon,
+} from "assets/icons";
 import { AppContext, JType } from "contexts";
 import Skeleton from "react-loading-skeleton";
-import { FJetton } from "components";
+import { FJetton, Search, Token } from "components";
 
 import { pagination } from "..";
+import { toast } from "react-toastify";
+import { copyTextToClipboard } from "utils";
 
 interface Props {
   isDrag: boolean;
@@ -43,17 +66,32 @@ export const Jettons: React.FC<Props> = ({ isDrag }) => {
     jettons,
     currency,
     jettonCurrency,
+    enabled,
+    jetton: selectedJetton,
     setOpen,
     setList,
     setHideList,
     setPage,
   } = useContext(AppContext);
+  const [info, setInfo] = useState<string>();
+  const [metadata, setMetadata] = useState<Record<string, any>>({});
+
+  useEffect(() => {
+    if (info) {
+      axios
+        .get(`https://tonapi.io/v1/jetton/getInfo?account=${info}`)
+        .then(({ data: { metadata, total_supply, mintable } }) => {
+          setMetadata({ ...metadata, total_supply, mintable });
+        });
+    }
+  }, [info]);
 
   const onDragEnd = ({ destination, source }: DropResult) => {
     if (
       typeof destination?.index === "number" &&
       typeof source?.index === "number"
     ) {
+      console.log(destination, source);
       setList((prevList) => {
         prevList.splice(
           destination.index,
@@ -80,11 +118,9 @@ export const Jettons: React.FC<Props> = ({ isDrag }) => {
     queryFn: ({ signal }) =>
       axios
         .get(
-          `https://api.fck.foundation/api/v2/analytics?jetton_ids=${pageList
+          `https://api.fck.foundation/api/v3/analytics?pairs=${pageList
             .map(({ id }) => id)
-            .join(",")}&time_min=${Math.floor(
-            Date.now() / 1000 - pagination[timescale]
-          )}&timescale=${pagination[timescale] / 4}&currency=${currency}`,
+            .join(",")}&period=${pagination[timescale]}&currency=${currency}`,
           { signal }
         )
         .then(({ data: { data } }) => data),
@@ -134,7 +170,117 @@ export const Jettons: React.FC<Props> = ({ isDrag }) => {
     setHideList((prevList) => [...prevList, jetton.address]);
   };
 
-  return (
+  const onCopy = () => {
+    copyTextToClipboard(info);
+    toast.success(t("copied"), {
+      position: toast.POSITION.TOP_RIGHT,
+      theme: enabled ? "dark" : "light",
+    });
+  };
+
+  const onPress = (value) => {
+    if (!isDrag) {
+      navigate(`/analytics/price/${value.symbol}`);
+      setInfo(value.address);
+    }
+  };
+
+  console.log("renderList", renderList);
+
+  return info ? (
+    !metadata?.total_supply ? (
+      <Grid.Container justify="center">
+        <Grid>
+          <Loading />
+        </Grid>
+      </Grid.Container>
+    ) : (
+      <Grid.Container direction="column" gap={0.4}>
+        <Grid>
+          <Button
+            onPress={() => setInfo(undefined)}
+            css={{
+              p: 0,
+              minWidth: "auto",
+              bg: "transparent",
+              color: "$accents9",
+            }}
+          >
+            <ARR02 className="text-2xl fill-current" />
+            <Spacer x={0.4} />
+            {t("Back")}
+          </Button>
+        </Grid>
+        <Grid>
+          <Token
+            index={-1}
+            column={renderList?.find(({ jetton }) => jetton.id === selectedJetton.id)!}
+            jetton={selectedJetton as JType}
+            onPress={onPress}
+            setInfo={setInfo}
+            isStatic
+          />
+        </Grid>
+        <Grid>
+          <Grid.Container alignItems="center">
+            <Grid xs={12}>
+              <Grid.Container
+                alignItems="center"
+                css={{ color: "$primary", cursor: "pointer" }}
+                onClick={onCopy}
+              >
+                {info?.slice(0, 4)}
+                ...
+                {info?.slice(-4)}
+                <Spacer x={0.4} />
+                <Copy className="text-lg text-current" />
+              </Grid.Container>
+            </Grid>
+            <Grid>
+              <ARR58 className="text-3xl fill-current" />
+            </Grid>
+            <Spacer x={0.4} />
+            <Grid>
+              <Text
+                className="text-2xl"
+                css={{
+                  textGradient: "45deg, $primary -20%, $secondary 100%",
+                }}
+                weight="bold"
+              >
+                {metadata?.total_supply
+                  ?.slice(0, metadata?.total_supply.length - metadata?.decimals)
+                  .replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")}
+              </Text>
+            </Grid>
+            <Spacer x={0.4} />
+            <Grid>
+              <Text className="text-lg">{metadata?.symbol}</Text>
+            </Grid>
+          </Grid.Container>
+        </Grid>
+        <Grid>
+          <Text css={{ overflowWrap: "anywhere" }}>
+            {metadata?.description}
+          </Text>
+        </Grid>
+        <Grid>
+          {metadata.websites?.map((site, i) => (
+            <Link key={i} href={site} target="_blank">
+              {site}
+            </Link>
+          ))}
+        </Grid>
+        <Grid>
+          {metadata.social?.map((social, i) => (
+            <Link key={i} href={social} target="_blank">
+              {social}
+            </Link>
+          ))}
+        </Grid>
+      </Grid.Container>
+    )
+  ) : (
     <Grid.Container gap={0.4} css={{ height: "fit-content" }}>
       {/* <Grid xs={12}>
                   <Button.Group size="sm">
@@ -142,6 +288,9 @@ export const Jettons: React.FC<Props> = ({ isDrag }) => {
                     <Button flat>{t("statistics")}</Button>
                   </Button.Group>
                 </Grid> */}
+      <Grid xs={12}>
+        <Search isCompact />
+      </Grid>
       <Grid xs={12} css={{ display: "flex", flexDirection: "column" }}>
         <div
           className={`jettons-list ${
@@ -157,47 +306,6 @@ export const Jettons: React.FC<Props> = ({ isDrag }) => {
           <div>
             <AnimatePresence>
               <DragDropContext onDragEnd={onDragEnd}>
-                <Grid.Container wrap="nowrap">
-                  <Grid xs={3}>
-                    <Text className="text-xs" css={{ width: "100%" }}>
-                      <div className="overflow-hidden text-ellipsis whitespace-nowrap w-full">
-                        {t("token")}
-                      </div>
-                    </Text>
-                  </Grid>
-                  <Spacer x={0.8} />
-                  <Grid xs={3}>
-                    <Text className="text-xs" css={{ width: "100%" }}>
-                      <div className="overflow-hidden text-ellipsis whitespace-nowrap w-full">
-                        {t("price")} ({jettonCurrency?.symbol})
-                      </div>
-                    </Text>
-                  </Grid>
-                  <Spacer x={0.4} />
-                  <Grid xs={1}>
-                    <Text className="text-xs" css={{ width: "100%" }}>
-                      <div className="overflow-hidden text-ellipsis whitespace-nowrap w-full">
-                        {t("votes")}
-                      </div>
-                    </Text>
-                  </Grid>
-                  <Spacer x={0.4} />
-                  <Grid xs={1}>
-                    <Text className="text-xs" css={{ width: "100%" }}>
-                      <div className="overflow-hidden text-ellipsis whitespace-nowrap w-full">
-                        {t("verified")}
-                      </div>
-                    </Text>
-                  </Grid>
-                  <Spacer x={0.4} />
-                  <Grid xs={3}>
-                    <Text className="text-xs" css={{ width: "100%" }}>
-                      <div className="overflow-hidden text-ellipsis whitespace-nowrap w-full">
-                        {t("analytics")}
-                      </div>
-                    </Text>
-                  </Grid>
-                </Grid.Container>
                 {!renderList?.length ? (
                   <Grid.Container justify="center">
                     <Grid xs={12}>
@@ -219,222 +327,28 @@ export const Jettons: React.FC<Props> = ({ isDrag }) => {
                 ) : (
                   renderList?.map((column, i) => (
                     <DroppableItems
-                      key={column?.jetton?.address}
+                      key={i}
                       column={column?.jetton?.address}
-                      id={column?.jetton?.id || i}
-                      data={
-                        jettons
-                          .filter(
-                            (jetton) =>
-                              jetton?.address === column.jetton.address
-                          )
-                          .map((jetton, key) => {
-                            return {
-                              key,
-                              address: jetton.address,
-                              children: (
-                                <motion.div
-                                  key={`${key}-${jetton.symbol}`}
-                                  className="w-full"
-                                >
-                                  <Grid className="jetton-card" xs={12}>
-                                    <Card
-                                      className="card"
-                                      variant={
-                                        location.pathname.includes(
-                                          jetton.symbol
-                                        )
-                                          ? undefined
-                                          : "bordered"
-                                      }
-                                      isHoverable
-                                      isPressable={!isDrag}
-                                      css={{
-                                        bg: location.pathname.includes(
-                                          jetton.symbol
-                                        )
-                                          ? "$border"
-                                          : undefined,
-                                      }}
-                                      onClick={() =>
-                                        !isDrag &&
-                                        navigate(
-                                          `/analytics/price/${jetton.symbol}`
-                                        )
-                                      }
-                                    >
-                                      <Card.Header style={{ padding: 0 }}>
-                                        <Grid.Container
-                                          wrap="nowrap"
-                                          justify="space-between"
-                                          alignItems="center"
-                                        >
-                                          <Grid xs={3}>
-                                            <Grid.Container
-                                              wrap="nowrap"
-                                              alignItems="center"
-                                            >
-                                              <Grid css={{ pl: "$4" }}>
-                                                <Image
-                                                  src={
-                                                    column?.jetton?.image || ""
-                                                  }
-                                                  width={24}
-                                                  className="rounded-full"
-                                                />
-                                              </Grid>
-                                              <Spacer x={0.4} />
-                                              <Grid
-                                                css={
-                                                  {
-                                                    // transform: 'translate3d(-50%, 0, 0)'
-                                                  }
-                                                }
-                                              >
-                                                <Text>
-                                                  <div className="overflow-hidden text-ellipsis whitespace-nowrap w-full">
-                                                    {column?.jetton?.symbol}
-                                                  </div>
-                                                </Text>
-                                              </Grid>
-                                            </Grid.Container>
-                                          </Grid>
-                                          <Spacer x={0.8} />
-                                          <Grid xs={3}>
-                                            <Text className="overflow-hidden whitespace-nowrap text-ellipsis text-sm">
-                                              {parseFloat(
-                                                parseFloat(
-                                                  column?.dataJetton[
-                                                    column?.dataJetton?.length -
-                                                      1
-                                                  ]?.pv || "0"
-                                                ).toFixed(
-                                                  column?.jetton?.decimals
-                                                )
-                                              )}
-                                            </Text>
-                                          </Grid>
-                                          <Spacer x={0.4} />
-                                          <Grid xs={1}>
-                                            <Badge
-                                              size="xs"
-                                              variant="flat"
-                                              color="primary"
-                                              css={{
-                                                flexWrap: "nowrap",
-                                                p: "$0",
-                                                cursor: "pointer",
-                                                background: "transparent",
-                                                borderColor:
-                                                  "transparent !important",
-                                                color: "$primary",
-                                              }}
-                                              // onClick={(e) => {
-                                              //   e.stopPropagation();
-                                              //   e.preventDefault();
-                                              //   setVoteId(id);
-                                              // }}
-                                            >
-                                              <GEN03 className="text-xs fill-current" />
-                                              <Spacer x={0.2} />
-                                              {column.jetton?.stats
-                                                ?.promoting_points || 0}
-                                            </Badge>
-                                          </Grid>
-                                          <Spacer x={0.4} />
-                                          <Grid xs={1}>
-                                            <Badge
-                                              size="xs"
-                                              css={{
-                                                p: 0,
-                                                background: column.jetton
-                                                  .verified
-                                                  ? "var(--nextui-colors-primary)"
-                                                  : "var(--nextui-colors-accents3)",
-                                                right: "unset",
-                                                left: "$2",
-                                              }}
-                                            >
-                                              {column.jetton.verified ? (
-                                                <ARR12
-                                                  className="text-base rounded-full overflow-hidden"
-                                                  style={{
-                                                    fill: "var(--nextui-colors-accents0)",
-                                                  }}
-                                                />
-                                              ) : (
-                                                <ARR10
-                                                  className="text-base rounded-full overflow-hidden"
-                                                  style={{
-                                                    fill: "var(--nextui-colors-accents0)",
-                                                  }}
-                                                />
-                                              )}
-                                            </Badge>
-                                          </Grid>
-                                          <Spacer x={0.4} />
-                                          <Grid xs={3}>
-                                            <Grid.Container className="relative">
-                                              <Grid xs={12}>
-                                                <FJetton
-                                                  index={i}
-                                                  data={
-                                                    column.dataChart?.length > 1
-                                                      ? column.dataChart
-                                                      : [{ pv: 0 }, { pv: 0 }]
-                                                  }
-                                                  height={40}
-                                                  color={
-                                                    !isNaN(column.percent) &&
-                                                    column.percent !== 0
-                                                      ? column.percent > 0
-                                                        ? "#1ac964"
-                                                        : "#f31260"
-                                                      : "gray"
-                                                  }
-                                                />
-                                              </Grid>
-                                              <Grid
-                                                css={{
-                                                  position: "absolute",
-                                                  left: "50%",
-                                                  top: "50%",
-                                                  transform:
-                                                    "translate3d(-50%, -50%, 0)",
-                                                }}
-                                              >
-                                                <Badge
-                                                  size="xs"
-                                                  css={{
-                                                    background:
-                                                      !isNaN(column.percent) &&
-                                                      column.percent !== 0
-                                                        ? column.percent > 0
-                                                          ? "#1ac964"
-                                                          : "#f31260"
-                                                        : "gray",
-                                                    border: "none",
-                                                    p: "2px 4px",
-                                                  }}
-                                                >
-                                                  {(
-                                                    column.percent || 0
-                                                  )?.toFixed(2)}
-                                                  %
-                                                </Badge>
-                                              </Grid>
-                                            </Grid.Container>
-                                          </Grid>
-                                        </Grid.Container>
-                                      </Card.Header>
-                                    </Card>
-                                  </Grid>
-                                  <Spacer y={0.4} />
-                                </motion.div>
-                              ),
-                            };
-                          })[0]
-                      }
+                      id={i}
+                      data={{
+                        address: column.jetton.address as any,
+                        children: (
+                          <motion.div
+                            key={`${i}-${column?.jetton.symbol}`}
+                            className="w-full"
+                          >
+                            <Token
+                              index={i}
+                              isDrag={isDrag}
+                              column={column}
+                              jetton={column.jetton as JType}
+                              onPress={onPress}
+                              setInfo={setInfo}
+                            />
+                            <Spacer y={0.4} />
+                          </motion.div>
+                        ),
+                      }}
                     />
                   ))
                 )}

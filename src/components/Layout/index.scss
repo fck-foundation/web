@@ -1,10 +1,16 @@
 .flayout {
   // overflow: auto;
   // height: 100vh;
+  padding-top: var(--nextui--navbarHeight);
+
+  @media (max-width: 960px) {
+    padding-top: var(--nextui--navbarCompactHeight);
+  }
 }
 
 .navbar {
   z-index: 999 !important;
+  position: fixed !important;
   background: transparent;
 
   .nextui-navbar-container {
@@ -17,6 +23,25 @@
     > div {
       margin: 0;
       // max-width: 100%;
+    }
+  }
+
+  @media (min-width: 960px) {
+    .nextui-collapse {
+      border: none;
+      .nextui-collapse-view {
+        + div  {
+          position: absolute;
+          padding: 0.8rem 0.8rem 0;
+          border: 1px solid var(--nextui--navbarBorderColor);
+          border-top: unset;
+          border-bottom-left-radius: var(--nextui-radii-lg);
+          border-bottom-right-radius: var(--nextui-radii-lg);
+          background: var(--nextui--navbarBlurBackgroundColor);
+    backdrop-filter: saturate(180%) blur(var(--nextui--navbarBlur));
+    top: var(--nextui--navbarHeight);  
+  }
+      }
     }
   }
 }

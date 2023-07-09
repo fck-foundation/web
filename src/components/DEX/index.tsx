@@ -22,9 +22,9 @@ export const DEX = () => {
           <Text>
             {dex}
           </Text>
+          <Spacer x={0.4} />
         </div>
       }
-      disabled
     >
       <Grid.Container direction="column" justify="center">
         <Grid className="flex place-items-center" css={{ color: "$accents8" }}>
@@ -32,22 +32,23 @@ export const DEX = () => {
             src="/img/stonfi.svg"
             width={18}
             height={18}
-            alt="DeDust.io"
+            alt="Stonfi"
             className="min-w-[18px]"
           />
           <Spacer x={0.4} />
-          Stonfi
+          Stonfi (coming soon)
         </Grid>
+        <Spacer y={0.4} />
         <Grid className="flex place-items-center" css={{ color: "$accents8" }}>
           <img
             src="/img/megaton.svg"
             width={18}
             height={18}
-            alt="DeDust.io"
+            alt="Megaton"
             className="min-w-[18px]"
           />
           <Spacer x={0.4} />
-          Megaton
+          Megaton (coming soon)
         </Grid>
       </Grid.Container>
     </Collapse>

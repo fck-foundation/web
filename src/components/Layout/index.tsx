@@ -146,10 +146,12 @@ export const Layout = ({ children }: { children?: any }) => {
     {
       title: t("tokens"),
       href: `/tokens`,
+      disabled: true
     },
     {
       title: t("pairs"),
       href: `/pairs`,
+      disabled: true
     },
     // { title: t("events"), href: "/events" },
     // { title: t("roadMap"), href: "/roadmap" },
@@ -179,7 +181,7 @@ export const Layout = ({ children }: { children?: any }) => {
     setTimeout(() => {
       if (address)
         globalThis.open(
-          "https://getgems.io/collection/EQBjfCXUjIl2EGzh2jlUM9gFeDQ3oHQIvGFDvVJe8iZVOdmG",
+          "https://getgems.io/collection/EQA2L1KZAC9ALT8BGaDMlTJn-MEUqvd8dFIgzWQdTv09ZjkA",
           "_blank"
         );
       else onAction("connect");
@@ -201,8 +203,8 @@ export const Layout = ({ children }: { children?: any }) => {
           md
           wrap="nowrap"
           justify="space-between"
-          gap={2}
-          css={{ display: "flex", p: 0 }}
+          gap={1}
+          css={{ display: "flex" }}
         >
           <Grid className="flex">
             <Navbar.Toggle
@@ -222,32 +224,37 @@ export const Layout = ({ children }: { children?: any }) => {
               <ThemeSwitcher isLogo loading={isLoadingWallet} />
             </Badge>
 
-          <Navbar.Brand
-          // ref={refLogo}
-          css={{
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-          }}
-          onClick={() => navigate("/")}
-        >
-          <Grid.Container gap={2} alignItems="center" wrap="nowrap" css={{ pr: 0 }}>
-            <Grid>
-              <Text
-                className="text-base"
-                css={{
-                  textGradient: "45deg, $primary 25%, $secondary 125%",
-                }}
-                weight="bold"
-                hideIn="xs"
+            <Navbar.Brand
+              // ref={refLogo}
+              css={{
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+              }}
+              onClick={() => navigate("/")}
+            >
+              <Grid.Container
+                gap={2}
+                alignItems="center"
+                wrap="nowrap"
+                css={{ pr: 0 }}
               >
-                Find & Check
-              </Text>
-            </Grid>
-          </Grid.Container>
-        </Navbar.Brand>
+                <Grid>
+                  <Text
+                    className="text-base"
+                    css={{
+                      textGradient: "45deg, $primary 25%, $secondary 125%",
+                    }}
+                    weight="bold"
+                    hideIn="xs"
+                  >
+                    Find & Check
+                  </Text>
+                </Grid>
+              </Grid.Container>
+            </Navbar.Brand>
           </Grid>
-          
+
           {(!isDebug || (!isPrivate && isDebug)) && (
             <>
               <Grid css={{ w: "auto" }}>
@@ -275,6 +282,15 @@ export const Layout = ({ children }: { children?: any }) => {
             }}
           >
             <Navbar.Content gap={8}>
+              <Grid
+                className="flex flex-nowrap"
+                css={{ display: "none", "@smMin": { display: "flex" } }}
+              >
+                <DEX />
+          <Spacer x={0.8} />
+                <Currency />
+          <Spacer x={0.8} />
+              </Grid>
               <LanguageSwitcher />
               <TonConnectButton className="tconnect-button" />
               {(address || !isDebug || (!isPrivate && isDebug)) && (
@@ -324,17 +340,36 @@ export const Layout = ({ children }: { children?: any }) => {
                   >
                     <Dropdown.Item
                       key="switcher"
-                      css={{ height: "unset", p: 0, margin: "-8px -8px 8px 0" }}
+                      css={{
+                        height: "unset",
+                        p: 0,
+                        margin: "-8px -8px 4px",
+                        width: "calc(100% + 16px)",
+                        bg: "none",
+                      }}
                     >
                       <ThemeSwitcher />
                     </Dropdown.Item>
                     <Dropdown.Item
-                      css={{ height: "fit-content", margin: "-4px -8px 8px" }}
+                      css={{
+                        height: "fit-content",
+                        margin: "-4px -8px 8px",
+                        borderTop: "none",
+                        display: "flex",
+                        "@sm": { display: "none" },
+                        zIndex: 9999,
+                        bg: 'var(--nextui--navbarBackgroundColor)'
+                      }}
                     >
                       <DEX />
                     </Dropdown.Item>
                     <Dropdown.Item
-                      css={{ height: "fit-content", margin: "-4px -8px" }}
+                      css={{
+                        height: "fit-content",
+                        margin: "-4px -8px",
+                        display: "flex",
+                        "@sm": { display: "none" },
+                      }}
                     >
                       <Currency />
                     </Dropdown.Item>
@@ -383,7 +418,7 @@ export const Layout = ({ children }: { children?: any }) => {
             {t("home")}
           </Navbar.CollapseItem>
           {(!isDebug || (!isPrivate && isDebug)) &&
-            menu.map(({ title, href }, index) => (
+            menu.map(({ title, href, disabled }, index) => (
               <Navbar.CollapseItem
                 key={index}
                 isActive={href === location.pathname}
@@ -405,7 +440,7 @@ export const Layout = ({ children }: { children?: any }) => {
             css={{ minHeight: "70vh", p: "$8" }}
           >
             <Grid>
-              <Card variant="shadow" css={{ p: "$8 $16 $8 $16" }}>
+              <Card variant="bordered" css={{ p: "$8 $16 $8 $16" }}>
                 <Card.Header css={{ pb: 0 }}>
                   <Text className="text-2xl text-center w-full" color="primary">
                     {t("joinCommunity")}
@@ -455,7 +490,7 @@ export const Layout = ({ children }: { children?: any }) => {
             <Grid.Container justify="space-between">
               <Grid
                 xs={12}
-                sm={6}
+                sm={4}
                 css={{ display: "flex", flexDirection: "column" }}
               >
                 <Grid.Container alignItems="center">
@@ -481,28 +516,28 @@ export const Layout = ({ children }: { children?: any }) => {
                 <Grid.Container>
                   <Grid>
                     <Link to="/privacy">
-                      <Text>Privacy Policy</Text>
+                      <Text>{t('privacyPolicy')}</Text>
                     </Link>
                   </Grid>
                   <Spacer x={1} />
                   <Grid>
                     <Link to="/cookie">
-                      <Text>Cookie Policy</Text>
+                      <Text>{t('cookiePolicy')}</Text>
                     </Link>
                   </Grid>
                   <Spacer x={1} />
                   <Grid>
                     <Link to="/terms">
-                      <Text>Terms of use</Text>
+                      <Text>{t('termsOfUse')}</Text>
                     </Link>
                   </Grid>
                 </Grid.Container>
               </Grid>
               <Spacer y={0.4} css={{ "@sm": { display: "none" } }} />
-              <Grid xs={12} sm={6}>
+              <Grid xs={12} sm={8}>
                 <Grid.Container justify="space-between">
                   <Grid>
-                    <Text className="text-lg">Project</Text>
+                    <Text className="text-lg">{t('project')}</Text>
                     <ul className="m-0 mt-4">
                       {/* <li>
                             <Link to="https://ton.app" target="_blank">
@@ -539,7 +574,7 @@ export const Layout = ({ children }: { children?: any }) => {
                   </Grid>
                   <Spacer x={1} />
                   <Grid>
-                    <Text className="text-lg">Community</Text>
+                    <Text className="text-lg">{t('community')}</Text>
                     <ul className="m-0 mt-4">
                       <li>
                         <Link to="https://t.me/tokenFCK" target="_blank">
@@ -571,34 +606,34 @@ export const Layout = ({ children }: { children?: any }) => {
                   </Grid>
                   <Spacer x={1} />
                   <Grid>
-                    <Text className="text-lg">Token</Text>
+                    <Text className="text-lg">{t('token')}</Text>
                     <ul className="m-0 mt-4">
                       <li>
-                        <Link to="/#introduction">Introduction</Link>
+                        <Link to="/#introduction">{t('introduction')}</Link>
                       </li>
                       <li>
-                        <Link to="/#tokenomics">Tokenomics</Link>
+                        <Link to="/#tokenomics">{t('tokenomics')}</Link>
                       </li>
                       <li>
                         <Link
                           to="https://dedust.io/swap/TON/EQA6TSGRCU46M9RgHvpRu1LcW6o1RRbhYrdwaVU4X4FEp_Z2"
                           target="_blank"
                         >
-                          Buy $FCK
+                          {t('buyFCK')}
                         </Link>
                       </li>
                       <li>
                         <Promote
                           voteId={voteId}
                           setVoteId={setVoteId}
-                          trigger={<Link to="#">Cast a vote</Link>}
+                          trigger={<Link to="#">{t('castVote')}</Link>}
                         />
                       </li>
                     </ul>
                   </Grid>
                   <Spacer x={1} />
                   <Grid>
-                    <Text className="text-lg">Get In Touch</Text>
+                    <Text className="text-lg">{t('getInTouch')}</Text>
                     <Spacer y={0.4} />
                     <Grid.Container>
                       <Link to="https://t.me/tokenFCK" target="_blank">

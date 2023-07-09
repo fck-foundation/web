@@ -28,18 +28,18 @@ import { AppContext } from "contexts";
 
 const actions = {
   buy: <ARR09 className="text-2xl" style={{ fill: "#1ac964" }} />,
-  sell: <ARR10 className="text-2xl" style={{ fill: "#f31260" }} />,
+  sell: <ARR10 className="text-2xl" style={{ fill: "#F54244" }} />,
   liquidity_deposit: <ARR28 className="text-2xl" style={{ fill: "#1ac964" }} />,
   liquidity_withdraw: (
-    <ARR25 className="text-2xl" style={{ fill: "#f31260" }} />
+    <ARR25 className="text-2xl" style={{ fill: "#F54244" }} />
   ),
 };
 
 const colorType = {
   buy: "#1ac964",
-  sell: "#f31260",
+  sell: "#F54244",
   liquidity_deposit: "#1ac964",
-  liquidity_withdraw: "#f31260",
+  liquidity_withdraw: "#F54244",
 };
 
 interface Props {
