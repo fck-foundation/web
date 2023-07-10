@@ -173,7 +173,7 @@ const defaultAppContext: AppProps = {
   refetchJettons: () => Promise.resolve(null),
 };
 
-const isDebug = true;
+const isDebug = false;
 const key = "dark-mode";
 
 export const AppContext = createContext<AppProps>(defaultAppContext);
@@ -396,17 +396,17 @@ const AppProviderWrapper = ({
     const getData = async () => {
       if (address) {
         if (isPrivate && isDebug) {
-          // setIsPrivate(false);
-          setTimeout(() => {
-            axios
-              .get(
-                `https://tonapi.io/v2/accounts/${address}/nfts?limit=1&offset=${0}&indirect_ownership=true&collection=0:362f5299002f402d3f0119a0cc953267f8c114aaf77c745220cd641d4efd3d66`
-              )
-              .then(({ data }) => {
-                setIsPrivate(!data.nft_items.length);
-                setPrivateKey(data.nft_items[0]);
-              });
-          }, 300);
+          setIsPrivate(false);
+          // setTimeout(() => {
+          //   axios
+          //     .get(
+          //       `https://tonapi.io/v2/accounts/${address}/nfts?limit=1&offset=${0}&indirect_ownership=true&collection=0:362f5299002f402d3f0119a0cc953267f8c114aaf77c745220cd641d4efd3d66`
+          //     )
+          //     .then(({ data }) => {
+          //       setIsPrivate(!data.nft_items.length);
+          //       setPrivateKey(data.nft_items[0]);
+          //     });
+          // }, 300);
         }
 
         if (isMenuOpen) {
