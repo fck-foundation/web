@@ -24,7 +24,7 @@ export const Transactions = () => {
   const { theme, timescale, page, list, jettons } = useContext(AppContext);
 
   const pageList = useMemo(() => {
-    const dataList = list?.slice((page - 1) * 15, page * 15);
+    const dataList = list?.slice((page - 1) * 10, page * 10);
     return jettons.length
       ? dataList.map((address) => ({
           ...jettons.find((jetton) => jetton.address === address),
@@ -60,7 +60,7 @@ export const Transactions = () => {
       count: transactions?.sources?.DeDust?.jettons[id].count,
     }))
     .sort((x, y) => x.count - y.count)
-    ?.slice(-15);
+    ?.slice(-10);
 
   return (
     <Card css={{ height: "fit-content" }}>

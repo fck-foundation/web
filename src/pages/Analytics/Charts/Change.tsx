@@ -26,7 +26,7 @@ export const Change = () => {
     useContext(AppContext);
 
   const pageList = useMemo(() => {
-    const dataList = list?.slice((page - 1) * 15, page * 15);
+    const dataList = list?.slice((page - 1) * 10, page * 10);
     return jettons.length
       ? dataList.map((address) => ({
           ...jettons.find((jetton) => jetton.address === address),
@@ -77,7 +77,7 @@ export const Change = () => {
     const percent =
       dataJetton && !!dataJetton[dataJetton.length - 1]?.pv
         ? ((dataJetton[dataJetton.length - 1]?.pv -
-            dataJetton[dataJetton.length - 2]?.pv) /
+            dataJetton[dataJetton.length - 3]?.pv) /
             dataJetton[0]?.pv) *
           100
         : 0;

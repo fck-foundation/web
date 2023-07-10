@@ -45,7 +45,7 @@ export const Transactions = () => {
           }
         )
         .then(({ data }) => data?.events),
-    refetchOnMount: false,
+    // refetchOnMount: false,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
     onSuccess: (reponse) => {

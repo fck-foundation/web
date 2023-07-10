@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next";
 
 import Header from "./Header";
 import Swaps from "./Swaps";
+import { usePairs } from "hooks";
 
 export const Wallet = () => {
   const location = useLocation();
@@ -62,7 +63,7 @@ export const Wallet = () => {
   );
 
   const pageList = useMemo(() => {
-    const dataList = dataSelected?.slice((page - 1) * 15, page * 15);
+    const dataList = dataSelected?.slice((page - 1) * 10, page * 10);
     return jettons?.length
       ? dataList?.map(({ address }) => ({
           ...jettons.find((jetton) => jetton.address === address),
@@ -70,12 +71,23 @@ export const Wallet = () => {
       : [];
   }, [jettons, dataSelected, page]);
 
+  const pairsWallet = usePairs(
+    "wallet",
+    pageList.map(({ id }) => id as number)
+  );
+
   const { data: dataChart, isLoading: isLoadingChart } = useQuery({
-    queryKey: ["jettons-analytics-profile", pageList, page, currency],
+    queryKey: [
+      "jettons-analytics-profile",
+      pageList,
+      page,
+      currency,
+      pairsWallet,
+    ],
     queryFn: ({ signal }) =>
       axios
         .get(
-          `https://api.fck.foundation/api/v3/analytics?pairs=${pageList
+          `https://api.fck.foundation/api/v3/analytics?pairs=${pairsWallet
             .map(({ id }) => id)
             .join(",")}&period=d1&currency=${currency}`,
           { signal }
@@ -83,13 +95,16 @@ export const Wallet = () => {
         .then(({ data: { data } }) => data),
     refetchOnMount: false,
     refetchOnReconnect: false,
-    enabled: !!dataSelected?.length,
+    enabled: !!dataSelected?.length && !!pairsWallet.length,
     cacheTime: 60 * 1000,
     select: (response) =>
       dataSelected.map((jetton: any) => {
-        jetton.data =
-          response?.sources?.DeDust?.jettons[jetton.id.toString()]?.prices ||
-          [];
+        const id = pairsWallet
+          ?.find(
+            ({ jetton1_id }) => jetton1_id.toString() === jetton.id.toString()
+          )
+          ?.id?.toString() as string;
+        jetton.data = response[id] || [];
         const dataJetton = [
           ...(jetton.data && jetton.data.length < 2
             ? [
@@ -176,7 +191,7 @@ export const Wallet = () => {
         <meta property="og:title" content={t("wallet") || ""}></meta>
         <meta property="og:image" content="/img/wallet.png"></meta>
       </Helmet>
-      <Container md css={{ minHeight: "70vh", py: '$2', px: '$4' }}>
+      <Container md css={{ minHeight: "70vh", py: "$2", px: "$4" }}>
         <Grid.Container gap={1}>
           <Grid xs={12}>
             <Header selected={selected} setSwaps={setSwaps} />

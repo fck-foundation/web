@@ -30,7 +30,7 @@ export const getList = (
     }));
     const volume = [...(stats || [])].reduce((acc, i) => (acc += i?.pair2_volume), 0);
     const percent =
-      ((stats[stats.length - 2]?.value - stats[stats.length - 3]?.value) /
+      ((stats[stats.length - 1]?.value - stats[stats.length - 3]?.value) /
         stats[stats.length - 3]?.value) *
       100;
 

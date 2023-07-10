@@ -23,6 +23,8 @@ export const ThemeSwitcher: React.FC<Props> = ({ loading, isLogo }) => {
   const { privateKey, nftItems, enabled, theme, setEnabled, setTheme } =
     useContext(AppContext);
 
+  console.log("nftItems", nftItems);
+
   return isLogo ? (
     loading ? (
       <Loading css={{ padding: 9 }} />
@@ -93,7 +95,17 @@ export const ThemeSwitcher: React.FC<Props> = ({ loading, isLogo }) => {
         )?.value;
 
         return (
-          <Grid key={i} xs={4} className="nft-item">
+          <Grid
+            key={i}
+            xs={4}
+            className="nft-item"
+            onClick={() =>
+              setTheme({
+                color: color?.toLowerCase(),
+                id: item.metadata.id,
+              })
+            }
+          >
             <Badge
               placement="top-left"
               css={{
@@ -121,12 +133,6 @@ export const ThemeSwitcher: React.FC<Props> = ({ loading, isLogo }) => {
                   src={item?.previews ? item?.previews[0]?.url : ""}
                   width="100%"
                   alt=""
-                  onClick={() =>
-                    setTheme({
-                      color: color?.toLowerCase(),
-                      id: item.metadata.id,
-                    })
-                  }
                   css={{ objectFit: "cover" }}
                 />
               </div>
