@@ -163,7 +163,7 @@ export const Jettons: React.FC<Props> = ({ isDrag }) => {
 
     const volume = dataJetton[dataJetton.length - 1]?.pair2_volume;
     const percent =
-      ((dataJetton[dataJetton.length - 2]?.pv -
+      ((dataJetton[dataJetton.length - 1]?.pv -
         dataJetton[dataJetton.length - 3]?.pv) /
         dataJetton[dataJetton.length - 3]?.pv) *
       100;

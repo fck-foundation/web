@@ -81,8 +81,8 @@ export const Price: React.FC<{
 
   const value = useDebounce(loadingPage, 300);
 
-  const pairJetton = usePairs('price', [jetton.id]);
-  
+  const pairJetton = usePairs("price", [jetton.id]);
+
   useEffect(() => {
     setChanges({
       jetton: jetton?.id,
@@ -91,9 +91,16 @@ export const Price: React.FC<{
       theme: theme?.color,
       enabled,
       currency: jettonCurrency?.symbol,
-      pairJetton
+      pairJetton,
     });
-  }, [jetton, timescale, location.pathname, theme, jettonCurrency?.symbol, pairJetton]);
+  }, [
+    jetton,
+    timescale,
+    location.pathname,
+    theme,
+    jettonCurrency?.symbol,
+    pairJetton,
+  ]);
 
   useEffect(() => {
     setPage(value);
@@ -143,11 +150,7 @@ export const Price: React.FC<{
     queryFn: ({ signal }) => {
       return axios
         .get(
-          `https://api.fck.foundation/api/v3/analytics?pairs=${
-            pairJetton[0].id
-          }&page=${page}&period=${
-            pagination[timescale]
-          }&currency=${jettonCurrency?.symbol}`,
+          `https://api.fck.foundation/api/v3/analytics?pairs=${pairJetton[0].id}&page=${page}&period=${pagination[timescale]}&currency=${jettonCurrency?.symbol}`,
           { signal }
         )
         .then(({ data: { data } }) => data[pairJetton[0].id]);
@@ -612,7 +615,8 @@ export const Price: React.FC<{
 
   const percent = useMemo(
     () =>
-      ((data[data.length - 2]?.price_close - data[data.length - 3]?.price_close) /
+      ((data[data.length - 1]?.price_close -
+        data[data.length - 3]?.price_close) /
         data[data.length - 3]?.price_close) *
       100,
     [data]

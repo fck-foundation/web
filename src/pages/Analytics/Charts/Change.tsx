@@ -77,7 +77,7 @@ export const Change = () => {
     const percent =
       dataJetton && !!dataJetton[dataJetton.length - 1]?.pv
         ? ((dataJetton[dataJetton.length - 1]?.pv -
-            dataJetton[dataJetton.length - 2]?.pv) /
+            dataJetton[dataJetton.length - 3]?.pv) /
             dataJetton[0]?.pv) *
           100
         : 0;
