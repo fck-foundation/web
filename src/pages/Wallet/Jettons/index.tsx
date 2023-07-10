@@ -18,6 +18,7 @@ import { _, normalize } from "utils";
 import { useTranslation } from "react-i18next";
 import Skeleton from "react-loading-skeleton";
 import TonProofApi from "TonProofApi";
+import { usePairs } from "hooks";
 
 interface Props {
   isBalance: boolean;
@@ -58,7 +59,7 @@ const WalletSwaps: React.FC<Props> = ({
   );
 
   const pageList = useMemo(() => {
-    const dataList = dataSelected?.slice((page - 1) * 15, page * 15);
+    const dataList = dataSelected?.slice((page - 1) * 10, page * 10);
     return jettons?.length
       ? dataList?.map(({ address }) => ({
           ...jettons.find((jetton) => jetton.address === address),
@@ -66,26 +67,40 @@ const WalletSwaps: React.FC<Props> = ({
       : [];
   }, [jettons, dataSelected, page]);
 
+  const pairsWallet = usePairs(
+    "wallet",
+    pageList.map(({ id }) => id as number)
+  );
+
   const { data: dataChart, isLoading: isLoadingChart } = useQuery({
-    queryKey: ["jettons-analytics-profile", dataSelected, page, currency],
+    queryKey: [
+      "jettons-analytics-profile",
+      pageList,
+      page,
+      currency,
+      pairsWallet,
+    ],
     queryFn: ({ signal }) =>
       axios
         .get(
-          `https://api.fck.foundation/api/v3/analytics?pairs=${pageList
+          `https://api.fck.foundation/api/v3/analytics?pairs=${pairsWallet
             .map(({ id }) => id)
-            .join(",")}&period=1d&currency=${currency}`,
+            .join(",")}&period=d1&currency=${currency}`,
           { signal }
         )
         .then(({ data: { data } }) => data),
     refetchOnMount: false,
     refetchOnReconnect: false,
-    enabled: !!dataSelected?.length,
+    enabled: !!dataSelected?.length && !!pairsWallet.length,
     cacheTime: 60 * 1000,
     select: (response) =>
       dataSelected.map((jetton: any) => {
-        jetton.data =
-          response?.sources?.DeDust?.jettons[jetton.id.toString()]?.prices ||
-          [];
+        const id = pairsWallet
+          ?.find(
+            ({ jetton1_id }) => jetton1_id.toString() === jetton.id.toString()
+          )
+          ?.id?.toString() as string;
+        jetton.data = response[id] || [];
         const dataJetton = [
           ...(jetton.data && jetton.data.length < 2
             ? [
@@ -100,37 +115,20 @@ const WalletSwaps: React.FC<Props> = ({
                 },
               ]
             : []),
-          ...((jetton.data || [])?.map((item) => {
-            return {
-              name: jettons.find(({ id }) => id === item.jetton_id)?.symbol,
-              pv:
-                _(item.price_close) ||
-                _(item.price_high) ||
-                _(item.price_low) ||
-                _(item.price_open),
-              volume: _(item.pair2_volume),
-            };
-          }) as any),
-        ];
-        const dataChart = [...dataJetton]
-          .filter((i) => i.pv)
-          .map((d, i) => ({
-            ...d,
+          ...((jetton.data || [])?.map((item) => ({
+            name: jettons.find(({ id }) => id === selected)?.symbol,
             pv:
-              i > 0 &&
-              d.pv &&
-              dataJetton[i - 1].pv &&
-              dataJetton[i - 1].pv !== d.pv
-                ? dataJetton[i - 1].pv < d.pv
-                  ? d.pv && d.pv - 100
-                  : d.pv && d.pv + 100
-                : dataJetton[dataJetton.length - 1].pv < d.pv
-                ? d.pv && d.pv + 100 * 10
-                : d.pv && d.pv - 100 * 2,
-          }));
+              _(item.price_close) ||
+              _(item.price_high) ||
+              _(item.price_low) ||
+              _(item.price_open),
+            volume: _(item.pair2_volume),
+          })) as any),
+        ];
+        const dataChart = [...dataJetton].filter((i) => i.pv);
 
         const volume = [...dataJetton].reduce(
-          (acc, i) => (acc += i?.pair2_volume),
+          (acc, i) => (acc += i?.volume),
           0
         );
         const percent = dataJetton[dataJetton.length - 1]?.pv
@@ -329,12 +327,12 @@ const WalletSwaps: React.FC<Props> = ({
           </Table.Body>
         </Table>
 
-        {Math.ceil(dataSelected?.length / 15) > 1 && (
+        {Math.ceil(dataSelected?.length / 10) > 1 && (
           <Pagination
             loop
             color="success"
             css={{ m: "$4" }}
-            total={Math.ceil(dataSelected?.length / 15)}
+            total={Math.ceil(dataSelected?.length / 10)}
             page={page}
             onChange={setPage}
           />
