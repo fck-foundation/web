@@ -1,2 +1,7 @@
-Terms of use example
-...
+# Denial of responsibility
+
+The information provided on this website does not constitute investment, financial, trading or any other advice and you should treat its content accordingly.
+
+We make every effort to keep the information on the site accurate and up-to-date, but we cannot guarantee this unconditionally. The [toncap.net](http://toncap.net/) website provides all information as is.
+
+Use information from the site at your own risk.

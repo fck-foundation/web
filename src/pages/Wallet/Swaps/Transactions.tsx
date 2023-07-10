@@ -1,8 +1,7 @@
-import { Divider, Grid, Link, Spacer, Text } from "@nextui-org/react";
+import { Divider, Grid, Link, Loading, Spacer, Text } from "@nextui-org/react";
 import { useQuery } from "@tanstack/react-query";
-import TonProofApi from "TonProofApi";
 import { Announcement } from "assets/icons";
-import { ARR01, ARR36, Arrowright, Link as LinkIcon } from "assets/icons";
+import { Arrowright, Link as LinkIcon } from "assets/icons";
 import axios from "axios";
 import { AppContext } from "contexts";
 import moment from "moment";
@@ -12,12 +11,11 @@ import { Address } from "ton-core";
 import { normalize } from "utils";
 
 export const Transactions = () => {
-  const wallet = location.pathname?.split("/").pop();
   const { t } = useTranslation();
+  const wallet = location.pathname?.split("/").pop();
   const { isBottom, setIsBottom } = useContext(AppContext);
   const [page, setPage] = useState(1);
   const [data, setData] = useState<Record<string, any>[]>([]);
-  const [type, setType] = useState<"all" | "balance">("all");
 
   useEffect(() => {
     setData([]);
@@ -30,14 +28,14 @@ export const Transactions = () => {
     }
   }, [isBottom]);
 
-  const { isLoading } = useQuery({
+  const { isLoading, isFetching } = useQuery({
     queryKey: ["wallet-transactions", page],
     queryFn: ({ signal }) =>
       axios
         .get(
           `https://tonapi.io/v2/accounts/${wallet}/events?limit=1000&start_date=${
-            Math.ceil(Date.now() / 1000) - page * 86400
-          }&end_date=${Math.ceil(Date.now() / 1000) - (page - 1) * 86400}`, //(page - 1) * 28
+            Math.ceil(Date.now() / 1000) - page * 86400 * 7
+          }&end_date=${Math.ceil(Date.now() / 1000) - (page - 1) * 86400 * 7}`, //(page - 1) * 28
           {
             signal,
             headers: {
@@ -47,6 +45,8 @@ export const Transactions = () => {
           }
         )
         .then(({ data }) => data?.events),
+    refetchOnMount: false,
+    refetchOnReconnect: false,
     refetchOnWindowFocus: false,
     onSuccess: (reponse) => {
       setData((prevData) => [...prevData, ...(reponse || [])]);
@@ -61,36 +61,14 @@ export const Transactions = () => {
   // "NftItemTransfer"
   // "SmartContractExec"
   // "JettonTransfer"
-  
+
   return (
-    <Grid.Container>
+    <Grid.Container justify="center">
       {data?.map((event, i) => (
         <>
-          <Grid key={i} xs={12}>
+          <Grid key={i} xs={12} sm={6} md={4}>
             <Grid.Container alignItems="center">
-              <Grid>
-                <Grid.Container wrap="nowrap" alignItems="center">
-                  <Grid>
-                    <Link
-                      href={`https://tonscan.org/tx/${event?.event_id}`}
-                      target="_blank"
-                      css={{ display: "flex" }}
-                    >
-                      <LinkIcon
-                        style={{ fill: "currentColor", fontSize: 18 }}
-                      />
-                    </Link>
-                  </Grid>
-                  <Spacer x={1} />
-                  <Grid>
-                    <Text css={{ whiteSpace: "nowrap" }}>
-                      {moment(event?.timestamp * 1000).format("DD.MM.YY HH:mm")}
-                    </Text>
-                  </Grid>
-                </Grid.Container>
-              </Grid>
-              <Spacer x={1} />
-              <Grid>
+              <Grid xs={12}>
                 <Grid.Container direction="column" justify="center">
                   {event?.actions?.map((item, y) => {
                     const sender =
@@ -106,7 +84,10 @@ export const Transactions = () => {
                     return (
                       <>
                         <Grid key={y}>
-                          <Grid.Container justify="center" alignItems="center">
+                          <Grid.Container
+                            justify="space-between"
+                            alignItems="center"
+                          >
                             <Grid>
                               <Grid.Container wrap="nowrap" alignItems="center">
                                 {item?.type === "SmartContractExec" && (
@@ -114,34 +95,29 @@ export const Transactions = () => {
                                     <Text>{item.simple_preview?.name}</Text>
                                   </Grid>
                                 )}
-                                {sender && (
-                                  <Grid>
-                                    <Link
-                                      href={`https://tonviewer.com/${sender}`}
-                                      target="_blank"
-                                    >
-                                      {item[item?.type as any]?.sender?.name
-                                        ? item[item?.type as any]?.sender?.name
-                                        : `${sender.slice(
-                                            0,
-                                            4
-                                          )}...${sender.slice(-4)}`}
-                                    </Link>
-                                  </Grid>
-                                )}
-                                {recipient && (
-                                  <>
-                                    <Spacer x={1} />
-                                    <Grid>
-                                      <Arrowright
-                                        style={{
-                                          fill: "currentColor",
-                                          fontSize: 24,
-                                        }}
-                                      />
-                                    </Grid>
-                                    <Spacer x={1} />
-                                    <Grid>
+                                <Grid className="flex flex-col">
+                                  {sender && (
+                                    <div className="flex">
+                                      {t("sender")}
+                                      <Spacer x={0.4} />
+                                      <Link
+                                        href={`https://tonviewer.com/${sender}`}
+                                        target="_blank"
+                                      >
+                                        {item[item?.type as any]?.sender?.name
+                                          ? item[item?.type as any]?.sender
+                                              ?.name
+                                          : `${sender?.slice(
+                                              0,
+                                              4
+                                            )}...${sender?.slice(-4)}`}
+                                      </Link>
+                                    </div>
+                                  )}
+                                  {recipient && (
+                                    <div className="flex">
+                                      {t("recipient")}
+                                      <Spacer x={0.4} />
                                       <Link
                                         href={`https://tonviewer.com/${recipient}`}
                                         target="_blank"
@@ -155,9 +131,10 @@ export const Transactions = () => {
                                               4
                                             )}...${recipient?.slice(-4)}`}
                                       </Link>
-                                    </Grid>
-                                  </>
-                                )}
+                                    </div>
+                                    //<Arrowright className="text-current text-2xl" />
+                                  )}
+                                </Grid>
                               </Grid.Container>
                             </Grid>
                             {item[item?.type as any]?.comment && (
@@ -169,12 +146,7 @@ export const Transactions = () => {
                                     alignItems="center"
                                   >
                                     <Grid>
-                                      <Announcement
-                                        style={{
-                                          fill: "currentColor",
-                                          fontSize: 18,
-                                        }}
-                                      />
+                                      <Announcement className="text-current text-lg" />
                                     </Grid>
                                     <Spacer x={0.4} />
                                     <Grid>
@@ -198,7 +170,10 @@ export const Transactions = () => {
                                       <>
                                         {parseFloat(
                                           normalize(
-                                            item[item?.type as any]?.amount,
+                                            item[item?.type as any]?.amount
+                                              ?.value ||
+                                              item[item?.type as any]?.amount ||
+                                              0,
                                             item[item?.type as any]?.jetton
                                               ? item[item?.type as any]?.jetton
                                                   ?.decimals
@@ -219,7 +194,10 @@ export const Transactions = () => {
                                       <>
                                         {parseFloat(
                                           normalize(
-                                            item[item?.type as any]?.amount,
+                                            item[item?.type as any]?.amount
+                                              ?.value ||
+                                              item[item?.type as any]?.amount ||
+                                              0,
                                             9
                                           ).toFixed(9)
                                         )}{" "}
@@ -251,6 +229,26 @@ export const Transactions = () => {
                   })}
                 </Grid.Container>
               </Grid>
+
+              <Grid>
+                <Grid.Container wrap="nowrap" alignItems="center">
+                  <Grid>
+                    <Link
+                      href={`https://tonscan.org/tx/${event?.event_id}`}
+                      target="_blank"
+                      css={{ display: "flex" }}
+                    >
+                      <LinkIcon className="text-current text-lg" />
+                    </Link>
+                  </Grid>
+                  <Spacer x={1} />
+                  <Grid>
+                    <Text className="text-sm" css={{ whiteSpace: "nowrap" }}>
+                      {moment(event?.timestamp * 1000).format("DD.MM.YY HH:mm")}
+                    </Text>
+                  </Grid>
+                </Grid.Container>
+              </Grid>
             </Grid.Container>
           </Grid>
 
@@ -261,6 +259,20 @@ export const Transactions = () => {
           )}
         </>
       ))}
+
+      {(isLoading || isFetching) && (
+        <Grid
+          xs={12}
+          css={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            h: 100,
+          }}
+        >
+          <Loading />
+        </Grid>
+      )}
     </Grid.Container>
   );
 };

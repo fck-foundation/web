@@ -89,7 +89,7 @@ export class TonProofApiService {
       })
     ).json();
 
-    return response as {};
+    return response as any;
   }
 
   reset() {

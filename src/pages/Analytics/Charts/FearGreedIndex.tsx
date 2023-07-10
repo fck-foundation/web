@@ -1,23 +1,15 @@
-/* eslint-disable @next/next/no-img-element */
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
-import cookie from "react-cookies";
+import { useContext, useMemo } from "react";
 import {
-  LineChart,
-  Line,
   ResponsiveContainer,
   PieChart,
   Pie,
   Cell,
 } from "recharts";
-import { DragDropContext, DropResult } from "react-beautiful-dnd";
-import { motion, AnimatePresence } from "framer-motion";
-import { arrayMoveImmutable } from "array-move";
 import {
   Badge,
   Button,
   Card,
   Grid,
-  Loading,
   Popover,
   Spacer,
 } from "@nextui-org/react";
@@ -26,15 +18,9 @@ import { useTranslation } from "react-i18next";
 import axios from "libs/axios";
 import { _ } from "utils";
 import { useQuery } from "@tanstack/react-query";
-import { useLocation, useNavigate } from "react-router-dom";
-import { GEN02, GEN15 } from "assets/icons";
+import { GEN15 } from "assets/icons";
 import { colors } from "colors";
 import { AppContext } from "contexts";
-import Skeleton from "react-loading-skeleton";
-import TonProofApi, {  } from "TonProofApi";
-import { useTonAddress } from "@tonconnect/ui-react";
-import { Promote } from "components";
-import { toast } from "react-toastify";
 import { pagination } from "..";
 
 const RADIAN = Math.PI / 180;
@@ -63,8 +49,9 @@ const needle = (value, list, cx, cy, iR, oR, color) => {
   const yp = y0 + length * sin;
 
   return [
-    <circle cx={x0} cy={y0} r={r} fill={color} stroke="none" />,
+    <circle key={value} cx={x0} cy={y0} r={r} fill={color} stroke="none" />,
     <path
+      key={value}
       d={`M${xba} ${yba}L${xbb} ${ybb} L${xp} ${yp} L${xba} ${yba}`}
       stroke="#none"
       fill={color}
@@ -74,15 +61,12 @@ const needle = (value, list, cx, cy, iR, oR, color) => {
 
 export const FearGreedIndex = () => {
   const { t } = useTranslation();
-  const location = useLocation();
-  const navigate = useNavigate();
-  const ref = useRef<HTMLDivElement>(null);
-  const address = useTonAddress();
   // const [present] = useIonActionSheet();
-  const { theme, timescale, list, page, jettons } = useContext(AppContext);
+  const { theme, timescale, list, page, jettons, currency } =
+    useContext(AppContext);
 
   const pageList = useMemo(() => {
-    const dataList = list.slice((page - 1) * 15, page * 15);
+    const dataList = list?.slice((page - 1) * 15, page * 15);
     return jettons.length
       ? dataList.map((address) => ({
           ...jettons.find((jetton) => jetton.address === address),
@@ -90,16 +74,14 @@ export const FearGreedIndex = () => {
       : [];
   }, [jettons, list, page]);
 
-  const { data: dataStats, isLoading: isLoadingStats } = useQuery({
-    queryKey: ["jettons-analytics", timescale, page],
+  const { data: dataStats } = useQuery({
+    queryKey: ["jettons-analytics", timescale, page, currency],
     queryFn: ({ signal }) =>
       axios
         .get(
-          `https://api.fck.foundation/api/v2/analytics?jetton_ids=${pageList
+          `https://api.fck.foundation/api/v3/analytics?pairs=${pageList
             .map(({ id }) => id)
-            .join(",")}&time_min=${Math.floor(
-            Date.now() / 1000 - pagination[timescale] * 21
-          )}&timescale=${pagination[timescale]}`,
+            .join(",")}&period=${pagination[timescale]}&currency=${currency}`,
           { signal }
         )
         .then(({ data: { data } }) => data),
@@ -115,8 +97,8 @@ export const FearGreedIndex = () => {
 
     Object.keys(dataStats?.sources?.DeDust?.jettons || {}).forEach((i) => {
       dataStats?.sources?.DeDust?.jettons[i].prices.forEach((price) => {
-        countJetton += _(price.jetton_volume) * _(price.price_close);
-        countTon += _(price.volume);
+        countJetton += _(price.pair1_volume) * _(price.price_close);
+        countTon += _(price.pair2_volume);
       });
     });
 
@@ -128,7 +110,7 @@ export const FearGreedIndex = () => {
       {
         name: "Sell",
         value: 25,
-        color: "#f31260",
+        color: "#F54244",
       },
       {
         name: "Sell",
@@ -167,7 +149,7 @@ export const FearGreedIndex = () => {
                   flat
                   size="xs"
                   icon={
-                    <GEN15 style={{ fill: "currentColor", fontSize: 24 }} />
+                    <GEN15 className="text-2xl text-current" />
                   }
                   css={{ minWidth: "auto", p: "$0" }}
                 />

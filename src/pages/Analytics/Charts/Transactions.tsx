@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 import { useContext, useMemo } from "react";
 import {
   ResponsiveContainer,
@@ -8,11 +7,10 @@ import {
   Bar,
   Tooltip,
 } from "recharts";
-import { Badge, Button, Card, Grid, Popover, Spacer } from "@nextui-org/react";
+import { Button, Card, Grid, Popover, Spacer } from "@nextui-org/react";
 import { useTranslation } from "react-i18next";
 
 import axios from "libs/axios";
-import { _ } from "utils";
 import { useQuery } from "@tanstack/react-query";
 import { GEN15 } from "assets/icons";
 import { colors } from "colors";
@@ -26,7 +24,7 @@ export const Transactions = () => {
   const { theme, timescale, page, list, jettons } = useContext(AppContext);
 
   const pageList = useMemo(() => {
-    const dataList = list.slice((page - 1) * 15, page * 15);
+    const dataList = list?.slice((page - 1) * 15, page * 15);
     return jettons.length
       ? dataList.map((address) => ({
           ...jettons.find((jetton) => jetton.address === address),
@@ -34,7 +32,7 @@ export const Transactions = () => {
       : [];
   }, [jettons, list, page]);
 
-  const { data: transactions, isLoading: isLoadingTransactions } = useQuery({
+  const { data: transactions } = useQuery({
     queryKey: ["analytics-transactions", timescale, page],
     queryFn: ({ signal }) =>
       axios
@@ -62,7 +60,7 @@ export const Transactions = () => {
       count: transactions?.sources?.DeDust?.jettons[id].count,
     }))
     .sort((x, y) => x.count - y.count)
-    .slice(-15);
+    ?.slice(-15);
 
   return (
     <Card css={{ height: "fit-content" }}>
@@ -77,9 +75,7 @@ export const Transactions = () => {
                   auto
                   flat
                   size="xs"
-                  icon={
-                    <GEN15 style={{ fill: "currentColor", fontSize: 24 }} />
-                  }
+                  icon={<GEN15 className="text-2xl text-current" />}
                   css={{ minWidth: "auto", p: "$0" }}
                 />
               </Popover.Trigger>
@@ -91,8 +87,8 @@ export const Transactions = () => {
       <Card.Body css={{ pt: 0, pb: 0, overflow: "hidden" }}>
         <ResponsiveContainer width={300} height={140}>
           <ComposedChart layout="vertical" data={dataTransactions}>
-            <XAxis type="category" fontSize={12} />
-            <YAxis dataKey="name" type="category" scale="auto" fontSize={12} />
+            <XAxis type="category" className="text-sm" />
+            <YAxis dataKey="name" type="category" scale="auto" className="text-sm" />
             <Bar
               dataKey="count"
               barSize={5}

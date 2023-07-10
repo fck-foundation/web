@@ -1,0 +1,33 @@
+.diamond-item {
+  cursor: pointer;
+  transition: all 300ms;
+  background-color: #fff;
+  width: 100%;
+
+  > div {
+    pointer-events: none;
+  }
+  img {
+    opacity: 0.75;
+    transition: all 300ms;
+  }
+
+  &.selected img {
+    opacity: 1;
+  }
+
+  &.selected img,
+  &:hover img {
+    border: 1px solid var(--nextui-colors-primary);
+    opacity: 1;
+  }
+}
+
+.nft-item .nextui-badge-root {
+width: 100%;
+}
+
+html:not([class*="light-theme"]) .diamond-item {
+  border-color: var(--nextui--navbarBorderColor);
+  background-color: #121212;
+}

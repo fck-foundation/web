@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Helmet } from "react-helmet";
 import { useTranslation } from "react-i18next";
@@ -19,6 +18,7 @@ import { ARR01, ARR12, ARR02 } from "assets/icons";
 import { StyledBadge } from "components";
 
 import "keen-slider/keen-slider.min.css";
+import "./index.scss";
 
 const tableProps = {
   bordered: {
@@ -168,7 +168,8 @@ export const RoadMap = () => {
               <Button
                 icon={
                   <ARR02
-                    style={{ fill: "var(--nextui-colors-link)", fontSize: 24 }}
+                    className="text-2xl"
+                    style={{ fill: "var(--nextui-colors-link)" }}
                   />
                 }
                 flat
@@ -183,7 +184,8 @@ export const RoadMap = () => {
               <Button
                 icon={
                   <ARR01
-                    style={{ fill: "var(--nextui-colors-link)", fontSize: 24 }}
+                    className="text-2xl"
+                    style={{ fill: "var(--nextui-colors-link)" }}
                   />
                 }
                 flat
@@ -236,9 +238,9 @@ export const RoadMap = () => {
                               {list.map((item, y) => {
                                 let icon = (
                                   <ARR12
+                                    className="text-current text-lg"
                                     style={{
                                       fill: "var(--nextui-colors-link)",
-                                      fontSize: 18,
                                     }}
                                   />
                                 );
@@ -265,10 +267,9 @@ export const RoadMap = () => {
                                     <Table.Cell>
                                       <Row align="center" justify="flex-start">
                                         <Col
+                                          className="overflow-hidden text-ellipsis"
                                           style={{
                                             maxWidth: 242,
-                                            overflow: "hidden",
-                                            textOverflow: "ellipsis",
                                           }}
                                         >
                                           <Tooltip content={item.title}>

@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import {
   Button,
@@ -12,12 +12,10 @@ import {
 } from "@nextui-org/react";
 import { GEN17 } from "assets/icons";
 import axios from "axios";
-import { useTonAddress } from "@tonconnect/ui-react";
 import { AppContext } from "contexts";
 import { useQuery } from "@tanstack/react-query";
 import { _, normalize } from "utils";
 import { useTranslation } from "react-i18next";
-import { Address, address } from "ton-core";
 import Skeleton from "react-loading-skeleton";
 import TonProofApi from "TonProofApi";
 
@@ -43,32 +41,20 @@ const WalletSwaps: React.FC<Props> = ({
   setIsBalance,
 }) => {
   const location = useLocation();
-  const tonAddress = useTonAddress();
   const { t } = useTranslation();
-  const { jettons, ton } = useContext(AppContext);
+  const { jettons, ton, currency, walletJettons, isLoadingWalletJettons } =
+    useContext(AppContext);
 
   const wallet = location.pathname.split("/").pop();
-
-  const { data, isLoading: isLoadingJettons } = useQuery({
-    queryKey: ["wallet-jettons", wallet],
-    queryFn: async ({ signal }) =>
-      await axios.get(`https://tonapi.io/v2/accounts/${wallet}/jettons`, {
-        signal,
-      }),
-    enabled: !!wallet,
-    refetchOnMount: false,
-    refetchOnReconnect: false,
-    select: (response) => response.data.balances,
-  });
 
   const dataSelected = useMemo(
     () =>
       jettons?.filter(({ address }) =>
-        data
+        walletJettons
           ?.filter(({ balance }) => (isBalance ? parseFloat(balance) : true))
           ?.some(({ jetton }) => jetton.address === address)
       ),
-    [jettons, data, isBalance]
+    [jettons, walletJettons, isBalance]
   );
 
   const pageList = useMemo(() => {
@@ -81,15 +67,13 @@ const WalletSwaps: React.FC<Props> = ({
   }, [jettons, dataSelected, page]);
 
   const { data: dataChart, isLoading: isLoadingChart } = useQuery({
-    queryKey: ["jettons-analytics-profile", dataSelected, page],
+    queryKey: ["jettons-analytics-profile", dataSelected, page, currency],
     queryFn: ({ signal }) =>
       axios
         .get(
-          `https://api.fck.foundation/api/v2/analytics?jetton_ids=${pageList
+          `https://api.fck.foundation/api/v3/analytics?pairs=${pageList
             .map(({ id }) => id)
-            .join(",")}&time_min=${Math.floor(
-            Date.now() / 1000 - 86400 * 7
-          )}&timescale=${86400}`,
+            .join(",")}&period=1d&currency=${currency}`,
           { signal }
         )
         .then(({ data: { data } }) => data),
@@ -98,7 +82,7 @@ const WalletSwaps: React.FC<Props> = ({
     enabled: !!dataSelected?.length,
     cacheTime: 60 * 1000,
     select: (response) =>
-      dataSelected.map((jetton: any, key) => {
+      dataSelected.map((jetton: any) => {
         jetton.data =
           response?.sources?.DeDust?.jettons[jetton.id.toString()]?.prices ||
           [];
@@ -116,7 +100,7 @@ const WalletSwaps: React.FC<Props> = ({
                 },
               ]
             : []),
-          ...(jetton.data || [])?.map((item, i) => {
+          ...((jetton.data || [])?.map((item) => {
             return {
               name: jettons.find(({ id }) => id === item.jetton_id)?.symbol,
               pv:
@@ -124,9 +108,9 @@ const WalletSwaps: React.FC<Props> = ({
                 _(item.price_high) ||
                 _(item.price_low) ||
                 _(item.price_open),
-              volume: _(item.volume),
+              volume: _(item.pair2_volume),
             };
-          }),
+          }) as any),
         ];
         const dataChart = [...dataJetton]
           .filter((i) => i.pv)
@@ -146,10 +130,10 @@ const WalletSwaps: React.FC<Props> = ({
           }));
 
         const volume = [...dataJetton].reduce(
-          (acc, i) => (acc += i?.volume),
+          (acc, i) => (acc += i?.pair2_volume),
           0
         );
-        const percent = !!dataJetton[dataJetton.length - 1]?.pv
+        const percent = dataJetton[dataJetton.length - 1]?.pv
           ? ((dataJetton[dataJetton.length - 1]?.pv - dataJetton[0]?.pv) /
               dataJetton[0]?.pv) *
             100
@@ -159,7 +143,7 @@ const WalletSwaps: React.FC<Props> = ({
       }),
   });
 
-  const { isLoading: isLoadingSwaps } = useQuery({
+  useQuery({
     queryKey: ["wallet-swaps", selected, TonProofApi.accessToken],
     queryFn: ({ signal }) =>
       axios.get(
@@ -175,7 +159,8 @@ const WalletSwaps: React.FC<Props> = ({
     refetchOnMount: false,
     refetchOnReconnect: false,
     onSuccess: (response) => {
-      setSwaps(response.data.data.sources.DeDust.jettons[selected!].swaps);
+      selected &&
+        setSwaps(response.data.data.sources.DeDust.jettons[selected].swaps);
     },
   });
 
@@ -212,7 +197,7 @@ const WalletSwaps: React.FC<Props> = ({
           </Table.Header>
           <Table.Body>
             {isLoading ||
-            isLoadingJettons ||
+            isLoadingWalletJettons ||
             (!!dataSelected?.length && isLoadingChart) ? (
               new Array(3).fill(null).map((_, i) => (
                 <Table.Row key={i}>
@@ -222,7 +207,7 @@ const WalletSwaps: React.FC<Props> = ({
                         <Skeleton
                           width={28}
                           height={28}
-                          style={{ borderRadius: 100 }}
+                          className="rounded-full"
                         />
                       </Grid>
                       <Spacer x={0.4} />
@@ -255,7 +240,7 @@ const WalletSwaps: React.FC<Props> = ({
                 <Table.Cell>
                   <Grid.Container justify="center">
                     <Grid>
-                      <GEN17 style={{ fill: "currentColor", fontSize: 24 }} />
+                      <GEN17 className="text-current text-2xl" />
                     </Grid>
                     <Spacer x={0.4} />
                     <Grid>
@@ -266,7 +251,7 @@ const WalletSwaps: React.FC<Props> = ({
                 <Table.Cell css={{ display: "none" }}>empty</Table.Cell>
               </Table.Row>
             ) : (
-              data
+              walletJettons
                 ?.filter((balance) =>
                   pageList.some(
                     ({ symbol }) => symbol === balance.jetton.symbol

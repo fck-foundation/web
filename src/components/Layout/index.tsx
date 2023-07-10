@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -12,30 +12,34 @@ import {
   Grid,
   Loading,
   Divider,
+  Image,
+  Badge,
 } from "@nextui-org/react";
 import cookie from "react-cookies";
 import {
   TonConnectButton,
   useTonAddress,
   useTonConnectUI,
-  useTonWallet,
 } from "@tonconnect/ui-react";
-import { LanguageSwitcher, Search } from "components";
+import { LanguageSwitcher, Promote, Search } from "components";
 import { AppContext } from "contexts";
 import { default as Logo } from "assets/logo.svg";
-import { GEN16, TG, TW, ABS28, GEN02 } from "assets/icons";
+import { GEN16, TG, TW, ABS28, GEN02, Ton } from "assets/icons";
 
 import { TUser } from "../TelegramLogin";
 import { ThemeSwitcher } from "../Theme";
+import { DEX } from "../DEX";
+import { Currency } from "../Currency";
 import { SvgInline } from "../SVG";
 
+import iKey from "./key.png";
+
+import "./index.scss";
+
 export const Layout = ({ children }: { children?: any }) => {
-  const ref = useRef(null);
   const { t } = useTranslation();
-  const { i18n } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const wallet = useTonWallet();
   const address = useTonAddress();
   const [tonConnectUI] = useTonConnectUI();
   const {
@@ -43,12 +47,31 @@ export const Layout = ({ children }: { children?: any }) => {
     nftItems,
     enabled,
     theme,
+    isDebug: isDebugValue,
+    isPrivate: isPrivateValue,
     setTheme,
     setAuthorized,
     setIsBottom,
+    setIsMenuOpen,
   } = useContext(AppContext);
   const [toggle, setToggle] = useState(false);
   const [user, setUser] = useState<TUser>();
+  const [animateCounter, setAnimateCounter] = useState(0);
+  const [isDebug, setIsDebug] = useState(isDebugValue);
+  const [isPrivate, setIsPrivate] = useState(isPrivateValue);
+  const [voteId, setVoteId] = useState<number>();
+
+  useEffect(() => {
+    if (isDebugValue && !isPrivateValue) {
+      setAnimateCounter(1);
+    }
+
+    setTimeout(() => {
+      setIsDebug(isDebugValue);
+      setIsPrivate(isPrivateValue);
+      setAnimateCounter(0);
+    }, 300);
+  }, [isDebugValue, isPrivateValue]);
 
   // Automatically scrolls to top whenever pathname changes
   useEffect(() => {
@@ -62,21 +85,25 @@ export const Layout = ({ children }: { children?: any }) => {
         localStorage.removeItem("access-token");
         cookie.remove("access-token");
         setAuthorized(false);
-        document
-          .getElementsByTagName("html")[0]
-          .classList.remove(`${theme.color}${enabled ? "" : "-light"}-theme`);
-        document
-          .getElementsByTagName("html")[0]
-          .classList.add(`${enabled ? "dark" : "light"}-theme`);
+        if (document.getElementsByTagName("html")) {
+          document
+            .getElementsByTagName("html")[0]
+            .classList.remove(`${theme.color}${enabled ? "" : "-light"}-theme`);
+          document
+            .getElementsByTagName("html")[0]
+            .classList.add(`${enabled ? "dark" : "light"}-theme`);
+        }
         setTheme({ color: enabled ? "dark" : "light" });
         setUser(undefined);
         break;
       case "connect":
-        (
-          Array.from(
-            document.getElementsByTagName("tc-root")[0]?.childNodes
-          )[0] as any
-        )?.click();
+        if (document.getElementsByTagName("tc-root")) {
+          (
+            Array.from(
+              document.getElementsByTagName("tc-root")[0]?.childNodes
+            )[0] as any
+          )?.click();
+        }
         break;
       case "whitelist":
         break;
@@ -108,16 +135,26 @@ export const Layout = ({ children }: { children?: any }) => {
 
   const menu = [
     {
-      title: t("analytics"),
+      title: t("dashboard"),
       href: `/analytics/price/${
         location.pathname.includes("price") ||
         location.pathname.includes("volume")
-          ? location.pathname.split("/").pop()
+          ? location.pathname.split("/")?.pop()
           : "FCK"
       }`,
     },
-    { title: t("events"), href: "/events" },
-    { title: t("roadMap"), href: "/roadmap" },
+    {
+      title: t("tokens"),
+      href: `/tokens`,
+      // disabled: true
+    },
+    {
+      title: t("pairs"),
+      href: `/pairs`,
+      disabled: true
+    },
+    // { title: t("events"), href: "/events" },
+    // { title: t("roadMap"), href: "/roadmap" },
   ];
 
   useEffect(() => {
@@ -139,53 +176,106 @@ export const Layout = ({ children }: { children?: any }) => {
 
   const isLoadingWallet = typeof authorized === "undefined";
 
+  const onPrivate = () => {
+    setAnimateCounter(1);
+    setTimeout(() => {
+      if (address)
+        globalThis.open(
+          "https://getgems.io/collection/EQA2L1KZAC9ALT8BGaDMlTJn-MEUqvd8dFIgzWQdTv09ZjkA",
+          "_blank"
+        );
+      else onAction("connect");
+      setAnimateCounter(0);
+    }, 300);
+  };
+
   return (
     <>
-      {typeof nftItems === "undefined" ? (
-        <Loading
-          css={{
-            left: "50%",
-            top: "50%",
-            position: "absolute",
-            transform: "translate3d(-50%, -50%, 0)",
-          }}
-        />
-      ) : (
-        <>
-          <Navbar
-            className="navbar"
-            isBordered
-            isCompact={{ "@smMax": true, "@smMin": false }}
-            shouldHideOnScroll
-            disableScrollHandler
-            variant="floating"
-          >
-            <Container
-              wrap="nowrap"
-              justify="space-between"
-              gap={2}
-              css={{ display: "flex", p: 0 }}
+      <Navbar
+        className="navbar"
+        isBordered
+        isCompact={{ "@smMax": true, "@smMin": false }}
+        shouldHideOnScroll
+        disableScrollHandler
+        variant="static"
+      >
+        <Container
+          md
+          wrap="nowrap"
+          justify="space-between"
+          gap={1}
+          css={{ display: "flex" }}
+        >
+          <Grid className="flex">
+            <Navbar.Toggle
+              isSelected={toggle}
+              aria-label="toggle navigation"
+              showIn="sm"
+              onChange={(value) => setToggle(!!value)}
+            />
+            <Spacer x={0.8} />
+            <Badge
+              size="xs"
+              content={t("beta")}
+              placement="bottom-right"
+              css={{
+                mb: "$4",
+              }}
             >
-              <Grid>
-                <Grid.Container wrap="nowrap">
-                  <Navbar.Toggle
-                    isSelected={toggle}
-                    aria-label="toggle navigation"
-                    showIn="sm"
-                    onChange={(value) => setToggle(!!value)}
-                  />
-                  <Grid css={{ w: "auto" }}>
-                    <Search />
-                  </Grid>
-                </Grid.Container>
-              </Grid>
-              <Grid css={{ w: "auto" }}>
+              <ThemeSwitcher isLogo loading={isLoadingWallet} />
+            </Badge>
+
+            <Navbar.Brand
+              // ref={refLogo}
+              css={{
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+              }}
+              onClick={() => navigate("/")}
+            >
+              <Grid.Container
+                gap={2}
+                alignItems="center"
+                wrap="nowrap"
+                css={{ pr: 0 }}
+              >
+                <Grid>
+                  <Text
+                    className="text-base"
+                    css={{
+                      textGradient: "45deg, $primary 25%, $secondary 125%",
+                    }}
+                    weight="bold"
+                    hideIn="xs"
+                  >
+                    Find & Check
+                  </Text>
+                  <Text
+                    className="text-base"
+                    css={{
+                      textGradient: "45deg, $primary 25%, $secondary 125%",
+                    }}
+                    weight="bold"
+                    showIn="xs"
+                  >
+                    FCK
+                  </Text>
+                </Grid>
+              </Grid.Container>
+            </Navbar.Brand>
+          </Grid>
+
+          {(!isDebug || (!isPrivate && isDebug)) && (
+            <>
+              <Grid css={{ w: "100%" }} className="flex justify-center">
                 <Navbar.Content hideIn="sm">
-                  {menu.map(({ title, href }, index) => (
+                  {menu.map(({ title, href, disabled }, index) => (
                     <Navbar.Link
                       key={index}
                       isActive={href === location.pathname}
                       onClick={() => navigate(href)}
+                      css={disabled ? { pointerEvents: 'none', color: '$accents5' } : undefined}
                     >
                       {title}
                     </Navbar.Link>
@@ -193,174 +283,276 @@ export const Layout = ({ children }: { children?: any }) => {
                 </Navbar.Content>
               </Grid>
               <Spacer x={0.4} />
-              <Grid
-                css={{
-                  "@xs": {
-                    display: "flex",
-                    jc: "flex-end",
-                  },
-                }}
-              >
-                <Navbar.Content gap={8}>
-                  <LanguageSwitcher />
-                  <TonConnectButton className="tconnect-button" />
-                  <Dropdown placement="bottom-right" closeOnSelect={false}>
-                    <Navbar.Item>
-                      <Dropdown.Trigger>
-                        <Button
-                          flat
-                          size="sm"
-                          style={{
-                            minWidth: "auto",
-                          }}
-                        >
-                          <ABS28
-                            style={{
-                              fill: "var(--nextui-colors-link)",
-                              fontSize: 24,
-                            }}
-                          />
-                          <Text
-                            color="primary"
-                            style={{
-                              maxWidth: 75,
-                              overflow: "hidden",
-                              whiteSpace: "nowrap",
-                              textOverflow: "ellipsis",
-                              display: "flex",
-                            }}
-                          >
-                            <Spacer x={0.4} />
-                            {isLoadingWallet ? (
-                              <Loading type="points-opacity" />
-                            ) : !user && !address ? (
-                              t("signIn")
-                            ) : user ? (
-                              user.first_name
-                            ) : (
-                              `...${address.slice(-4)}`
-                            )}
-                          </Text>
-                        </Button>
-                      </Dropdown.Trigger>
-                    </Navbar.Item>
-                    <Dropdown.Menu
-                      aria-label="User menu actions"
-                      color="secondary"
-                      onAction={onAction}
-                    >
-                      <Dropdown.Item
-                        key="switcher"
-                        css={{ height: "unset", p: 0, margin: -8 }}
-                      >
-                        <ThemeSwitcher />
-                      </Dropdown.Item>
-                      {!address &&
-                        ((
-                          <Dropdown.Item
-                            key="connect"
-                            icon={
-                              <ABS28
-                                style={{
-                                  fill: "var(--nextui-colors-link)",
-                                  fontSize: 24,
-                                }}
-                              />
-                            }
-                            withDivider
-                          >
-                            {t("connectWallet")}
-                          </Dropdown.Item>
-                        ) as any)}
-                      {!!address &&
-                        ((
-                          <Dropdown.Item key="analytics" withDivider>
-                            {t("analytics")}
-                          </Dropdown.Item>
-                        ) as any)}
-                      {!!address &&
-                        ((
-                          <Dropdown.Item key="logout" color="error" withDivider>
-                            {t("disconnect")}
-                          </Dropdown.Item>
-                        ) as any)}
-                    </Dropdown.Menu>
-                  </Dropdown>
-                </Navbar.Content>
-              </Grid>
-            </Container>
-            <Navbar.Collapse isOpen={toggle}>
-              <Navbar.CollapseItem
-                key="home"
-                isActive={"/" === location.pathname}
-                onClick={() => onChangeHref("/")}
-                style={{ cursor: "pointer" }}
-              >
-                {t("home")}
-              </Navbar.CollapseItem>
-              {menu.map(({ title, href }, index) => (
-                <Navbar.CollapseItem
-                  key={index}
-                  isActive={href === location.pathname}
-                  onClick={() => onChangeHref(href)}
-                  style={{ cursor: "pointer" }}
-                >
-                  {title}
-                </Navbar.CollapseItem>
-              ))}
-            </Navbar.Collapse>
-          </Navbar>
-
-          <div className="flayout">
-            <Container
-              gap={0}
-              css={{
+            </>
+          )}
+          <Grid
+            css={{
+              "@xs": {
                 display: "flex",
-                maxW: "var(--nextui--navbarContainerMaxWidth)",
-              }}
-            >
-              {children ? children : <Outlet />}
-            </Container>
-          </div>
-          {background}
-          <Card variant="flat" css={{ borderRadius: 0 }}>
-            <Card.Body css={{ p: "16px 0 16px " }}>
-              <Container alignItems="center">
-                <Grid.Container justify="space-between">
-                  <Grid
-                    xs={12}
-                    sm={5}
-                    md={7}
-                    css={{ display: "flex", flexDirection: "column" }}
-                  >
-                    <Grid.Container alignItems="center">
-                      <Grid css={{ display: "flex" }}>
-                        <img src={Logo.toString()} alt="logo" height={24} />
-                      </Grid>
-                      <Spacer x={0.4} />
-                      <Grid>
-                        <Text
-                          size={16}
-                          css={{
-                            textGradient:
-                              "45deg, $primary 25%, $secondary 125%",
+                jc: "flex-end",
+              },
+            }}
+          >
+            <Navbar.Content gap={8}>
+              <Grid
+                className="flex flex-nowrap"
+                css={{ display: "none", "@smMin": { display: "flex" } }}
+              >
+                <DEX />
+          <Spacer x={0.8} />
+                <Currency />
+          <Spacer x={0.8} />
+              </Grid>
+              <LanguageSwitcher />
+              <TonConnectButton className="tconnect-button" />
+              {(address || !isDebug || (!isPrivate && isDebug)) && (
+                <Dropdown
+                  placement="bottom-right"
+                  closeOnSelect={false}
+                  onOpenChange={setIsMenuOpen}
+                >
+                  <Navbar.Item>
+                    <Dropdown.Trigger>
+                      <Button
+                        flat
+                        size="sm"
+                        style={{
+                          minWidth: "auto",
+                        }}
+                      >
+                        <ABS28
+                          className="text-lg"
+                          style={{
+                            fill: "var(--nextui-colors-link)",
                           }}
-                          weight="bold"
+                        />
+                        <Text
+                          color="primary"
+                          className="overflow-hidden whitespace-nowrap text-ellipsis flex"
                         >
-                          Find & Check
+                          <Spacer x={0.4} />
+                          {isLoadingWallet ? (
+                            <Loading type="points-opacity" />
+                          ) : !user && !address ? (
+                            t("signIn")
+                          ) : user ? (
+                            user.first_name
+                          ) : (
+                            `...${address?.slice(-4)}`
+                          )}
                         </Text>
-                      </Grid>
-                    </Grid.Container>
-                    <Spacer x={0.4} />
-                    <Text css={{ maxW: 500 }}>{t("footerDescription")}</Text>
+                      </Button>
+                    </Dropdown.Trigger>
+                  </Navbar.Item>
+                  <Dropdown.Menu
+                    aria-label="User menu actions"
+                    color="secondary"
+                    onAction={onAction}
+                    onChange={console.log}
+                  >
+                    <Dropdown.Item
+                      key="switcher"
+                      css={{
+                        height: "unset",
+                        p: 0,
+                        margin: "-8px -8px 4px",
+                        width: "calc(100% + 16px)",
+                        bg: "none",
+                      }}
+                    >
+                      <ThemeSwitcher />
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      css={{
+                        height: "fit-content",
+                        margin: "-4px -8px 8px",
+                        borderTop: "none",
+                        display: "flex",
+                        "@sm": { display: "none" },
+                        zIndex: 9999,
+                        bg: 'var(--nextui--navbarBackgroundColor)'
+                      }}
+                    >
+                      <DEX />
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      css={{
+                        height: "fit-content",
+                        margin: "-4px -8px",
+                        display: "flex",
+                        "@sm": { display: "none" },
+                      }}
+                    >
+                      <Currency />
+                    </Dropdown.Item>
+                    {!address &&
+                      ((
+                        <Dropdown.Item
+                          key="connect"
+                          icon={
+                            <ABS28
+                              className="text-2xl"
+                              style={{
+                                fill: "var(--nextui-colors-link)",
+                              }}
+                            />
+                          }
+                          withDivider
+                        >
+                          {t("connectWallet")}
+                        </Dropdown.Item>
+                      ) as any)}
+                    {!!address &&
+                      ((
+                        <Dropdown.Item key="analytics" withDivider>
+                          {t("analytics")}
+                        </Dropdown.Item>
+                      ) as any)}
+                    {!!address &&
+                      ((
+                        <Dropdown.Item key="logout" color="error" withDivider>
+                          {t("disconnect")}
+                        </Dropdown.Item>
+                      ) as any)}
+                  </Dropdown.Menu>
+                </Dropdown>
+              )}
+            </Navbar.Content>
+          </Grid>
+        </Container>
+        <Navbar.Collapse isOpen={toggle}>
+          <Navbar.CollapseItem
+            key="home"
+            isActive={"/" === location.pathname}
+            onClick={() => onChangeHref("/")}
+            className="cursor-pointer"
+          >
+            {t("home")}
+          </Navbar.CollapseItem>
+          {(!isDebug || (!isPrivate && isDebug)) &&
+            menu.map(({ title, href, disabled }, index) => (
+              <Navbar.CollapseItem
+                key={index}
+                isActive={href === location.pathname}
+                onClick={() => onChangeHref(href)}
+                className="cursor-pointer"
+                css={disabled ? { pointerEvents: 'none', color: '$accents5' } : undefined}
+              >
+                {title}
+              </Navbar.CollapseItem>
+            ))}
+        </Navbar.Collapse>
+      </Navbar>
+
+      <div className="flayout">
+        {isDebug && isPrivate ? (
+          <Grid.Container
+            direction="column"
+            justify="center"
+            alignItems="center"
+            css={{ minHeight: "70vh", p: "$8" }}
+          >
+            <Grid>
+              <Card variant="bordered" css={{ p: "$8 $16 $8 $16" }}>
+                <Card.Header css={{ pb: 0 }}>
+                  <Text className="text-2xl text-center w-full" color="primary">
+                    {t("joinCommunity")}
+                  </Text>
+                </Card.Header>
+                <Card.Body css={{ overflow: "visible" }}>
+                  <Image
+                    src={iKey}
+                    width={150}
+                    objectFit="none"
+                    className="key-animation"
+                    css={{
+                      borderRadius: "100%",
+                      transition: "all 300ms",
+                      transform: animateCounter ? "rotateZ(-90deg)" : undefined,
+                    }}
+                  />
+                </Card.Body>
+                <Card.Footer className="flex justify-center" css={{ pt: 0 }}>
+                  <Button auto onClick={() => onPrivate()} size="lg">
+                    {t(address ? "buy" : "connect")} {address && "NFT"}
+                  </Button>
+                </Card.Footer>
+              </Card>
+            </Grid>
+          </Grid.Container>
+        ) : children ? (
+          children
+        ) : (
+          <Outlet />
+        )}
+      </div>
+      {background}
+      <Card
+        variant="bordered"
+        css={{
+          borderRadius: 0,
+          borderLeft: 0,
+          borderRight: 0,
+          borderBottom: 0,
+        }}
+      >
+        <Card.Body
+          css={{ p: "32px 0 32px", bg: "var(--nextui-colors-background)" }}
+        >
+          <Container md alignItems="center">
+            <Grid.Container justify="space-between">
+              <Grid
+                xs={12}
+                sm={4}
+                css={{ display: "flex", flexDirection: "column" }}
+              >
+                <Grid.Container alignItems="center">
+                  <Grid css={{ display: "flex" }}>
+                    <img src={Logo.toString()} alt="logo" height={24} />
                   </Grid>
-                  <Spacer y={0.4} css={{ "@sm": { display: "none" } }} />
-                  <Grid xs={12} sm={7} md={5}>
-                    <Grid.Container justify="space-between">
-                      <Grid>
-                        <Text size={18}>{t("learnMore")}</Text>
-                        <ul style={{ margin: 0 }}>
-                          {/* <li>
+                  <Spacer x={0.4} />
+                  <Grid>
+                    <Text
+                      className="text-base"
+                      css={{
+                        textGradient: "45deg, $primary 25%, $secondary 125%",
+                      }}
+                      weight="bold"
+                    >
+                      Find & Check
+                    </Text>
+                  </Grid>
+                </Grid.Container>
+                <Spacer x={0.4} />
+                <Text css={{ maxW: 400 }}>{t("footerDescription")}</Text>
+                <Spacer x={0.4} />
+                <Grid.Container>
+                  <Grid>
+                    <Link to="/privacy">
+                      <Text>{t('privacyPolicy')}</Text>
+                    </Link>
+                  </Grid>
+                  <Spacer x={1} />
+                  <Grid>
+                    <Link to="/cookie">
+                      <Text>{t('cookiePolicy')}</Text>
+                    </Link>
+                  </Grid>
+                  <Spacer x={1} />
+                  <Grid>
+                    <Link to="/terms">
+                      <Text>{t('termsOfUse')}</Text>
+                    </Link>
+                  </Grid>
+                </Grid.Container>
+              </Grid>
+              <Spacer y={0.4} css={{ "@sm": { display: "none" } }} />
+              <Grid xs={12} sm={5}>
+                <Grid.Container justify="space-between">
+                  <Grid>
+                    <Text className="text-lg">{t('project')}</Text>
+                    <ul className="m-0 mt-4">
+                      {/* <li>
                             <Link to="https://ton.app" target="_blank">
                               {t("apps")}
                             </Link>
@@ -373,153 +565,166 @@ export const Layout = ({ children }: { children?: any }) => {
                               {t("glossary")}
                             </Link>
                           </li> */}
-                          <li>
-                            <Link
-                              to="https://github.com/fck-foundation"
-                              target="_blank"
-                            >
-                              {t("developers")}
-                            </Link>
-                          </li>
-                          <li>
-                            <Link to="/whitepaper" target="_blank">
-                              {t("whitePaper")}
-                            </Link>
-                          </li>
-                          <li>
-                            <Link to="/plitch" target="_blank">
-                              {t("projectPlitch")}
-                            </Link>
-                          </li>
-                          <li>
-                            <Link to="/team">{t("ourTeam")}</Link>
-                          </li>
-                        </ul>
-                      </Grid>
-                      <Spacer x={2} />
-                      <Grid>
-                        <Text size={18}>{t("community")}</Text>
-                        <Spacer y={0.4} />
-                        <Grid.Container>
-                          <Link to="https://t.me/tokenFCK" target="_blank">
-                            <Button flat css={{ minWidth: "auto", p: "$4" }}>
-                              <TG
-                                style={{
-                                  fill: "currentColor",
-                                  fontSize: 32,
-                                }}
-                              />
-                            </Button>
-                          </Link>
-                          <Spacer x={0.4} />
-                          <Link
-                            to="https://twitter.com/FCKFoundation"
-                            target="_blank"
-                          >
-                            <Button flat css={{ minWidth: "auto", p: "$4" }}>
-                              <TW
-                                style={{
-                                  fill: "currentColor",
-                                  fontSize: 32,
-                                }}
-                              />
-                            </Button>
-                          </Link>
-                          <Spacer x={0.4} />
-                          <Link
-                            to="https://t.me/FCKAnalyticsBot"
-                            target="_blank"
-                          >
-                            <Button flat css={{ minWidth: "auto", p: "$4" }}>
-                              <GEN02
-                                style={{
-                                  fill: "currentColor",
-                                  fontSize: 32,
-                                }}
-                              />
-                            </Button>
-                          </Link>
-                        </Grid.Container>
-                        <Spacer y={0.4} />
-                        <Link to="https://t.me/fckcoins" target="_blank">
-                          <Button flat css={{ minWidth: "100%" }}>
-                            <GEN16
-                              style={{
-                                fill: "currentColor",
-                                fontSize: 24,
-                              }}
-                            />
-                            <Spacer x={0.4} />
-                            {t("joinCommunity")}
-                          </Button>
+                      <li>
+                        <Link to="/team">{t("ourTeam")}</Link>
+                      </li>
+                      <li>
+                        <Link to="/whitepaper" target="_blank">
+                          {t("whitePaper")}
                         </Link>
-                      </Grid>
-                    </Grid.Container>
+                      </li>
+                      <li>
+                        <Link to="/plitch" target="_blank">
+                          {t("projectPlitch")}
+                        </Link>
+                      </li>
+                      <li>
+                        <Link to="/roadmap" target="_blank">
+                          {t("roadMap")}
+                        </Link>
+                      </li>
+                    </ul>
                   </Grid>
-                </Grid.Container>
-              </Container>
-            </Card.Body>
-            <Card.Divider />
-            <Card.Footer>
-              <Container>
-                <Grid.Container justify="space-between" alignItems="center">
+                  <Spacer x={1} />
                   <Grid>
-                    <Grid.Container alignItems="center" alignContent="center">
-                      <Grid>{t("basedOn")}</Grid>
-                      <Spacer x={0.4} />
-                      <Grid>
-                        <Link
-                          to="https://ton.org"
-                          target="_blank"
-                          style={{ height: "fit-content" }}
-                        >
-                          <svg
-                            width="32px"
-                            height="32px"
-                            viewBox="0 0 32 32"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              clipRule="evenodd"
-                              d="M11.5479 10.5742H20.5218C20.8393 10.5742 21.1566 10.6208 21.4881 10.7754C21.8855 10.9606 22.0963 11.2527 22.2439 11.4686C22.2554 11.4854 22.2662 11.5027 22.2761 11.5204C22.4497 11.8295 22.5392 12.1631 22.5392 12.522C22.5392 12.863 22.4581 13.2346 22.2761 13.5584C22.2744 13.5615 22.2726 13.5646 22.2708 13.5677L16.6013 23.3068C16.4762 23.5216 16.2461 23.6534 15.9976 23.6525C15.7491 23.6516 15.5199 23.5182 15.3964 23.3025L9.83089 13.5842C9.8293 13.5815 9.8277 13.5789 9.82609 13.5763C9.69874 13.3664 9.50177 13.0418 9.46733 12.6229C9.43566 12.2377 9.52222 11.8518 9.71576 11.5172C9.9093 11.1825 10.2007 10.9149 10.5511 10.7512C10.9269 10.5756 11.3077 10.5742 11.5479 10.5742ZM15.3044 11.9655H11.5479C11.3011 11.9655 11.2063 11.9807 11.1401 12.0117C11.0485 12.0544 10.9716 12.1247 10.9202 12.2137C10.8687 12.3026 10.8455 12.4057 10.854 12.5089C10.8588 12.5681 10.8829 12.6357 11.0251 12.8703C11.0281 12.8752 11.031 12.8802 11.0339 12.8852L15.3044 20.3423V11.9655ZM16.6957 11.9655V20.3791L21.0651 12.8733C21.1145 12.7837 21.1479 12.6543 21.1479 12.522C21.1479 12.4147 21.1257 12.3216 21.0759 12.2256C21.0238 12.1506 20.992 12.1109 20.9654 12.0837C20.9426 12.0604 20.9251 12.048 20.9003 12.0364C20.797 11.9882 20.6913 11.9655 20.5218 11.9655H16.6957Z"
-                              fill="#05ADF5"
-                            ></path>
-                            <path
-                              fillRule="evenodd"
-                              clipRule="evenodd"
-                              d="M32 16C32 24.8365 24.8365 32 16 32C7.16342 32 0 24.8365 0 16C0 7.16342 7.16342 0 16 0C24.8365 0 32 7.16342 32 16ZM30.6087 16C30.6087 24.0681 24.0681 30.6087 16 30.6087C7.93182 30.6087 1.3913 24.0681 1.3913 16C1.3913 7.93182 7.93182 1.3913 16 1.3913C24.0681 1.3913 30.6087 7.93182 30.6087 16Z"
-                              fill="#05ADF5"
-                            ></path>
-                          </svg>
+                    <Text className="text-lg">{t('community')}</Text>
+                    <ul className="m-0 mt-4">
+                      <li>
+                        <Link to="https://t.me/tokenFCK" target="_blank">
+                          Telegram
                         </Link>
-                      </Grid>
+                      </li>
+                      <li>
+                        <Link
+                          to="https://twitter.com/FCKFoundation"
+                          target="_blank"
+                        >
+                          Twitter
+                        </Link>
+                      </li>
+                      <li>
+                        <Link to="https://discord.gg/u58ArC2K" target="_blank">
+                          Discord
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          to="https://www.linkedin.com/company/fck-foundation/"
+                          target="_blank"
+                        >
+                          LinkedIn
+                        </Link>
+                      </li>
+                    </ul>
+                  </Grid>
+                  <Spacer x={1} />
+                  <Grid>
+                    <Text className="text-lg">{t('token')}</Text>
+                    <ul className="m-0 mt-4">
+                      <li>
+                        <Link to="/#introduction">{t('introduction')}</Link>
+                      </li>
+                      <li>
+                        <Link to="/#tokenomics">{t('tokenomics')}</Link>
+                      </li>
+                      <li>
+                        <Link
+                          to="https://dedust.io/swap/TON/EQA6TSGRCU46M9RgHvpRu1LcW6o1RRbhYrdwaVU4X4FEp_Z2"
+                          target="_blank"
+                        >
+                          {t('buyFCK')}
+                        </Link>
+                      </li>
+                      <li>
+                        <Promote
+                          voteId={voteId}
+                          setVoteId={setVoteId}
+                          trigger={<Link to="#">{t('castVote')}</Link>}
+                        />
+                      </li>
+                    </ul>
+                  </Grid>
+                  {/* <Spacer x={1} />
+                  <Grid>
+                    <Text className="text-lg">{t('getInTouch')}</Text>
+                    <Spacer y={0.4} />
+                    <Grid.Container>
+                      <Link to="https://t.me/tokenFCK" target="_blank">
+                        <Button flat css={{ minWidth: "auto", p: "$4" }}>
+                          <TG className="text-3xl fill-current" />
+                        </Button>
+                      </Link>
                       <Spacer x={0.4} />
-                      <Grid>TON</Grid>
+                      <Link
+                        to="https://twitter.com/FCKFoundation"
+                        target="_blank"
+                      >
+                        <Button flat css={{ minWidth: "auto", p: "$4" }}>
+                          <TW className="text-3xl fill-current" />
+                        </Button>
+                      </Link>
+                      <Spacer x={0.4} />
+                      <Link to="https://t.me/FCKAnalyticsBot" target="_blank">
+                        <Button flat css={{ minWidth: "auto", p: "$4" }}>
+                          <GEN02 className="text-3xl fill-current" />
+                        </Button>
+                      </Link>
                     </Grid.Container>
-                  </Grid>
-                  <Grid>2023 © Find & Check Foundation</Grid>
-                  <Grid xs={12}>
                     <Spacer y={0.4} />
+                    <Link to="https://t.me/fckcoins" target="_blank">
+                      <Button flat css={{ minWidth: "100%" }}>
+                        <GEN16 className="text-2xl fill-current" />
+                        <Spacer x={0.4} />
+                        {t("joinCommunity")}
+                      </Button>
+                    </Link>
+                  </Grid> */}
+                </Grid.Container>
+              </Grid>
+            </Grid.Container>
+          </Container>
+        </Card.Body>
+        <Card.Divider />
+        <Card.Footer css={{ bg: "var(--nextui-colors-background)" }}>
+          <Container md>
+            <Grid.Container justify="space-between" alignItems="center">
+              <Grid css={{ mt: "$8" }}>
+                <Grid.Container alignItems="center" alignContent="center">
+                  <Grid>{t("basedOn")}</Grid>
+                  <Spacer x={0.4} />
+                  <Grid>
+                    <Link
+                      to="https://ton.org"
+                      target="_blank"
+                      className="h-fit"
+                    >
+                      <Ton className="text-3xl" />
+                    </Link>
                   </Grid>
-                  <Grid xs={12}>
-                    <Divider css={{ opacity: 0.3 }} />
-                  </Grid>
-                  <Grid xs={12}>
-                    <Spacer y={0.4} />
-                  </Grid>
-                  <Grid xs={12}>
-                    <Text color="gray" size={11}>
-                      {t("disclamer")}
+                  <Spacer x={0.4} />
+                  <Grid>
+                    <Text className="text-base" weight="bold">
+                      TON
                     </Text>
                   </Grid>
                 </Grid.Container>
-              </Container>
-            </Card.Footer>
-          </Card>
-        </>
-      )}
+              </Grid>
+              <Grid css={{ mt: "$8" }}>2023 © Find & Check Foundation</Grid>
+              <Grid xs={12}>
+                <Spacer y={0.4} />
+              </Grid>
+              <Grid xs={12}>
+                <Divider css={{ opacity: 0.3 }} />
+              </Grid>
+              <Grid xs={12} css={{ pt: "$8", pb: "$8" }}>
+                <Text color="gray" className="text-xs">
+                  {t("disclamer")}
+                </Text>
+              </Grid>
+            </Grid.Container>
+          </Container>
+        </Card.Footer>
+      </Card>
     </>
   );
 };

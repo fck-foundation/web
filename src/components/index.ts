@@ -11,3 +11,4 @@ export * from "./Badge";
 export * from "./Promote";
 export * from "./Search";
 export * from "./Language";
+export * from "./Token";

@@ -1,5 +1,4 @@
-/* eslint-disable @next/next/no-img-element */
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import cookie from "react-cookies";
 import {
   ResponsiveContainer,
@@ -11,12 +10,9 @@ import { Button, Card, Grid, Popover, Spacer } from "@nextui-org/react";
 import { useTranslation } from "react-i18next";
 
 import axios from "libs/axios";
-import { _ } from "utils";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AppContext } from "contexts";
-import TonProofApi, {  } from "TonProofApi";
-import { useTonAddress } from "@tonconnect/ui-react";
 import { pagination } from "..";
 import { GEN15 } from "assets/icons";
 import { CustomTooltip } from "../Tooltip";
@@ -25,12 +21,10 @@ export const Volume = () => {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
-  const ref = useRef<HTMLDivElement>(null);
-  const address = useTonAddress();
   // const [present] = useIonActionSheet();
-  const { theme, timescale, page, jettons, list, setList, setJettons } =
+  const { theme, timescale, page, jettons, list, currency } =
     useContext(AppContext);
-  const [isInformed, setIsInformed] = useState(
+  const [isInformed] = useState(
     cookie.load("informed") === "true" ? true : false
   );
 
@@ -56,7 +50,7 @@ export const Volume = () => {
   }, [location.pathname]);
 
   const pageList = useMemo(() => {
-    const dataList = list.slice((page - 1) * 15, page * 15);
+    const dataList = list?.slice((page - 1) * 10, page * 10);
     return jettons.length
       ? dataList.map((address) => ({
           ...jettons.find((jetton) => jetton.address === address),
@@ -64,16 +58,14 @@ export const Volume = () => {
       : [];
   }, [jettons, list, page]);
 
-  const { data: dataStats, isLoading: isLoadingStats } = useQuery({
-    queryKey: ["jettons-analytics", timescale, page],
+  const { data: dataStats } = useQuery({
+    queryKey: ["jettons-analytics", timescale, page, currency],
     queryFn: ({ signal }) =>
       axios
         .get(
-          `https://api.fck.foundation/api/v2/analytics?jetton_ids=${pageList
+          `https://api.fck.foundation/api/v3/analytics?pairs=${pageList
             .map(({ id }) => id)
-            .join(",")}&time_min=${Math.floor(
-            Date.now() / 1000 - pagination[timescale] * 21
-          )}&timescale=${pagination[timescale]}`,
+            .join(",")}&period=${pagination[timescale]}`,
           { signal }
         )
         .then(({ data: { data } }) => data),
@@ -88,7 +80,7 @@ export const Volume = () => {
       {
         name: "Sell",
         value: 25,
-        color: "#f31260",
+        color: "#F54244",
       },
       {
         name: "Sell",
@@ -115,7 +107,7 @@ export const Volume = () => {
 
   const dataPie = useMemo(() => {
     const dailyVolume = Object.keys(dataStats?.sources?.DeDust?.jettons || {})
-      .map((jettonId, i) => {
+      .map((jettonId) => {
         return {
           name: pageList.find(({ id }) => parseInt(jettonId) === id)?.symbol,
           pv: dataStats.sources.DeDust.jettons[jettonId].prices.reduce(
@@ -142,8 +134,8 @@ export const Volume = () => {
         };
       });
     return {
-      top: dailyVolume.slice(0, 9),
-      others: dailyVolume.slice(9, dailyVolume.length - 1),
+      top: dailyVolume?.slice(0, 9),
+      others: dailyVolume?.slice(9, dailyVolume.length - 1),
     };
   }, [dataStats, theme]);
 
@@ -160,9 +152,7 @@ export const Volume = () => {
                   auto
                   flat
                   size="xs"
-                  icon={
-                    <GEN15 style={{ fill: "currentColor", fontSize: 24 }} />
-                  }
+                  icon={<GEN15 className="text-2xl text-current" />}
                   css={{ minWidth: "auto", p: "$0" }}
                 />
               </Popover.Trigger>

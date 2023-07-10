@@ -1,15 +1,14 @@
-const queryString = new Proxy(new URLSearchParams(globalThis.location?.search), {
-  // @ts-ignore
-  get: (searchParams, prop) => searchParams.get(prop),
-});
-
+const queryString = new Proxy(
+  new URLSearchParams(globalThis.location?.search),
+  {
+    get: (searchParams, prop) => searchParams.get(prop as string),
+  }
+);
 
 export const getAuthDataFromUrl = () => {
-  // @ts-ignore
-  const authToken = queryString['authToken']
-  // @ts-ignore
+  const authToken = queryString["authToken"];
 
   return {
-      authToken,
-  }
-}
+    authToken,
+  };
+};

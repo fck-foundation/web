@@ -1,16 +1,20 @@
-import { lazy, Suspense } from "react";
-import { createRoot } from "react-dom/client";
-import { Spinner } from "@nextui-org/react";
+import ReactDOM from "react-dom/client";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { AppProvider } from "contexts";
+import App from "./App";
 
 import "./assets/index.scss";
 import "./patch-local-storage-for-github-pages";
 
-const App = lazy(() => import("./App"));
+const queryClient = new QueryClient();
 
 window.global = window;
 
-createRoot(document.getElementById("root") as any).render(
-  <Suspense fallback={<Spinner />}>
-    <App />
-  </Suspense>
+ReactDOM.hydrateRoot(
+  document.getElementById("root") as any,
+  <QueryClientProvider client={queryClient}>
+    <AppProvider>
+      <App />
+    </AppProvider>
+  </QueryClientProvider>
 );

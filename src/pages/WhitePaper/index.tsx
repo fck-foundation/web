@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 import { useTranslation } from "react-i18next";
 import { Helmet } from "react-helmet";
 
@@ -13,7 +12,6 @@ export const WhitePaper = () => {
       </Helmet>
       <iframe
         src={`https://docs.google.com/viewer?url=https://raw.githubusercontent.com/fck-foundation/web/master/intro/whitepaper.pdf&embedded=true`}
-        cross-origin="anonymous"
         width="100%"
         style={{ minHeight: "90vh", border: "none" }}
       />

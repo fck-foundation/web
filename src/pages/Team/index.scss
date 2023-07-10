@@ -1,0 +1,9 @@
+.vertical-timeline-line::before {
+  content: "";
+  width: 3px;
+  height: 100%;
+  background: #131b26;
+  position: absolute;
+  top: 0;
+  left: 30px;
+}

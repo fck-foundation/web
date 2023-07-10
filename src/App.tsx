@@ -1,18 +1,13 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import {
-  QueryClient,
-  QueryClientProvider,
-  useQuery,
-} from "@tanstack/react-query";
 import { Helmet } from "react-helmet";
 import { ThemeProvider } from "next-themes";
-import { Loading, NextUIProvider } from "@nextui-org/react";
+import { NextUIProvider } from "@nextui-org/react";
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 import { en, ru } from "locales";
 
-import { AppContext, AppProvider } from "./contexts";
+import { AppContext } from "./contexts";
 import {
   dark,
   light,
@@ -42,7 +37,18 @@ import {
   andromedaLight,
 } from "./themes";
 import { Layout } from "./components";
-import { Home, Events, OurTeam, RoadMap, Analytics, Export } from "./pages";
+import {
+  Home,
+  Tokens,
+  Pairs,
+  OurTeam,
+  RoadMap,
+  Analytics,
+  Export,
+  Privacy,
+  Cookie,
+  Terms,
+} from "./pages";
 import NotFound from "./NotFound";
 
 import "react-loading-skeleton/dist/skeleton.css";
@@ -52,8 +58,6 @@ import { Suspense, useContext, useMemo } from "react";
 import { Wallet } from "pages/Wallet";
 import { WhitePaper } from "pages/WhitePaper";
 import { Plitch } from "pages/Plitch";
-
-const queryClient = new QueryClient();
 
 i18n
   .use(LanguageDetector)
@@ -83,9 +87,17 @@ const router = createBrowserRouter([
         element: <Home />,
       },
       {
-        path: "events",
-        element: <Events />,
+        path: "/tokens",
+        element: <Tokens />,
       },
+      {
+        path: "/pairs",
+        element: <Pairs />,
+      },
+      // {
+      //   path: "events",
+      //   element: <Events />,
+      // },
       {
         path: "roadmap",
         element: <RoadMap />,
@@ -117,6 +129,18 @@ const router = createBrowserRouter([
       {
         path: "/plitch",
         element: <Plitch />,
+      },
+      {
+        path: "/privacy",
+        element: <Privacy />,
+      },
+      {
+        path: "/cookie",
+        element: <Cookie />,
+      },
+      {
+        path: "/terms",
+        element: <Terms />,
       },
     ],
   },
@@ -198,58 +222,52 @@ function App() {
           content="Decentralization, Smart Contracts, ICO (Initial Coin Offering), Digital Assets, Mining, Public Ledger, Altcoinsm, Consensus Algorithm, Distributed Ledger Technology, Wallets, Cryptography, Peer-to-Peer Network, Hashing, Security, Ethereum Virtual Machine, Gas, Proof-of-Stake, Non-Fungible Tokens (NFTs), Stablecoins, Cross-Chain Interoperability"
         ></meta>
       </Helmet>
-      <ThemeProvider
-        enableSystem
-        enableColorScheme
-        forcedTheme={themeName}
-        themes={[
-          "light",
-          "dark",
-          "sky",
-          "skyLight",
-          "arctic",
-          "arcticLight",
-          "azure",
-          "azureLight",
-          "iris",
-          "irisLight",
-          "flamingo",
-          "flamingoLight",
-          "corral",
-          "corralLight",
-          "marine",
-          "marineLight",
-          "ocean",
-          "oceanLight",
-          "fluid",
-          "fluidLight",
-          "galaxy",
-          "galaxyLight",
-          "cosmos",
-          "cosmosLight",
-          "andromeda",
-          "andromedaLight",
-        ]}
-        value={Object.keys(values).reduce((acc, curr) => {
-          acc[curr] = values[curr].className;
+      <Suspense>
+        <ThemeProvider
+          enableSystem
+          enableColorScheme
+          forcedTheme={themeName}
+          themes={[
+            "light",
+            "dark",
+            "sky",
+            "skyLight",
+            "arctic",
+            "arcticLight",
+            "azure",
+            "azureLight",
+            "iris",
+            "irisLight",
+            "flamingo",
+            "flamingoLight",
+            "corral",
+            "corralLight",
+            "marine",
+            "marineLight",
+            "ocean",
+            "oceanLight",
+            "fluid",
+            "fluidLight",
+            "galaxy",
+            "galaxyLight",
+            "cosmos",
+            "cosmosLight",
+            "andromeda",
+            "andromedaLight",
+          ]}
+          value={Object.keys(values).reduce((acc, curr) => {
+            acc[curr] = values[curr].className;
 
-          return acc;
-        }, {})}
-      >
-        <NextUIProvider theme={values[themeName]}>
-          <Suspense fallback={<Loading />}>
-            {!globalThis ? <Loading /> : <RouterProvider router={router} />}
-          </Suspense>
-        </NextUIProvider>
-      </ThemeProvider>
+            return acc;
+          }, {})}
+        >
+          <NextUIProvider theme={values[themeName]}>
+            <RouterProvider router={router} />
+          </NextUIProvider>
+        </ThemeProvider>
+      </Suspense>
     </>
   );
 }
 
-export default () => (
-  <QueryClientProvider client={queryClient}>
-    <AppProvider>
-      <App />
-    </AppProvider>
-  </QueryClientProvider>
-);
+export default App;

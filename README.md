@@ -31,7 +31,7 @@ You can download it from the official website (https://nodejs.org/en/download).
 
 ```127.0.0.1    www.dev.fck.foundation```
 - Once the dependencies are installed, run the command:
-`yarn dev`
+`sudo yarn dev`
 
 This will start the project in development mode and automatically open it in your browser at https://dev.fck.foundation.
 

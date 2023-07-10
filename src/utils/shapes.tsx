@@ -1,5 +1,4 @@
 import { Sector } from "recharts";
-import { _ } from "utils";
 
 export const renderActiveShape = (props): React.ReactNode => {
   const RADIAN = Math.PI / 180;
@@ -14,7 +13,6 @@ export const renderActiveShape = (props): React.ReactNode => {
     payload,
     percent,
     fill,
-    value,
   } = props;
   const sin = Math.sin(-RADIAN * midAngle);
   const cos = Math.cos(-RADIAN * midAngle);

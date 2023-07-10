@@ -1,9 +1,22 @@
 import { Link } from "react-router-dom";
 import Skeleton from "react-loading-skeleton";
-import { Card, Grid, Image, Text, Spacer, Badge } from "@nextui-org/react";
-import { ARR20, GEN03 } from "assets/icons";
+import {
+  Card,
+  Grid,
+  Image,
+  Text,
+  Spacer,
+  Badge,
+  Loading,
+} from "@nextui-org/react";
+import { ARR10, ARR12, ARR16, ARR20, GEN03, Heart } from "assets/icons";
 
 import { FJetton } from "../Jetton";
+
+import "./index.scss";
+import { useTranslation } from "react-i18next";
+import { useContext, useEffect, useState } from "react";
+import { AppContext } from "contexts";
 
 export type Item = {
   id?: number;
@@ -30,222 +43,288 @@ export const FCard: React.FC<React.PropsWithChildren<Props>> = ({
   title,
   list,
   isLoading,
-  setVoteId,
+  // setVoteId,
 }) => {
+  const { jettonCurrency } = useContext(AppContext);
+  const { t } = useTranslation();
+  const [animate, setAnimate] = useState<{ i: number; value: number }[]>([]);
+  const [values, setValue] = useState<Item[]>([]);
+
+  useEffect(() => {
+    if (values.length) {
+      list.forEach((item, i) => {
+        if (item?.percent > values[i]?.percent) {
+          setAnimate((prevState) => [
+            ...prevState,
+            {
+              i,
+              value:
+                item?.percent > values[i]?.percent
+                  ? 1
+                  : item?.percent < values[i]?.percent
+                  ? -1
+                  : 0,
+            },
+          ]);
+        }
+      });
+    }
+
+    setValue(list);
+  }, [list]);
+
+  useEffect(() => {
+    setTimeout(() => setAnimate([]), 3000);
+  }, [animate]);
+
   return (
-    <Card css={{ p: "$6" }}>
-      <Card.Header>{title}</Card.Header>
+    <Card variant={title ? "bordered" : undefined}>
+      {title && (
+        <Card.Header
+          className="flex place-items-center"
+          css={{ pb: title ? "$4" : 0, minHeight: 50 }}
+        >
+          {title}
+        </Card.Header>
+      )}
       <Card.Body css={{ p: 0, overflow: "hidden" }}>
-        <Grid.Container gap={0.8}>
-          {isLoading ? (
-            <Grid.Container gap={0.8}>
-              {new Array(9).fill(null).map((_, i) => (
-                <Grid key={i} xs={4}>
-                  <Skeleton
-                    count={1}
-                    borderRadius={20}
-                    height={75}
-                    width={75}
-                  />
-                </Grid>
-              ))}
-            </Grid.Container>
-          ) : (
-            list?.map(
-              (
-                {
-                  id,
-                  name,
-                  image,
-                  price,
-                  volume,
-                  percent,
-                  color,
-                  chart,
-                  stats,
-                  decimals,
-                  verified,
-                },
-                i
-              ) => (
-                <Grid key={i} xs={4} sm={6} md={4}>
-                  <Link
-                    to={`/analytics/price/${name}`}
-                    style={{ width: "100%" }}
+        <Grid.Container gap={!isLoading ? 0.8 : 0} css={{ h: "100%" }}>
+          <Grid xs={12}>
+            <Card>
+              <Card.Header>
+                <Grid.Container
+                  wrap="nowrap"
+                  alignItems="center"
+                  justify="space-between"
+                >
+                  <Grid xs={4}>
+                    <Text className="text-xs" css={{ width: "100%" }}>
+                      <div className="overflow-hidden text-ellipsis whitespace-nowrap w-full">
+                        {t("token")}
+                      </div>
+                    </Text>
+                  </Grid>
+                  <Grid xs={3}>
+                    <Text className="text-xs" css={{ width: "100%" }}>
+                      <div className="overflow-hidden text-ellipsis whitespace-nowrap w-full">
+                        {t("price")} ({jettonCurrency?.symbol})
+                      </div>
+                    </Text>
+                  </Grid>
+                  <Grid xs={1}>
+                    <Text className="text-xs" css={{ width: "100%" }}>
+                      <div className="overflow-hidden text-base text-ellipsis whitespace-nowrap w-full text-red-500 fill-red-500">
+                        <Heart />
+                      </div>
+                    </Text>
+                  </Grid>
+                  <Grid xs={3}>
+                    <Text className="text-xs" css={{ width: "100%" }}>
+                      <div className="overflow-hidden text-ellipsis whitespace-nowrap w-full">
+                        {t("analytics")}
+                      </div>
+                    </Text>
+                  </Grid>
+                </Grid.Container>
+              </Card.Header>
+            </Card>
+          </Grid>
+          {isLoading
+            ? Array(9)
+                .fill(null)
+                .map((_, i) => (
+                  <Grid
+                    key={i}
+                    xs={12}
+                    className="flex justify-center place-items-center"
                   >
-                    <Card
-                      isHoverable
-                      isPressable
-                      variant="flat"
-                      className="card"
+                    <Grid.Container
+                      wrap="nowrap"
+                      justify="space-between"
+                      alignItems="center"
                     >
-                      <Card.Header>
-                        <Grid.Container
-                          wrap="nowrap"
-                          justify="space-between"
-                          alignItems="center"
-                        >
-                          <Grid>
-                            {verified ? (
-                              <Badge
-                                size="xs"
-                                css={{
-                                  p: 0,
-                                  background: "transparent",
-                                  right: "unset",
-                                  left: "$2",
-                                }}
-                                content={
-                                  <ARR20
-                                    style={{
-                                      fill: "var(--nextui-colors-primary)",
-                                      fontSize: 16,
-                                      borderRadius: 100,
-                                      overflow: "hidden",
-                                    }}
-                                  />
-                                }
-                              >
-                                <Image
-                                  src={image}
-                                  width={24}
-                                  style={{ borderRadius: 100 }}
-                                />
-                              </Badge>
-                            ) : (
-                              <Image
-                                src={image}
-                                width={24}
-                                style={{ borderRadius: 100 }}
-                              />
-                            )}
+                      <Grid xs={4}>
+                        <Grid.Container wrap="nowrap" alignItems="center">
+                          <Grid css={{ pl: "$4" }}>
+                            <Skeleton
+                              width={28}
+                              height={28}
+                              className="rounded-full"
+                            />
                           </Grid>
                           <Spacer x={0.4} />
-                          <Grid>
-                            <Badge size="xs" css={{ background: color }}>
-                              {(percent || 0)?.toFixed(2)}%
-                            </Badge>
+                          <Grid
+                            css={
+                              {
+                                // transform: 'translate3d(-50%, 0, 0)'
+                              }
+                            }
+                          >
+                            <Skeleton width={50} height={18} />
                           </Grid>
+                          <Spacer x={0.4} />
+                          <Grid></Grid>
                         </Grid.Container>
-                      </Card.Header>
-                      <Card.Body className="card-body">
-                        <FJetton
-                          index={i}
-                          data={
-                            chart?.length > 1
-                              ? chart.map((v) => ({ pv: v.value }))
-                              : [{ pv: 0 }, { pv: 0 }]
-                          }
-                          height={48}
-                          color={color}
-                        />
-                        <Grid.Container
-                          justify="space-between"
-                          alignItems="center"
-                          gap={1}
-                          wrap="nowrap"
-                        >
-                          <Grid
-                            css={{
-                              position: "absolute",
-                              top: "0%",
-                              left: "0%",
-                              maxW: "65%",
-                              // transform: 'translate3d(-50%, 0, 0)'
-                            }}
-                          >
-                            <Text
-                              css={{
-                                display: "flex",
-                                justifyContent: "center",
-                              }}
-                            >
-                              <div
-                                style={{
-                                  maxWidth: "100%",
-                                  overflow: "hidden",
-                                  whiteSpace: "nowrap",
-                                  textOverflow: "ellipsis",
-                                }}
-                              >
-                                {name}
-                              </div>
-                            </Text>
-                          </Grid>
-                          <Grid
-                            css={{
-                              position: "absolute",
-                              right: "-12px",
-                              top: "0%",
-                              "@xs": {
-                                right: "0",
-                              },
-                            }}
-                          >
-                            <Badge
-                              size="xs"
-                              variant="flat"
-                              color="primary"
-                              css={{
-                                flexWrap: "nowrap",
-                                p: "$0 $4 $0 $1",
-                                cursor: "pointer",
-                                background: "transparent",
-                                borderColor: "$secondary",
-                                color: "$primary",
+                      </Grid>
+                      <Grid xs={3}>
+                        <Skeleton width={90} height={18} />
+                      </Grid>
+                      <Grid xs={1}>
+                        <Skeleton width={18} height={18} />
+                      </Grid>
+                      <Grid xs={3}>
+                        <Skeleton width={90} height={36} />
+                      </Grid>
+                    </Grid.Container>
+                  </Grid>
+                ))
+            : values?.map(
+                (
+                  {
+                    // id,
+                    name,
+                    image,
+                    price,
+                    // volume,
+                    percent,
+                    color,
+                    chart,
+                    stats,
+                    decimals,
+                    verified,
+                  },
+                  i
+                ) => {
+                  const highlight =
+                    animate.find(({ i: x }) => x === i)?.value || 0;
 
-                                borderTopRightRadius: "0%",
-                                borderBottomRightRadius: "0%",
-                                "@xs": {
-                                  borderTopRightRadius:
-                                    "var(--nextui-radii-pill)",
-                                  borderBottomRightRadius:
-                                    "var(--nextui-radii-pill)",
-                                },
-                              }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                setVoteId(id);
-                              }}
-                            >
-                              <GEN03
-                                style={{
-                                  fill: "currentColor",
-                                  fontSize: 14,
-                                }}
-                              />
-                              <Spacer x={0.2} />
-                              {stats?.promoting_points || 0}
-                            </Badge>
-                          </Grid>
-                        </Grid.Container>
-                        {/* <Text
-                          color="primary"
-                          css={{
-                            display: "flex",
-                            flexDirection: "column",
-                            justifyContent: "center",
-                            textAlign: "center",
-                            overflow: "hidden",
-                            lineHeight: "var(--nextui-lineHeights-md)",
-                            whiteSpace: "nowrap",
-                            textOverflow: "ellipsis",
-                            position: "absolute",
-                            left: "50%",
-                            top: "50%",
-                            transform: "translate3d(-50%, -50%, 0)",
-                          }}
+                  return (
+                    <Grid key={i} xs={12} className="card__item">
+                      <Link to={`/analytics/price/${name}`} className="w-full">
+                        <Card
+                          isHoverable
+                          isPressable
+                          variant="flat"
+                          className="card"
                         >
-                          <div>{parseFloat(price.toFixed(decimals))}</div> TON
-                        </Text> */}
-                      </Card.Body>
-                    </Card>
-                  </Link>
-                </Grid>
-              )
-            )
-          )}
+                          <Card.Header css={{ p: 0 }}>
+                            <Grid.Container
+                              wrap="nowrap"
+                              justify="space-between"
+                              alignItems="center"
+                            >
+                              <Grid xs={4}>
+                                <Grid.Container
+                                  wrap="nowrap"
+                                  alignItems="center"
+                                >
+                                  <Grid css={{ pl: "$4" }}>
+                                    <Image
+                                      src={image}
+                                      width={24}
+                                      className="rounded-full"
+                                    />
+                                  </Grid>
+                                  <Spacer x={0.4} />
+                                  <Grid
+                                    css={
+                                      {
+                                        // transform: 'translate3d(-50%, 0, 0)'
+                                      }
+                                    }
+                                  >
+                                    <Text>
+                                      <div className="overflow-hidden text-ellipsis whitespace-nowrap w-full text-sm">
+                                        {name}
+                                      </div>
+                                    </Text>
+                                  </Grid>
+                                  {verified ? (
+                                    <>
+                                      <Spacer x={0.4} />
+                                      <Grid className="flex place-items-center">
+                                        <Badge color="primary" variant="flat" className="flex" css={{ p: 0, border: 'none' }}>
+                                          <ARR16
+                                            className="overflow-hidden rounded-full text-2xl fill-current"
+                                          />
+                                        </Badge>
+                                      </Grid>
+                                    </>
+                                  ) : null}
+                                </Grid.Container>
+                              </Grid>
+                              <Grid xs={3}>
+                                <Text className="overflow-hidden whitespace-nowrap text-ellipsis text-sm">
+                                  {price.toFixed(decimals).toLocaleString()}
+                                </Text>
+                              </Grid>
+                              <Grid xs={1}>
+                                <Text
+                                  className="text-xs"
+                                  // onClick={(e) => {
+                                  //   e.stopPropagation();
+                                  //   e.preventDefault();
+                                  //   setVoteId(id);
+                                  // }}
+                                >
+                                  {stats?.promoting_points || 0}
+                                </Text>
+                              </Grid>
+                              <Grid xs={3}>
+                                <Grid.Container className="relative">
+                                  <Grid xs={12}>
+                                    <FJetton
+                                      index={i}
+                                      data={
+                                        chart?.length > 1
+                                          ? chart.map((v) => ({ pv: v.value }))
+                                          : [{ pv: 0 }, { pv: 0 }]
+                                      }
+                                      height={40}
+                                      color={
+                                        highlight < 0
+                                          ? "#9a1444"
+                                          : highlight > 0
+                                          ? "#188246"
+                                          : color
+                                      }
+                                    />
+                                  </Grid>
+                                  <Grid
+                                    css={{
+                                      position: "absolute",
+                                      left: "50%",
+                                      top: "50%",
+                                      transform: "translate3d(-50%, -50%, 0)",
+                                    }}
+                                  >
+                                    <Badge
+                                      size="xs"
+                                      css={{
+                                        background: color,
+                                        border: "none",
+                                        p: "2px 4px",
+                                        transition: "all 300ms",
+                                      }}
+                                      className={`${
+                                        highlight < 0 || highlight > 0
+                                          ? `highlight-${highlight}`
+                                          : ""
+                                      }`}
+                                    >
+                                      {(percent || 0).toFixed(2)}%
+                                    </Badge>
+                                  </Grid>
+                                </Grid.Container>
+                              </Grid>
+                            </Grid.Container>
+                          </Card.Header>
+                        </Card>
+                      </Link>
+                    </Grid>
+                  );
+                }
+              )}
         </Grid.Container>
       </Card.Body>
     </Card>

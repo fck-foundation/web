@@ -1,53 +1,49 @@
-import React, { useContext, useEffect, useState } from "react";
+import React from "react";
 import { useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useTonAddress } from "@tonconnect/ui-react";
 import TonProofApi from "TonProofApi";
-import { Button, Card } from "@nextui-org/react";
-import { ARR09, ARR10, ARR25, ARR28 } from "assets/icons";
+import { Button, Card, Grid } from "@nextui-org/react";
 import axios from "axios";
-import { AppContext } from "contexts";
-import { _ } from "utils";
+import { JType } from "contexts";
 import { Dex } from "./Dex";
 import { Transactions } from "./Transactions";
 import { NFT } from "./NFT";
 import { useQuery } from "@tanstack/react-query";
-
-const actions = {
-  buy: <ARR09 style={{ fill: "#1ac964", fontSize: 24 }} />,
-  sell: <ARR10 style={{ fill: "#f31260", fontSize: 24 }} />,
-  liquidity_deposit: <ARR28 style={{ fill: "#1ac964", fontSize: 24 }} />,
-  liquidity_withdraw: <ARR25 style={{ fill: "#f31260", fontSize: 24 }} />,
-};
-
-const colorType = {
-  buy: "#1ac964",
-  sell: "#f31260",
-  liquidity_deposit: "#1ac964",
-  liquidity_withdraw: "#f31260",
-};
+import Jettons from "../Jettons";
 
 interface Props {
   selected?: number;
   isLoading?: boolean;
+  isBalance: boolean;
   tab: string;
+  dataSelected: JType[];
   swaps?: Record<string, any>[];
   setSwaps: React.Dispatch<Record<string, any>[]>;
   setTab: React.Dispatch<string>;
+  page: number;
+  setSelected: React.Dispatch<number>;
+  setPage: (value?: any) => void;
+  setIsBalance: (value?: any) => void;
 }
 
 const WalletSwaps: React.FC<Props> = ({
+  page,
   tab,
+  dataSelected,
+  isBalance,
   isLoading,
   selected,
   swaps,
   setTab,
+  setPage,
   setSwaps,
+  setSelected,
+  setIsBalance,
 }) => {
   const location = useLocation();
   const tonAddress = useTonAddress();
   const { t } = useTranslation();
-  const { authorized, jettons, ton } = useContext(AppContext);
 
   const wallet = location.pathname?.split("/").pop();
 
@@ -67,7 +63,7 @@ const WalletSwaps: React.FC<Props> = ({
     refetchOnMount: false,
     refetchOnReconnect: false,
     onSuccess: (response) => {
-      setSwaps(response.data.data.sources.DeDust.jettons[selected!].swaps);
+      selected && setSwaps(response.data.data.sources.DeDust.jettons[selected].swaps);
     },
   });
 
@@ -90,21 +86,39 @@ const WalletSwaps: React.FC<Props> = ({
         </Button.Group>
       </Card.Header>
       <Card.Body css={{ pt: "$0", pb: "$2", overflow: "hidden" }}>
-        {tab === "dex" && (
-          <Dex
-            isLoading={
-              isLoading ||
-              isLoadingSwaps ||
-              isFetching ||
-              (!!TonProofApi.accessToken && (!tonAddress || !selected))
-            }
-            selected={selected}
-            swaps={swaps}
-            setSwaps={setSwaps}
-          />
-        )}
-        {tab === "transactions" && <Transactions />}
-        {tab === "nft" && <NFT />}
+        <Grid.Container gap={1}>
+          {tab === "dex" && (
+            <Grid xs={12} sm={4} css={{ h: "fit-content" }}>
+              <Jettons
+                isBalance={isBalance}
+                page={page}
+                isLoading={!!dataSelected?.length && isLoading}
+                selected={selected}
+                setSelected={setSelected}
+                setSwaps={setSwaps}
+                setPage={setPage}
+                setIsBalance={setIsBalance}
+              />
+            </Grid>
+          )}
+          <Grid xs={12} sm={tab === "dex" ? 8 : 12}>
+            {tab === "dex" && (
+              <Dex
+                isLoading={
+                  isLoading ||
+                  isLoadingSwaps ||
+                  isFetching ||
+                  (!!TonProofApi.accessToken && (!tonAddress || !selected))
+                }
+                selected={selected}
+                swaps={swaps}
+                setSwaps={setSwaps}
+              />
+            )}
+            {tab === "transactions" && <Transactions />}
+            {tab === "nft" && <NFT />}
+          </Grid>
+        </Grid.Container>
       </Card.Body>
     </Card>
   );

@@ -1,24 +1,30 @@
-/* eslint-disable @next/next/no-img-element */
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Helmet } from "react-helmet";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Grid, Loading } from "@nextui-org/react";
+import { Container, Grid, Loading } from "@nextui-org/react";
 import { useTranslation } from "react-i18next";
-import { _ } from "utils";
 import { GEN02 } from "assets/icons";
 import { AppContext } from "contexts";
 import { Price } from "./Stats/Price";
 import { Jettons } from "./Jettons";
 import { Header } from "./Header";
 
+import "./index.scss";
+
 export const pagination = {
-  "5M": 300,
-  "30M": 1800,
-  "1H": 3600,
-  "4H": 14400,
-  "1D": 86400,
-  "7D": 604800,
-  "30D": 2592000,
+  "5M": "min5",
+  "15M": "min15",
+  "30M": "min30",
+  "1H": "h1",
+  "4H": "h4",
+  "1D": "d1",
+  "3D": "d3",
+  "7D": "w1",
+  "14D": "w2",
+  "30D": "m1",
+  "90D": "m3",
+  "180D": "m6",
+  "1Y": "y1",
 };
 
 export const Analytics = () => {
@@ -46,40 +52,24 @@ export const Analytics = () => {
         <meta property="og:title" content={t("analytics") || ""}></meta>
         <meta property="og:image" content="/img/analytics.png"></meta>
       </Helmet>
-      {!jettons.length ? (
-        <Grid.Container
-          alignItems="center"
-          justify="center"
-          css={{ height: "70vh" }}
-        >
-          <Grid>
-            <Loading />
-          </Grid>
-        </Grid.Container>
-      ) : (
-        <>
+      <Container md className="py-2" css={{ px: '$4' }}>
+        {!jettons.length ? (
           <Grid.Container
-            gap={0.4}
-            css={{ minHeight: "70vh", display: "flex", pt: 16 }}
+            alignItems="center"
+            justify="center"
+            css={{ height: "70vh" }}
           >
-            {/* {!isInformed && (
-          <>
-            <Spacer y={0.4} />
-            <Grid css={{ maxWidth: 400, w: '100%', display: 'flex' }}>
-              <Spacer x={1} />
-              <IonText color="warning">
-                <IonIcon icon={warning} />
-              </IonText>
-              <Spacer x={0.5} y={0.5} />
-              <p>{t('infoMessage')}</p>
-              <Button css={{ minWidth: 40 }} onClick={() => setIsInformed(true)}>
-                Ok
-              </Button>
+            <Grid>
+              <Loading />
             </Grid>
-          </>
-        )} */}
-
-            {/* <Grid xs={12}>
+          </Grid.Container>
+        ) : (
+          <>
+            <Grid.Container
+              gap={0}
+              css={{ minHeight: "70vh", display: "flex", pt: 0 }}
+            >
+              {/* <Grid xs={12}>
           <Grid.Container
             className="hide-scrollbar"
             gap={1}
@@ -106,49 +96,52 @@ export const Analytics = () => {
             </Grid>
           </Grid.Container>
         </Grid> */}
-            <Grid xs={12}>
-              <Grid.Container>
-                <Grid xs={12} sm={4} lg={3}>
-                  <Jettons isDrag={isDrag} setIsDrag={setIsDrag} />
-                </Grid>
-                <Grid xs={12} sm={8} lg={9}>
-                  <Grid.Container>
-                    <Grid xs={12}>
-                      <Header percent={percent} isDrag={isDrag} setIsDrag={setIsDrag} />
-                    </Grid>
-                    <Grid xs={12}>
-                      {location.pathname.includes("volume") ||
-                      location.pathname.includes("price") ? (
-                        <Price
-                          timescale={timescale}
-                          onPercentChange={setPercent}
+              <Grid xs={12}>
+                <Grid.Container>
+                  <Grid xs={12} sm={4} lg={3}>
+                    <Jettons isDrag={isDrag} setIsDrag={setIsDrag} />
+                  </Grid>
+                  <Grid xs={12} sm={8} lg={9}>
+                    <Grid.Container
+                      alignItems="flex-start"
+                      style={{ height: "fit-content" }}
+                    >
+                      <Grid xs={12}>
+                        <Header
+                          percent={percent}
+                          isDrag={isDrag}
+                          setIsDrag={setIsDrag}
                         />
-                      ) : (
-                        <Grid.Container justify="center">
-                          <Grid
-                            css={{
-                              display: "flex",
-                              alignItems: "center",
-                              color: "$primary",
-                            }}
-                          >
-                            <GEN02
-                              style={{
-                                fill: "currentColor",
-                                fontSize: 32,
+                      </Grid>
+                      <Grid xs={12}>
+                        {location.pathname.includes("volume") ||
+                        location.pathname.includes("price") ? (
+                          <Price
+                            timescale={timescale}
+                            onPercentChange={setPercent}
+                          />
+                        ) : (
+                          <Grid.Container justify="center">
+                            <Grid
+                              css={{
+                                display: "flex",
+                                alignItems: "center",
+                                color: "$primary",
                               }}
-                            />
-                          </Grid>
-                        </Grid.Container>
-                      )}
-                    </Grid>
-                  </Grid.Container>
-                </Grid>
-              </Grid.Container>
-            </Grid>
-          </Grid.Container>
-        </>
-      )}
+                            >
+                              <GEN02 className="text-3xl text-current" />
+                            </Grid>
+                          </Grid.Container>
+                        )}
+                      </Grid>
+                    </Grid.Container>
+                  </Grid>
+                </Grid.Container>
+              </Grid>
+            </Grid.Container>
+          </>
+        )}
+      </Container>
     </>
   );
 };

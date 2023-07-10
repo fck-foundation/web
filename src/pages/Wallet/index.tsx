@@ -12,14 +12,14 @@ import { AppContext } from "contexts";
 import { useTranslation } from "react-i18next";
 
 import Header from "./Header";
-import Jettons from "./Jettons";
 import Swaps from "./Swaps";
 
 export const Wallet = () => {
   const location = useLocation();
   const tonAddress = useTonAddress();
   const { t } = useTranslation();
-  const { ton, theme, jettons } = useContext(AppContext);
+  const { ton, jettons, currency, walletJettons, isLoadingWalletJettons } =
+    useContext(AppContext);
   const [swaps, setSwaps] = useState<Record<string, any>[]>();
   const [selected, setSelected] = useState<number>();
   const [page, setPage] = useState(1);
@@ -32,19 +32,7 @@ export const Wallet = () => {
     setPage(1);
   }, [wallet]);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["wallet-jettons", wallet],
-    queryFn: async ({ signal }) =>
-      await axios.get(`https://tonapi.io/v2/accounts/${wallet}/jettons`, {
-        signal,
-      }),
-    enabled: !!wallet,
-    refetchOnMount: false,
-    refetchOnReconnect: false,
-    select: (response) => response.data.balances,
-  });
-
-  const { data: dataTON, isLoading: isLoadingTON } = useQuery({
+  useQuery({
     queryKey: ["wallet-ton", tonAddress],
     queryFn: async ({ signal }) =>
       await axios.get(
@@ -68,9 +56,9 @@ export const Wallet = () => {
   const dataSelected = useMemo(
     () =>
       jettons?.filter(({ address }) =>
-        data?.some(({ jetton }) => jetton.address === address)
+        walletJettons?.some(({ jetton }) => jetton.address === address)
       ),
-    [jettons, data]
+    [jettons, walletJettons]
   );
 
   const pageList = useMemo(() => {
@@ -83,15 +71,13 @@ export const Wallet = () => {
   }, [jettons, dataSelected, page]);
 
   const { data: dataChart, isLoading: isLoadingChart } = useQuery({
-    queryKey: ["jettons-analytics-profile", pageList, page],
+    queryKey: ["jettons-analytics-profile", pageList, page, currency],
     queryFn: ({ signal }) =>
       axios
         .get(
-          `https://api.fck.foundation/api/v2/analytics?jetton_ids=${pageList
+          `https://api.fck.foundation/api/v3/analytics?pairs=${pageList
             .map(({ id }) => id)
-            .join(",")}&time_min=${Math.floor(
-            Date.now() / 1000 - 86400 * 7
-          )}&timescale=${86400}`,
+            .join(",")}&period=d1&currency=${currency}`,
           { signal }
         )
         .then(({ data: { data } }) => data),
@@ -100,7 +86,7 @@ export const Wallet = () => {
     enabled: !!dataSelected?.length,
     cacheTime: 60 * 1000,
     select: (response) =>
-      dataSelected.map((jetton: any, key) => {
+      dataSelected.map((jetton: any) => {
         jetton.data =
           response?.sources?.DeDust?.jettons[jetton.id.toString()]?.prices ||
           [];
@@ -118,17 +104,15 @@ export const Wallet = () => {
                 },
               ]
             : []),
-          ...(jetton.data || [])?.map((item, i) => {
-            return {
-              name: jettons.find(({ id }) => id === selected)?.symbol,
-              pv:
-                _(item.price_close) ||
-                _(item.price_high) ||
-                _(item.price_low) ||
-                _(item.price_open),
-              volume: _(item.volume),
-            };
-          }),
+          ...((jetton.data || [])?.map((item) => ({
+            name: jettons.find(({ id }) => id === selected)?.symbol,
+            pv:
+              _(item.price_close) ||
+              _(item.price_high) ||
+              _(item.price_low) ||
+              _(item.price_open),
+            volume: _(item.pair2_volume),
+          })) as any),
         ];
         const dataChart = [...dataJetton].filter((i) => i.pv);
 
@@ -136,7 +120,7 @@ export const Wallet = () => {
           (acc, i) => (acc += i?.volume),
           0
         );
-        const percent = !!dataJetton[dataJetton.length - 1]?.pv
+        const percent = dataJetton[dataJetton.length - 1]?.pv
           ? ((dataJetton[dataJetton.length - 1]?.pv - dataJetton[0]?.pv) /
               dataJetton[0]?.pv) *
             100
@@ -148,7 +132,7 @@ export const Wallet = () => {
 
   useEffect(() => {
     if (!selected) {
-      const list = data?.filter((balance) =>
+      const list = walletJettons?.filter((balance) =>
         dataChart?.find(
           ({ jetton }) =>
             (isBalance ? parseFloat(balance.balance) : true) &&
@@ -162,9 +146,9 @@ export const Wallet = () => {
         );
       }
     }
-  }, [data, selected, jettons, dataChart]);
+  }, [walletJettons, selected, jettons, dataChart]);
 
-  const { isLoading: isLoadingSwaps } = useQuery({
+  useQuery({
     queryKey: ["wallet-swaps", selected, TonProofApi.accessToken],
     queryFn: ({ signal }) =>
       axios.get(
@@ -180,56 +164,25 @@ export const Wallet = () => {
     refetchOnMount: false,
     refetchOnReconnect: false,
     onSuccess: (response) => {
-      setSwaps(response.data.data.sources.DeDust.jettons[selected!].swaps);
+      selected &&
+        setSwaps(response.data.data.sources.DeDust.jettons[selected].swaps);
     },
   });
-
-  const selectedValue = useMemo(
-    () =>
-      data
-        ?.filter((balance) =>
-          dataChart?.find(
-            ({ jetton }) =>
-              jetton.symbol === balance.jetton.symbol && jetton.id === selected
-          )
-        )
-        ?.map((balance, i) =>
-          normalize(balance.balance, balance.jetton.decimals)
-        )
-        .pop(),
-    [data, selected]
-  );
 
   return (
     <>
       <Helmet>
-        <title>{t("whitePaper")}</title>
+        <title>{t("wallet")}</title>
         <meta property="og:title" content={t("wallet") || ""}></meta>
         <meta property="og:image" content="/img/wallet.png"></meta>
       </Helmet>
-      <Container css={{ minHeight: "70vh", p: "$8" }}>
+      <Container md css={{ minHeight: "70vh", py: '$2', px: '$4' }}>
         <Grid.Container gap={1}>
           <Grid xs={12}>
             <Header selected={selected} setSwaps={setSwaps} />
           </Grid>
-          {tab === "dex" && (
-            <Grid xs={12} sm={4} css={{ h: "fit-content" }}>
-              {
-                <Jettons
-                  isBalance={isBalance}
-                  page={page}
-                  isLoading={!!dataSelected?.length && isLoadingChart}
-                  selected={selected}
-                  setSelected={setSelected}
-                  setSwaps={setSwaps}
-                  setPage={setPage}
-                  setIsBalance={setIsBalance}
-                />
-              }
-            </Grid>
-          )}
-          <Grid xs={12} sm={tab === "dex" ? 8 : 12} css={{ h: "fit-content" }}>
-            <Grid.Container>
+          <Grid xs={12} css={{ h: "fit-content" }}>
+            <Grid.Container gap={0}>
               {/* {selected && (
               <Grid xs={12}>
                 <ResponsiveContainer width="100%" height={300}>
@@ -273,12 +226,20 @@ export const Wallet = () => {
             )} */}
               <Grid xs={12}>
                 <Swaps
-                  isLoading={!!wallet && !!tonAddress && isLoading}
+                  isBalance={isBalance}
+                  isLoading={
+                    !!wallet && (isLoadingWalletJettons || isLoadingChart)
+                  }
                   selected={selected}
                   swaps={swaps}
                   setSwaps={setSwaps}
                   tab={tab}
+                  page={page}
                   setTab={setTab}
+                  dataSelected={dataSelected}
+                  setSelected={setSelected}
+                  setPage={setPage}
+                  setIsBalance={setIsBalance}
                 />
               </Grid>
             </Grid.Container>

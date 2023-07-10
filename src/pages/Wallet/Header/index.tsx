@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import {
   Button,
@@ -15,7 +15,7 @@ import { useTonAddress, useTonConnectUI } from "@tonconnect/ui-react";
 import { AppContext } from "contexts";
 import qrcode from "qrcode-generator";
 import { useQuery } from "@tanstack/react-query";
-import { _, copyTextToClipboard, normalize } from "utils";
+import { copyTextToClipboard, normalize } from "utils";
 import { useTranslation } from "react-i18next";
 import { Address } from "ton-core";
 import Skeleton from "react-loading-skeleton";
@@ -31,7 +31,7 @@ const WalletHeader: React.FC<Props> = ({ selected, setSwaps }) => {
   const location = useLocation();
   const tonAddress = useTonAddress();
   const { t } = useTranslation();
-  const { jettons, ton, enabled } = useContext(AppContext);
+  const { ton, enabled } = useContext(AppContext);
   const [tonConnectUi] = useTonConnectUI();
   const [value, setValue] = useState("");
 
@@ -64,7 +64,7 @@ const WalletHeader: React.FC<Props> = ({ selected, setSwaps }) => {
     }),
   });
 
-  const { data, isLoading } = useQuery({
+  useQuery({
     queryKey: ["wallet-jettons", wallet],
     queryFn: async ({ signal }) =>
       await axios.get(`https://tonapi.io/v2/accounts/${wallet}/jettons`, {
@@ -76,7 +76,7 @@ const WalletHeader: React.FC<Props> = ({ selected, setSwaps }) => {
     select: (response) => response.data.balances,
   });
 
-  const { isLoading: isLoadingSwaps } = useQuery({
+  useQuery({
     queryKey: ["wallet-swaps", selected, TonProofApi.accessToken],
     queryFn: ({ signal }) =>
       axios.get(
@@ -92,7 +92,8 @@ const WalletHeader: React.FC<Props> = ({ selected, setSwaps }) => {
     refetchOnMount: false,
     refetchOnReconnect: false,
     onSuccess: (response) => {
-      setSwaps(response.data.data.sources.DeDust.jettons[selected!].swaps);
+      selected &&
+        setSwaps(response.data.data.sources.DeDust.jettons[selected].swaps);
     },
   });
 
@@ -122,7 +123,10 @@ const WalletHeader: React.FC<Props> = ({ selected, setSwaps }) => {
                               target="_blank"
                             >
                               <Tonviewer
-                                style={{ color: "var(--nextui-colors-text)", zoom: 0.5 }}
+                                style={{
+                                  color: "var(--nextui-colors-text)",
+                                  zoom: 0.5,
+                                }}
                               />
                             </Link>
                           </Grid>
@@ -132,10 +136,8 @@ const WalletHeader: React.FC<Props> = ({ selected, setSwaps }) => {
                               href={`https://tonscan.org/address/${wallet}`}
                               target="_blank"
                             >
-                              <Tonscan
-                                style={{ fill: "currentColor", fontSize: 20 }}
-                              />
-                              <Text size={12} css={{ fontWeight: "bold" }}>
+                              <Tonscan className="text-current text-xl" />
+                              <Text className="text-sm" css={{ fontWeight: "bold" }}>
                                 Tonscan
                               </Text>
                             </Link>
@@ -153,12 +155,7 @@ const WalletHeader: React.FC<Props> = ({ selected, setSwaps }) => {
                           ...
                           {wallet?.slice(-4)}
                           <Spacer x={0.4} />
-                          <Copy
-                            style={{
-                              fill: "currentColor",
-                              fontSize: 18,
-                            }}
-                          />
+                          <Copy className="text-current text-lg" />
                         </Grid.Container>
                       </Grid>
                       <Grid>

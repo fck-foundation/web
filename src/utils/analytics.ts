@@ -1,35 +1,38 @@
 import { JType } from "contexts";
+import moment from "moment";
 import { _ } from "./number";
 import { Item } from "components";
+import { PairType } from "hooks";
 
-export const getList = (data: Record<number, any>, jettons?: JType[]): Item[] =>
-  Object.keys({ ...data }).map((id) => {
-    const stats = [
-      ...(Array.isArray(data[parseInt(id)])
-        ? data[parseInt(id)]
-        : [data[parseInt(id)] as Record<string, any>]),
-    ].map((item) => ({
-      value: _(item.price_close),
-      volume: item.volume,
+export const getList = (
+  data: Record<number, any>,
+  jettons?: JType[],
+  pairs?: PairType
+): Item[] =>
+  Object.keys({ ...data }).map((pairId) => {
+    const id = pairs
+      ?.find(({ id }) => id.toString() === pairId)
+      ?.jetton1_id?.toString() as string;
+
+    const stats = data[pairId]
+      .sort(
+        (x, y) =>
+          new Date(x.period as any).getTime() -
+          new Date(y.period as any).getTime()
+      )
+      ?.map((item) => ({
+        value: _(item.price_close),
+        volume: _(item.pair2_volume),
+      }));
+    const jetton = jettons?.find((i) => i.id.toString() === id);
+    const chart = [...stats].map(({ value }: { value: number }, i: number) => ({
+      value,
     }));
-    const jetton = jettons?.find((i) => i.id === parseInt(id));
-    const chart = [...stats]
-    .map(({ value }: { value: number }, i: number) => ({
-      value:
-        i > 0 && value && stats[i - 1].value && stats[i - 1].value !== value
-          ? stats[i - 1].value < value
-            ? value && value - 10
-            : value && value + 10
-          : stats[stats.length - 1].value < value
-          ? value && value + 10 * 10
-          : value && value - 10 * 2,
-    }));
-    const volume = [...stats].reduce((acc, i) => (acc += i?.volume), 0);
-    const percent = !!stats[stats.length - 2]?.value
-      ? ((stats[stats.length - 1]?.value - stats[stats.length - 2]?.value) /
-          stats[stats.length - 2]?.value) *
-        100
-      : 0;
+    const volume = [...(stats || [])].reduce((acc, i) => (acc += i?.pair2_volume), 0);
+    const percent =
+      ((stats[stats.length - 2]?.value - stats[stats.length - 3]?.value) /
+        stats[stats.length - 3]?.value) *
+      100;
 
     return {
       id: jetton?.id,
@@ -44,7 +47,7 @@ export const getList = (data: Record<number, any>, jettons?: JType[]): Item[] =>
         !isNaN(percent) && percent !== 0
           ? percent > 0
             ? "#1ac964"
-            : "#f31260"
+            : "#F54244"
           : "gray",
       stats: jetton?.stats,
       verified: !!jetton?.verified,
