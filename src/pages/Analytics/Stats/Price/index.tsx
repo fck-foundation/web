@@ -235,8 +235,6 @@ export const Price: React.FC<{
         const time = candle?.time ? new Date(candle.time * 1000) : new Date();
         const item = dataCandle?.find(({ time }) => time === volume?.time);
 
-        console.log('item', item);
-
         const selectedInfo = {
           time: moment(time).format("HH:mm"),
           price: candle?.close || 0,

@@ -117,12 +117,6 @@ export function Tokens() {
     },
   });
 
-  console.log(
-    "timescale, currency, pairsTrending",
-    timescale,
-    currency,
-    pairsTrending
-  );
   const { isLoading: isLoadingStatsTrending } = useQuery({
     queryKey: ["stats-trending", timescale, currency, pairsTrending],
     queryFn: ({ signal }) =>
