@@ -70,8 +70,6 @@ export function Pairs() {
     },
   });
 
-  console.log("dataStats", dataStats);
-
   return (
     <>
       <Container md css={{ p: 0 }}>

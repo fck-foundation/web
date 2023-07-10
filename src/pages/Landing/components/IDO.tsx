@@ -172,7 +172,7 @@ export const IDO = () => {
             className="flex justify-between w-full max-w-[305px]"
             style={{ padding: "var(--nextui-space-sm)" }}
           >
-            <Badge color="default">{(stats.balance + stats.sold).toFixed(0)} total</Badge>
+            <Badge color="default">{(stats.balance + stats.sold).toFixed(0)} {t('total')}</Badge>
             <Badge color="primary">
               {days}{t('D')}. {hours}{t('H')}. {minutes}{t('M')}. {seconds}{t('S')}.
             </Badge>

@@ -6,10 +6,12 @@ import axios from "axios";
 import { AppContext } from "contexts";
 import moment from "moment";
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Address } from "ton-core";
 import { normalize } from "utils";
 
 export const Transactions = () => {
+  const { t } = useTranslation();
   const wallet = location.pathname?.split("/").pop();
   const { isBottom, setIsBottom } = useContext(AppContext);
   const [page, setPage] = useState(1);
@@ -61,10 +63,10 @@ export const Transactions = () => {
   // "JettonTransfer"
 
   return (
-    <Grid.Container>
+    <Grid.Container justify="center">
       {data?.map((event, i) => (
         <>
-          <Grid key={i} xs={12}>
+          <Grid key={i} xs={12} sm={6} md={4}>
             <Grid.Container alignItems="center">
               <Grid xs={12}>
                 <Grid.Container direction="column" justify="center">
@@ -82,7 +84,10 @@ export const Transactions = () => {
                     return (
                       <>
                         <Grid key={y}>
-                          <Grid.Container justify="space-between" alignItems="center">
+                          <Grid.Container
+                            justify="space-between"
+                            alignItems="center"
+                          >
                             <Grid>
                               <Grid.Container wrap="nowrap" alignItems="center">
                                 {item?.type === "SmartContractExec" && (
@@ -92,31 +97,41 @@ export const Transactions = () => {
                                 )}
                                 <Grid className="flex flex-col">
                                   {sender && (
-                                    <Link
-                                      href={`https://tonviewer.com/${sender}`}
-                                      target="_blank"
-                                    >
-                                      {item[item?.type as any]?.sender?.name
-                                        ? item[item?.type as any]?.sender?.name
-                                        : `${sender?.slice(
-                                            0,
-                                            4
-                                          )}...${sender?.slice(-4)}`}
-                                    </Link>
+                                    <div className="flex">
+                                      {t("sender")}
+                                      <Spacer x={0.4} />
+                                      <Link
+                                        href={`https://tonviewer.com/${sender}`}
+                                        target="_blank"
+                                      >
+                                        {item[item?.type as any]?.sender?.name
+                                          ? item[item?.type as any]?.sender
+                                              ?.name
+                                          : `${sender?.slice(
+                                              0,
+                                              4
+                                            )}...${sender?.slice(-4)}`}
+                                      </Link>
+                                    </div>
                                   )}
                                   {recipient && (
-                                    <Link
-                                      href={`https://tonviewer.com/${recipient}`}
-                                      target="_blank"
-                                    >
-                                      {item[item?.type as any]?.recipient?.name
-                                        ? item[item?.type as any]?.recipient
-                                            ?.name
-                                        : `${recipient?.slice(
-                                            0,
-                                            4
-                                          )}...${recipient?.slice(-4)}`}
-                                    </Link>
+                                    <div className="flex">
+                                      {t("recipient")}
+                                      <Spacer x={0.4} />
+                                      <Link
+                                        href={`https://tonviewer.com/${recipient}`}
+                                        target="_blank"
+                                      >
+                                        {item[item?.type as any]?.recipient
+                                          ?.name
+                                          ? item[item?.type as any]?.recipient
+                                              ?.name
+                                          : `${recipient?.slice(
+                                              0,
+                                              4
+                                            )}...${recipient?.slice(-4)}`}
+                                      </Link>
+                                    </div>
                                     //<Arrowright className="text-current text-2xl" />
                                   )}
                                 </Grid>
@@ -155,7 +170,10 @@ export const Transactions = () => {
                                       <>
                                         {parseFloat(
                                           normalize(
-                                            item[item?.type as any]?.amount?.value || item[item?.type as any]?.amount || 0,
+                                            item[item?.type as any]?.amount
+                                              ?.value ||
+                                              item[item?.type as any]?.amount ||
+                                              0,
                                             item[item?.type as any]?.jetton
                                               ? item[item?.type as any]?.jetton
                                                   ?.decimals
@@ -173,10 +191,13 @@ export const Transactions = () => {
                                           : "TON"}
                                       </>
                                     ) : item[item?.type as any]?.amount ? (
-                                      <> 
+                                      <>
                                         {parseFloat(
                                           normalize(
-                                            item[item?.type as any]?.amount?.value || item[item?.type as any]?.amount || 0,
+                                            item[item?.type as any]?.amount
+                                              ?.value ||
+                                              item[item?.type as any]?.amount ||
+                                              0,
                                             9
                                           ).toFixed(9)
                                         )}{" "}
@@ -208,7 +229,7 @@ export const Transactions = () => {
                   })}
                 </Grid.Container>
               </Grid>
-              
+
               <Grid>
                 <Grid.Container wrap="nowrap" alignItems="center">
                   <Grid>

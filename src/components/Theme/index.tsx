@@ -1,5 +1,13 @@
 import { useContext } from "react";
-import { Button, Image, Grid, Badge, Spacer, Loading, Text } from "@nextui-org/react";
+import {
+  Button,
+  Image,
+  Grid,
+  Badge,
+  Spacer,
+  Loading,
+  Text,
+} from "@nextui-org/react";
 import { AppContext } from "contexts/AppContext";
 import { ABS13, ABS14 } from "assets/icons";
 import { ReactComponent as Logo } from "assets/logo.svg";
@@ -40,7 +48,9 @@ export const ThemeSwitcher: React.FC<Props> = ({ loading, isLogo }) => {
       //     }}
       //   />
       // )
-      <Logo className="h-10 w-10" />
+      <div className="flex place-items-center">
+        <Logo className="h-8 w-8" />
+      </div>
     )
   ) : (
     <Grid.Container css={{ maxWidth: 300 }}>
@@ -89,8 +99,8 @@ export const ThemeSwitcher: React.FC<Props> = ({ loading, isLogo }) => {
               css={{
                 backgroundColor: item?.metadata?.theme?.main,
                 left: "50%",
-                height: '$5',
-                marginTop: "$5"
+                height: "$5",
+                marginTop: "$5",
               }}
               size="xs"
               content={theme.id === item.metadata.id && color}

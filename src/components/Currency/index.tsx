@@ -1,14 +1,18 @@
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { Button, Text, Spacer } from "@nextui-org/react";
 import { AppContext } from "contexts";
 
 export const Currency = () => {
   const { jettonCurrency, currency, setCurrency } = useContext(AppContext);
 
+  useEffect(() => {
+    setCurrency("");
+  }, []);
+
   return (
     <div
-      className="flex place-items-center py-2 cursor-pointer"
-      onClick={() => setCurrency(currency === "" ? "jUSDT" : "")}
+      className="flex place-items-center py-2" // cursor-pointer
+      // onClick={() => setCurrency(currency === "" ? "jUSDT" : "")}
     >
       {jettonCurrency?.image && (
         <img
@@ -20,9 +24,7 @@ export const Currency = () => {
         />
       )}
       <Spacer x={0.4} />
-      <Text>
-        {currency !== "" ? currency : "TON"}
-      </Text>
+      <Text>{currency !== "" ? currency : "TON"}</Text>
     </div>
   );
 };

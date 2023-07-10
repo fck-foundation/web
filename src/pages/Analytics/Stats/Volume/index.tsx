@@ -17,6 +17,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toFixed } from "utils/price";
 import { useLocation } from "react-router-dom";
 import { GEN13, GRA06, GRA09 } from "assets/icons";
+import { usePairs } from "hooks";
 
 export const paginationVolume = {
   "1H": "h1",
@@ -39,11 +40,44 @@ export const Volume = ({ timescale }) => {
   const chartRef = useRef<IChartApi>();
   const areaSeriesRef = useRef<ISeriesApi<"Area">>();
   const jettonsSeriesRef = useRef<ISeriesApi<"Area">>();
-  const { jettons, enabled } = useContext(AppContext);
+  const { jettons, enabled, theme, jettonCurrency, setTimescale } =
+    useContext(AppContext);
   const [data, setData] = useState<Record<string, any>[]>([]);
   const [isFull] = useState(false);
   const [info, setInfo] = useState<Record<string, any>>();
   const [jetton, setJetton] = useState<Record<string, any>>({});
+  const [changes, setChanges] = useState<Record<string, any>>({});
+  const [isLoad, setIsLoad] = useState(false);
+
+  const pairJetton = usePairs("volume", [jetton.id]);
+
+  useEffect(() => {
+    setChanges({
+      jetton: jetton?.id,
+      timescale,
+      location: location.pathname,
+      theme: theme?.color,
+      enabled,
+      currency: jettonCurrency?.symbol,
+      pairJetton,
+    });
+  }, [
+    jetton,
+    timescale,
+    location.pathname,
+    theme,
+    jettonCurrency?.symbol,
+    pairJetton,
+  ]);
+
+  useEffect(() => {
+    if (
+      location.pathname.includes("volume") &&
+      ["5M", "15M", "30M"].includes(timescale)
+    ) {
+      setTimescale("1H");
+    }
+  }, [timescale, location.pathname]);
 
   useEffect(() => {
     if (jettons?.length) {
@@ -80,16 +114,27 @@ export const Volume = ({ timescale }) => {
   );
 
   const { data: dataVolume, isLoading } = useQuery({
-    queryKey: ["jetton-analytics"],
+    queryKey: [
+      "single-analytics-volume",
+      location.pathname,
+      timescale,
+      jetton.id,
+      jettonCurrency?.symbol,
+      JSON.stringify(enabled),
+      pairJetton,
+    ],
     queryFn: ({ signal }) => {
       return axios
         .get(
-          `https://api.fck.foundation/api/v3/analytics/liquidity?pairs=${jetton.id}&period=${paginationVolume[timescale]}`,
+          `https://api.fck.foundation/api/v3/analytics/liquidity?pairs=${pairJetton[0].id}&period=${paginationVolume[timescale]}&currency=${jettonCurrency?.symbol}`,
           { signal }
         )
-        .then(({ data: { data } }) => data[jetton.id]);
+        .then(({ data: { data } }) => data[pairJetton[0].id]?.reverse());
     },
-    enabled: !!jetton?.id,
+    enabled:
+      !!jetton?.id &&
+      !!pairJetton.length &&
+      location.pathname.includes("volume"),
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     onSuccess: (results) => {
@@ -169,57 +214,90 @@ export const Volume = ({ timescale }) => {
   );
 
   useEffect(() => {
-    if (ref.current) {
+    if (
+      !isLoad ||
+      !chartRef.current ||
+      changes?.enabled !== enabled ||
+      changes?.currency !== jettonCurrency?.symbol ||
+      changes?.jetton !== jetton?.id ||
+      changes?.timescale !== timescale ||
+      changes?.location !== location?.pathname ||
+      changes?.theme !== theme?.color
+    ) {
       if (chartRef.current && "remove" in chartRef.current) {
         chartRef.current?.remove();
       }
 
-      chartRef.current = createChart(ref.current, chartOptions);
+      chartRef.current = createChart(ref.current as any, chartOptions);
       const date = new Date();
 
-      if (chartRef.current) {
-        areaSeriesRef.current = chartRef.current.addAreaSeries({
-          lineColor: "#2962FF",
-          topColor: "transparent",
-          bottomColor: "transparent",
-        });
-        jettonsSeriesRef.current = chartRef.current.addAreaSeries({
-          lineColor: "#1ac964",
-          topColor: "transparent",
-          bottomColor: "transparent",
-        });
+      areaSeriesRef.current = chartRef.current.addAreaSeries({
+        lineColor: "#2962FF",
+        topColor: "transparent",
+        bottomColor: "transparent",
+      });
+      jettonsSeriesRef.current = chartRef.current.addAreaSeries({
+        lineColor: "#1ac964",
+        topColor: "transparent",
+        bottomColor: "transparent",
+      });
 
-        areaSeriesRef.current.setMarkers([
-          {
-            time: {
-              year: date.getFullYear(),
-              month: date.getMonth(),
-              day: date.getDate(),
-            },
-            position: "belowBar",
-            color: "#2962FF",
-            shape: "circle",
-            text: "TON",
+      areaSeriesRef.current.setMarkers([
+        {
+          time: {
+            year: date.getFullYear(),
+            month: date.getMonth(),
+            day: date.getDate(),
           },
-        ]);
-        jettonsSeriesRef.current.setMarkers([
-          {
-            time: {
-              year: date.getFullYear(),
-              month: date.getMonth(),
-              day: date.getDate(),
-            },
-            position: "aboveBar",
-            color: "#1ac964",
-            shape: "circle",
-            text: jetton?.symbol,
+          position: "belowBar",
+          color: "#2962FF",
+          shape: "circle",
+          text: "TON",
+        },
+      ]);
+      jettonsSeriesRef.current.setMarkers([
+        {
+          time: {
+            year: date.getFullYear(),
+            month: date.getMonth(),
+            day: date.getDate(),
           },
-        ]);
-      }
+          position: "aboveBar",
+          color: "#1ac964",
+          shape: "circle",
+          text: jetton?.symbol,
+        },
+      ]);
+      setData([]);
+      areaSeriesRef.current?.setData([]);
+      jettonsSeriesRef.current?.setData([]);
+      queryClient.setQueryData(
+        [
+          "single-analytics-volume",
+          location.pathname,
+          timescale,
+          jetton.id,
+          jettonCurrency?.symbol,
+          JSON.stringify(enabled),
+          pairJetton,
+        ],
+        []
+      );
 
-      queryClient.setQueryData(["jetton-analytics"], []);
+      setIsLoad(true);
     }
-  }, [chartOptions]);
+  }, [
+    changes,
+    jetton,
+    timescale,
+    location,
+    chartOptions,
+    theme,
+    enabled,
+    jettonCurrency?.symbol,
+    isLoad,
+    pairJetton,
+  ]);
 
   return (
     <Grid.Container>

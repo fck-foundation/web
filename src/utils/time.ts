@@ -148,8 +148,8 @@ export const scaleTime = (
 
     if (Array.isArray(list)) {
       list.forEach((item) => {
-        value.jetton_volume += _(item.jetton_volume);
-        value.volume += _(item.volume);
+        value.jetton_volume += _(item.pair1_volume);
+        value.volume += _(item.pair2_volume);
         value.price_high =
           _(item.price_high) >= value.price_high
             ? _(item.price_high)

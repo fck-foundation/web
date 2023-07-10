@@ -1,5 +1,5 @@
-import { Grid, Card, Image, Spacer, Text, Button } from "@nextui-org/react";
-import { ARR12, Info, TransparentTon } from "assets/icons";
+import { Grid, Card, Image, Spacer, Text, Button, Badge } from "@nextui-org/react";
+import { ARR12, ARR16, Info, TransparentTon } from "assets/icons";
 import { FJetton } from "components/Jetton";
 import { JType } from "contexts";
 import React from "react";
@@ -36,7 +36,7 @@ export const Token: React.FC<Props> = ({
         }}
         onClick={() => onPress(jetton)}
       >
-        <Card.Header css={{ p: isStatic ? 0 : undefined, }}>
+        <Card.Header css={{ p: isStatic ? 0 : undefined }}>
           <Grid.Container justify="space-between" alignItems="center">
             <Grid xs={12} css={{ mb: "$4" }}>
               <Grid.Container
@@ -123,7 +123,14 @@ export const Token: React.FC<Props> = ({
                         }}
                       >
                         {column.jetton.verified ? (
-                          <ARR12 className="text-2xl rounded-full overflow-hidden" />
+                          <Badge
+                            color="primary"
+                            variant="flat"
+                            className="flex"
+                            css={{ p: 0, border: 'none' }}
+                          >
+                            <ARR16 className="overflow-hidden rounded-full text-2xl fill-current" />
+                          </Badge>
                         ) : null}
                       </Text>
                     </Grid>
@@ -134,8 +141,8 @@ export const Token: React.FC<Props> = ({
                   <Text
                     css={{
                       color:
-                        !isNaN(column.percent) && column.percent !== 0
-                          ? column.percent > 0
+                        !isNaN(column?.percent) && column?.percent !== 0
+                          ? column?.percent > 0
                             ? "#1ac964"
                             : "#F54244"
                           : "gray",
@@ -143,7 +150,7 @@ export const Token: React.FC<Props> = ({
                       p: "2px 4px",
                     }}
                   >
-                    {(column.percent || 0)?.toFixed(2)}%
+                    {(column?.percent || 0)?.toFixed(2)}%
                   </Text>
                   <Spacer x={0.4} />
                   <Button
@@ -194,8 +201,8 @@ export const Token: React.FC<Props> = ({
                 height={40}
                 className="max-w-[100px]"
                 color={
-                  !isNaN(column.percent) && column.percent !== 0
-                    ? column.percent > 0
+                  !isNaN(column?.percent) && column?.percent !== 0
+                    ? column?.percent > 0
                       ? "#1ac964"
                       : "#F54244"
                     : "gray"

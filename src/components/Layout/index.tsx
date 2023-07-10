@@ -146,7 +146,7 @@ export const Layout = ({ children }: { children?: any }) => {
     {
       title: t("tokens"),
       href: `/tokens`,
-      disabled: true
+      // disabled: true
     },
     {
       title: t("pairs"),
@@ -213,6 +213,7 @@ export const Layout = ({ children }: { children?: any }) => {
               showIn="sm"
               onChange={(value) => setToggle(!!value)}
             />
+            <Spacer x={0.8} />
             <Badge
               size="xs"
               content={t("beta")}
@@ -250,6 +251,16 @@ export const Layout = ({ children }: { children?: any }) => {
                   >
                     Find & Check
                   </Text>
+                  <Text
+                    className="text-base"
+                    css={{
+                      textGradient: "45deg, $primary 25%, $secondary 125%",
+                    }}
+                    weight="bold"
+                    showIn="xs"
+                  >
+                    FCK
+                  </Text>
                 </Grid>
               </Grid.Container>
             </Navbar.Brand>
@@ -257,13 +268,14 @@ export const Layout = ({ children }: { children?: any }) => {
 
           {(!isDebug || (!isPrivate && isDebug)) && (
             <>
-              <Grid css={{ w: "auto" }}>
+              <Grid css={{ w: "100%" }} className="flex justify-center">
                 <Navbar.Content hideIn="sm">
-                  {menu.map(({ title, href }, index) => (
+                  {menu.map(({ title, href, disabled }, index) => (
                     <Navbar.Link
                       key={index}
                       isActive={href === location.pathname}
                       onClick={() => navigate(href)}
+                      css={disabled ? { pointerEvents: 'none', color: '$accents5' } : undefined}
                     >
                       {title}
                     </Navbar.Link>
@@ -424,6 +436,7 @@ export const Layout = ({ children }: { children?: any }) => {
                 isActive={href === location.pathname}
                 onClick={() => onChangeHref(href)}
                 className="cursor-pointer"
+                css={disabled ? { pointerEvents: 'none', color: '$accents5' } : undefined}
               >
                 {title}
               </Navbar.CollapseItem>
@@ -534,7 +547,7 @@ export const Layout = ({ children }: { children?: any }) => {
                 </Grid.Container>
               </Grid>
               <Spacer y={0.4} css={{ "@sm": { display: "none" } }} />
-              <Grid xs={12} sm={8}>
+              <Grid xs={12} sm={5}>
                 <Grid.Container justify="space-between">
                   <Grid>
                     <Text className="text-lg">{t('project')}</Text>
@@ -631,7 +644,7 @@ export const Layout = ({ children }: { children?: any }) => {
                       </li>
                     </ul>
                   </Grid>
-                  <Spacer x={1} />
+                  {/* <Spacer x={1} />
                   <Grid>
                     <Text className="text-lg">{t('getInTouch')}</Text>
                     <Spacer y={0.4} />
@@ -665,7 +678,7 @@ export const Layout = ({ children }: { children?: any }) => {
                         {t("joinCommunity")}
                       </Button>
                     </Link>
-                  </Grid>
+                  </Grid> */}
                 </Grid.Container>
               </Grid>
             </Grid.Container>

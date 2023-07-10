@@ -1,9 +1,9 @@
 import { Address, beginCell, toNano } from "ton-core";
 
 export const whiteCoins = {
-  // FCK: "0:3a4d2191094e3a33d4601efa51bb52dc5baa354516e162b7706955385f8144a7",
-  FCK: "0:271a29f3fb60371d2dbc4844cb1745e70c9911db9993cb283fe16eabf7d609b1",
-  OLDFCK: "0:8a2f4c2cbee23cdde55e2971d180d36015404bb2f094a57d52144a0ec8ec44c7"
+  FCK: "0:3a4d2191094e3a33d4601efa51bb52dc5baa354516e162b7706955385f8144a7",
+  // FCK: "0:271a29f3fb60371d2dbc4844cb1745e70c9911db9993cb283fe16eabf7d609b1",
+  OLDFCK: "0:3a4d2191094e3a33d4601efa51bb52dc5baa354516e162b7706955385f8144a7"
 };
 
 const coins = {

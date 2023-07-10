@@ -50,7 +50,7 @@ export const Volume = () => {
   }, [location.pathname]);
 
   const pageList = useMemo(() => {
-    const dataList = list?.slice((page - 1) * 15, page * 15);
+    const dataList = list?.slice((page - 1) * 10, page * 10);
     return jettons.length
       ? dataList.map((address) => ({
           ...jettons.find((jetton) => jetton.address === address),
@@ -63,11 +63,9 @@ export const Volume = () => {
     queryFn: ({ signal }) =>
       axios
         .get(
-          `https://api.fck.foundation/api/v2/analytics?jetton_ids=${pageList
+          `https://api.fck.foundation/api/v3/analytics?pairs=${pageList
             .map(({ id }) => id)
-            .join(",")}&time_min=${Math.floor(
-            Date.now() / 1000 - pagination[timescale] * 21
-          )}&timescale=${pagination[timescale]}&currency=${currency}`,
+            .join(",")}&period=${pagination[timescale]}`,
           { signal }
         )
         .then(({ data: { data } }) => data),

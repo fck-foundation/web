@@ -282,7 +282,6 @@ export const Promote: React.FC<{
   };
 
   const toPay = selected.reduce((acc, curr) => (acc += curr.amount), 0);
-  console.log("price", price);
 
   return (
     <>
@@ -290,12 +289,7 @@ export const Promote: React.FC<{
         <div onClick={onPromote}>{trigger}</div>
       ) : (
         !hideTrigger && (
-          <Button
-            color="gradient"
-            size="sm"
-            onPress={onPromote}
-            css={{ minWidth: "auto" }}
-          >
+          <Button flat size="sm" onPress={onPromote} css={{ minWidth: "auto" }}>
             <Grid.Container wrap="nowrap" alignItems="center">
               {processing?.wait ? (
                 <>
@@ -307,7 +301,7 @@ export const Promote: React.FC<{
               ) : (
                 <>
                   <Grid css={{ display: "flex" }}>
-                    <Heart className="text-lg text-current" />
+                    <Heart className="text-lg text-current text-red-500 fill-red-500" />
                   </Grid>
                   <Spacer x={0.4} />
                 </>
@@ -350,7 +344,7 @@ export const Promote: React.FC<{
                       setProcessing([]);
                     }}
                   >
-                    <ARR22 className="text-lg text-current" />
+                    <ARR22 className="text-lg fill-current" />
                   </Button>
                 </Grid>
                 <Spacer x={0.5} />
@@ -621,11 +615,12 @@ export const Promote: React.FC<{
                                       </>
                                     )}
                                     <Badge
-                                      variant="flat"
-                                      color="primary"
-                                      style={{ borderRadius: 8 }}
+                                      style={{
+                                        borderRadius: 8,
+                                        background: "transparent",
+                                      }}
                                     >
-                                      <Heart className="text-lg text-current" />
+                                      <Heart className="text-lg text-red-500 fill-red-500" />
                                       <Spacer x={0.4} />
                                       {item?.amount
                                         ? item?.amount
@@ -667,7 +662,7 @@ export const Promote: React.FC<{
             </>
           )}
         </Modal.Body>
-        {(!!toPay || !!(dataFCK || 0)) && (
+        {!!toPay && !orders.length && (
           <Modal.Footer
             css={{
               position: "sticky",
@@ -682,8 +677,8 @@ export const Promote: React.FC<{
                   <Grid>
                     <Grid.Container alignItems="center">
                       <Grid>
-                        <Badge color="primary">
-                          <Heart className="text-lg text-current" />
+                        <Badge color="primary" variant="flat">
+                          <Heart className="text-lg text-current text-red-500 fill-red-500" />
                           <Spacer x={0.4} />
                           {toPay} {t("Points")}
                         </Badge>
@@ -712,7 +707,7 @@ export const Promote: React.FC<{
                     css={{ minWidth: "auto" }}
                     onPress={() => (!processing?.wait ? onVote() : undefined)}
                     disabled={
-                      !!wallet && (!toPay || !dataFCK || toPay > dataFCK)
+                      !!wallet && (!toPay || !dataFCK || (toPay * (price?.price || 1)) > dataFCK)
                     }
                   >
                     <Grid.Container alignItems="center">

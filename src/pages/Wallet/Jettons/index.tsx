@@ -108,7 +108,7 @@ const WalletSwaps: React.FC<Props> = ({
                 _(item.price_high) ||
                 _(item.price_low) ||
                 _(item.price_open),
-              volume: _(item.volume),
+              volume: _(item.pair2_volume),
             };
           }) as any),
         ];
@@ -130,7 +130,7 @@ const WalletSwaps: React.FC<Props> = ({
           }));
 
         const volume = [...dataJetton].reduce(
-          (acc, i) => (acc += i?.volume),
+          (acc, i) => (acc += i?.pair2_volume),
           0
         );
         const percent = dataJetton[dataJetton.length - 1]?.pv

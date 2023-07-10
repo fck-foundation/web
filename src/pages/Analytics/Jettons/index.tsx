@@ -37,8 +37,10 @@ import {
   Copy,
   GEN03,
   Info,
+  TG,
   Ton,
   TransparentTon,
+  Web,
 } from "assets/icons";
 import { AppContext, JType } from "contexts";
 import Skeleton from "react-loading-skeleton";
@@ -46,7 +48,18 @@ import { FJetton, Search, Token } from "components";
 
 import { pagination } from "..";
 import { toast } from "react-toastify";
-import { copyTextToClipboard } from "utils";
+import { arrayMove, copyTextToClipboard } from "utils";
+import { usePairs } from "hooks";
+
+const icon = {
+  t: <TG className="text-2xl" />,
+  ton: (
+    <Image
+      src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB8AAAAfCAMAAAAocOYLAAAAgVBMVEVHcEwAVX4AUnoAUnoAic4Ai9EASm8AUnoAhssAgcMAUnoAi9EAUnoAi9EARmkAUnoAi9EAhssATXMAhMcAYZEAUnoAc64AUnoAgMEAgcIAY5QAY5QAW4cAgcIAgcIAfr4AY5QAY5QAfb0AgcIAfb0AY5QAOVcAOVcAOVcAOVcAOVfKfszsAAAAK3RSTlMAVP9fXf8j2OQup7N2gkPs90e/0TuOE/PC/27mLpH+bP/K/549/tr/mK1hVipfTAAAAONJREFUeAHN0VVihDAAANHB3X3d7f4HLGGzaao/1cF5OHxnhmlhOzbv53rm5I4f8E6hOSZ8LHqjsWkqFyXopZmpuygvUJWmYtQBTqW89iZtgBZIJvYL/c06s2xH7YdeLCInt5XN5jWwAJbDahiGJRCIyV/ffbPZuoAtcGqNuNRu9/CxBcvhuSXBbkzzmr3mew7/zD9//nn95v2DSvnRAFyQl1jKrUK6KD2d9e9fmlmKCvd0Fl3k/2tMkbdQfj3LboBhykr0y8sDFHcpereHW3eOed1F8xAt/SmFqyd7Uzq5wTf2BFoUJwyW6Y19AAAAAElFTkSuQmCC"
+      css={{ width: "$12" }}
+    />
+  ),
+};
 
 interface Props {
   isDrag: boolean;
@@ -91,21 +104,14 @@ export const Jettons: React.FC<Props> = ({ isDrag }) => {
       typeof destination?.index === "number" &&
       typeof source?.index === "number"
     ) {
-      console.log(destination, source);
-      setList((prevList) => {
-        prevList.splice(
-          destination.index,
-          0,
-          prevList.splice(source.index, 1)[0]
-        );
-
-        return prevList;
-      });
+      setList((prevList) =>
+        arrayMove(prevList, source.index, destination.index)
+      );
     }
   };
 
   const pageList = useMemo(() => {
-    const dataList = list?.slice((page - 1) * 15, page * 15);
+    const dataList = list?.slice((page - 1) * 10, page * 10);
     return jettons.length
       ? dataList.map((address) => ({
           ...jettons.find((jetton) => jetton.address === address),
@@ -113,12 +119,17 @@ export const Jettons: React.FC<Props> = ({ isDrag }) => {
       : [];
   }, [jettons, list, page]);
 
+  const pairJetton = usePairs(
+    "jettons",
+    pageList?.map(({ id }) => id as number) || []
+  );
+
   const { data: dataStats, isLoading: isLoadingStats } = useQuery({
-    queryKey: ["jettons-analytics", timescale, page, currency],
+    queryKey: ["jettons-analytics", timescale, page, currency, pairJetton],
     queryFn: ({ signal }) =>
       axios
         .get(
-          `https://api.fck.foundation/api/v3/analytics?pairs=${pageList
+          `https://api.fck.foundation/api/v3/analytics?pairs=${pairJetton
             .map(({ id }) => id)
             .join(",")}&period=${pagination[timescale]}&currency=${currency}`,
           { signal }
@@ -127,40 +138,35 @@ export const Jettons: React.FC<Props> = ({ isDrag }) => {
     refetchOnMount: false,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
-    enabled: !!pageList.length,
+    enabled: !!pageList.length && !!pairJetton.length,
   });
 
   const renderList = pageList.map((jetton, key) => {
+    const pairId = pairJetton.find((x) => x.jetton1_id === jetton.id)?.id;
     const dataJetton =
       (jetton.data =
-        jetton?.id &&
-        dataStats?.sources?.DeDust?.jettons[
-          jetton?.id?.toString()
-        ]?.prices?.map((item) => ({
-          ...item,
-          pv: item.price_close,
-        }))) || [];
+        pairId &&
+        dataStats &&
+        dataStats[pairId]
+          ?.sort(
+            (x, y) =>
+              new Date(x.period).getTime() - new Date(y.period).getTime()
+          )
+          ?.map((item) => ({
+            ...item,
+            pv: item.price_close,
+          }))) || [];
     const dataChart = [...dataJetton].map((d, i) => ({
       ...d,
-      pv:
-        i > 0 &&
-        d.pv &&
-        dataJetton[i - 1].value &&
-        dataJetton[i - 1].value !== d.pv
-          ? dataJetton[i - 1].value < d.pv
-            ? d.pv && d.pv - 10
-            : d.pv && d.pv + 10
-          : dataJetton[dataJetton.length - 1].value < d.pv
-          ? d.pv && d.pv + 10 * 10
-          : d.pv && d.pv - 10 * 2,
+      pv: d.pv,
     }));
 
-    const volume = dataJetton[dataJetton.length - 1]?.volume;
-    const percent = dataJetton[dataJetton.length - 1]?.pv
-      ? ((dataJetton[dataJetton.length - 1]?.pv - dataJetton[0]?.pv) /
-          dataJetton[0]?.pv) *
-        100
-      : 0;
+    const volume = dataJetton[dataJetton.length - 1]?.pair2_volume;
+    const percent =
+      ((dataJetton[dataJetton.length - 2]?.pv -
+        dataJetton[dataJetton.length - 3]?.pv) /
+        dataJetton[dataJetton.length - 3]?.pv) *
+      100;
 
     return { key, jetton, dataJetton, dataChart, percent, volume };
   });
@@ -185,7 +191,36 @@ export const Jettons: React.FC<Props> = ({ isDrag }) => {
     }
   };
 
-  console.log("renderList", renderList);
+  const renderItems = useMemo(
+    () =>
+      renderList?.map((column, i) => (
+        <DroppableItems
+          key={i}
+          column={column?.jetton?.address}
+          id={column.key}
+          data={{
+            address: column.jetton.address as any,
+            children: (
+              <motion.div
+                key={`${i}-${column.key}-${column?.jetton.symbol}`}
+                className="w-full"
+              >
+                <Token
+                  index={i}
+                  isDrag={isDrag}
+                  column={column}
+                  jetton={column.jetton as JType}
+                  onPress={onPress}
+                  setInfo={setInfo}
+                />
+                <Spacer y={0.4} />
+              </motion.div>
+            ),
+          }}
+        />
+      )),
+    [renderList]
+  );
 
   return info ? (
     !metadata?.total_supply ? (
@@ -208,38 +243,26 @@ export const Jettons: React.FC<Props> = ({ isDrag }) => {
           >
             <ARR02 className="text-2xl fill-current" />
             <Spacer x={0.4} />
-            {t("Back")}
+            {t("seeAll")}
           </Button>
         </Grid>
         <Grid>
           <Token
             index={-1}
-            column={renderList?.find(({ jetton }) => jetton.id === selectedJetton.id)!}
+            column={
+              renderList?.find(
+                ({ jetton }) => jetton.id === selectedJetton.id
+              ) || {}
+            }
             jetton={selectedJetton as JType}
             onPress={onPress}
             setInfo={setInfo}
             isStatic
           />
         </Grid>
+        <Spacer y={0.4} />
         <Grid>
           <Grid.Container alignItems="center">
-            <Grid xs={12}>
-              <Grid.Container
-                alignItems="center"
-                css={{ color: "$primary", cursor: "pointer" }}
-                onClick={onCopy}
-              >
-                {info?.slice(0, 4)}
-                ...
-                {info?.slice(-4)}
-                <Spacer x={0.4} />
-                <Copy className="text-lg text-current" />
-              </Grid.Container>
-            </Grid>
-            <Grid>
-              <ARR58 className="text-3xl fill-current" />
-            </Grid>
-            <Spacer x={0.4} />
             <Grid>
               <Text
                 className="text-2xl"
@@ -257,26 +280,59 @@ export const Jettons: React.FC<Props> = ({ isDrag }) => {
             <Grid>
               <Text className="text-lg">{metadata?.symbol}</Text>
             </Grid>
+            <Spacer x={0.8} />
+            <Grid css={{ m: "$4 0" }}>
+              <Button flat auto>
+                <Grid.Container
+                  alignItems="center"
+                  css={{ color: "$primary", cursor: "pointer" }}
+                  onClick={onCopy}
+                >
+                  {info?.slice(0, 4)}
+                  ...
+                  {info?.slice(-4)}
+                  <Spacer x={0.4} />
+                  <Copy className="text-lg text-current" />
+                </Grid.Container>
+              </Button>
+            </Grid>
           </Grid.Container>
         </Grid>
+        <Spacer y={0.4} />
         <Grid>
           <Text css={{ overflowWrap: "anywhere" }}>
             {metadata?.description}
           </Text>
         </Grid>
+        <Spacer y={0.4} />
         <Grid>
           {metadata.websites?.map((site, i) => (
             <Link key={i} href={site} target="_blank">
-              {site}
+              <Button flat size="md" css={{ minWidth: "auto" }}>
+                {icon[site.split("//")[1].split(".")[0]] || (
+                  <Web className="text-2xl" />
+                )}{" "}
+                <Spacer x={0.4} />
+                {site.split("/").pop()}
+              </Button>
             </Link>
           ))}
         </Grid>
-        <Grid>
-          {metadata.social?.map((social, i) => (
-            <Link key={i} href={social} target="_blank">
-              {social}
-            </Link>
-          ))}
+        <Spacer y={0.4} />
+        <Grid className="flex gap-3 w-full flex-wrap">
+          {metadata.social?.map((social, i) => {
+            return (
+              <Link key={i} href={social} target="_blank">
+                <Button size="md" css={{ minWidth: "auto" }}>
+                  {icon[social.split("//")[1].split(".")[0]] || (
+                    <Web className="text-2xl" />
+                  )}{" "}
+                  <Spacer x={0.4} />
+                  {social.split("/").pop()}
+                </Button>
+              </Link>
+            );
+          })}
         </Grid>
       </Grid.Container>
     )
@@ -325,44 +381,39 @@ export const Jettons: React.FC<Props> = ({ isDrag }) => {
                     </Grid>
                   </Grid.Container>
                 ) : (
-                  renderList?.map((column, i) => (
-                    <DroppableItems
-                      key={i}
-                      column={column?.jetton?.address}
-                      id={i}
-                      data={{
-                        address: column.jetton.address as any,
-                        children: (
-                          <motion.div
-                            key={`${i}-${column?.jetton.symbol}`}
-                            className="w-full"
-                          >
-                            <Token
-                              index={i}
-                              isDrag={isDrag}
-                              column={column}
-                              jetton={column.jetton as JType}
-                              onPress={onPress}
-                              setInfo={setInfo}
-                            />
-                            <Spacer y={0.4} />
-                          </motion.div>
-                        ),
-                      }}
-                    />
-                  ))
+                  renderItems
+                )}
+                {Math.ceil(list.length / 10) > 1 && (
+                  <Pagination
+                    css={{
+                      m: "$8",
+                      display: "block !important",
+                      "@smMin": { display: "none  !important" },
+                    }}
+                    loop
+                    color="success"
+                    total={Math.ceil(list.length / 10)}
+                    page={page}
+                    onChange={setPage}
+                  />
                 )}
               </DragDropContext>
             </AnimatePresence>
           </div>
         </div>
       </Grid>
-      {Math.ceil(list.length / 15) > 1 && (
-        <Grid xs={12}>
+      {Math.ceil(list.length / 10) > 1 && (
+        <Grid
+          xs={12}
+          css={{
+            display: "none !important",
+            "@smMin": { display: "block  !important" },
+          }}
+        >
           <Pagination
             loop
             color="success"
-            total={Math.ceil(list.length / 15)}
+            total={Math.ceil(list.length / 10)}
             page={page}
             onChange={setPage}
           />

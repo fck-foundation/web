@@ -1,6 +1,6 @@
 {
   "name": "@fck-foundation/web",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "scripts": {
     "dev": "vite --host dev.fck.foundation --port 443",
     "build": "vite build",

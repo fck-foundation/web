@@ -9,7 +9,7 @@ import {
   Badge,
   Loading,
 } from "@nextui-org/react";
-import { ARR10, ARR12, ARR20, GEN03, Heart } from "assets/icons";
+import { ARR10, ARR12, ARR16, ARR20, GEN03, Heart } from "assets/icons";
 
 import { FJetton } from "../Jetton";
 
@@ -53,15 +53,15 @@ export const FCard: React.FC<React.PropsWithChildren<Props>> = ({
   useEffect(() => {
     if (values.length) {
       list.forEach((item, i) => {
-        if (item.percent > values[i].percent) {
+        if (item?.percent > values[i]?.percent) {
           setAnimate((prevState) => [
             ...prevState,
             {
               i,
               value:
-                item.percent > values[i].percent
+                item?.percent > values[i]?.percent
                   ? 1
-                  : item.percent < values[i].percent
+                  : item?.percent < values[i]?.percent
                   ? -1
                   : 0,
             },
@@ -82,7 +82,7 @@ export const FCard: React.FC<React.PropsWithChildren<Props>> = ({
       {title && (
         <Card.Header
           className="flex place-items-center"
-          css={{ pb: title ? "$4" : 0, h: 50 }}
+          css={{ pb: title ? "$4" : 0, minHeight: 50 }}
         >
           {title}
         </Card.Header>
@@ -113,7 +113,7 @@ export const FCard: React.FC<React.PropsWithChildren<Props>> = ({
                   </Grid>
                   <Grid xs={1}>
                     <Text className="text-xs" css={{ width: "100%" }}>
-                      <div className="overflow-hidden text-base text-ellipsis whitespace-nowrap w-full">
+                      <div className="overflow-hidden text-base text-ellipsis whitespace-nowrap w-full text-red-500 fill-red-500">
                         <Heart />
                       </div>
                     </Text>
@@ -239,19 +239,18 @@ export const FCard: React.FC<React.PropsWithChildren<Props>> = ({
                                       </div>
                                     </Text>
                                   </Grid>
-                                  <Spacer x={0.4} />
-                                  <Grid className="flex place-items-center">
-                                    <Text className="flex text-lg">
-                                      {verified ? (
-                                        <ARR12
-                                          className="overflow-hidden rounded-full"
-                                          style={{
-                                            fill: "var(--nextui-colors-primary)",
-                                          }}
-                                        />
-                                      ) : null}
-                                    </Text>
-                                  </Grid>
+                                  {verified ? (
+                                    <>
+                                      <Spacer x={0.4} />
+                                      <Grid className="flex place-items-center">
+                                        <Badge color="primary" variant="flat" className="flex" css={{ p: 0, border: 'none' }}>
+                                          <ARR16
+                                            className="overflow-hidden rounded-full text-2xl fill-current"
+                                          />
+                                        </Badge>
+                                      </Grid>
+                                    </>
+                                  ) : null}
                                 </Grid.Container>
                               </Grid>
                               <Grid xs={3}>

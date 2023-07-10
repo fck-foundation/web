@@ -97,8 +97,8 @@ export const FearGreedIndex = () => {
 
     Object.keys(dataStats?.sources?.DeDust?.jettons || {}).forEach((i) => {
       dataStats?.sources?.DeDust?.jettons[i].prices.forEach((price) => {
-        countJetton += _(price.jetton_volume) * _(price.price_close);
-        countTon += _(price.volume);
+        countJetton += _(price.pair1_volume) * _(price.price_close);
+        countTon += _(price.pair2_volume);
       });
     });
 

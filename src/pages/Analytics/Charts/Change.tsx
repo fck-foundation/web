@@ -55,7 +55,7 @@ export const Change = () => {
     const dataJetton =
       (jetton.data =
         jetton?.id &&
-        dataStats?.sources?.DeDust?.jettons[
+        dataStats[
           jetton?.id?.toString()
         ]?.prices?.map((item) => ({
           ...item,
@@ -73,7 +73,7 @@ export const Change = () => {
           : d.pv && d.pv - 100 * 2,
     }));
 
-    const volume = dataJetton && dataJetton[dataJetton.length - 1]?.volume;
+    const volume = dataJetton && dataJetton[dataJetton.length - 1]?.pair2_volume;
     const percent =
       dataJetton && !!dataJetton[dataJetton.length - 1]?.pv
         ? ((dataJetton[dataJetton.length - 1]?.pv -
@@ -89,7 +89,7 @@ export const Change = () => {
     () =>
       renderList
         .filter(({ percent }) => percent)
-        .sort((x, y) => x.percent - y.percent)
+        .sort((x, y) => x?.percent - y?.percent)
         .map(({ jetton, percent }) => ({
           name: jetton.symbol,
           uv: percent,

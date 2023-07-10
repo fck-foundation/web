@@ -47,6 +47,7 @@
   width: calc(100% + 100px);
   justify-content: space-between;
   flex-wrap: wrap;
+  overflow: auto;
 
   > div {
     width: 100%;

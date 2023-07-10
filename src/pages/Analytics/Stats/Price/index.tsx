@@ -47,7 +47,7 @@ import {
 } from "assets/icons";
 import { colors } from "colors";
 import { pagination } from "pages/Analytics";
-import { useDebounce } from "hooks";
+import { useDebounce, usePairs } from "hooks";
 import { normalize } from "utils";
 import { ThemeSwitcher } from "components";
 import { Address } from "ton-core";
@@ -81,6 +81,8 @@ export const Price: React.FC<{
 
   const value = useDebounce(loadingPage, 300);
 
+  const pairJetton = usePairs('price', [jetton.id]);
+  
   useEffect(() => {
     setChanges({
       jetton: jetton?.id,
@@ -89,8 +91,9 @@ export const Price: React.FC<{
       theme: theme?.color,
       enabled,
       currency: jettonCurrency?.symbol,
+      pairJetton
     });
-  }, [jetton, timescale, location.pathname, theme, jettonCurrency?.symbol]);
+  }, [jetton, timescale, location.pathname, theme, jettonCurrency?.symbol, pairJetton]);
 
   useEffect(() => {
     setPage(value);
@@ -135,22 +138,25 @@ export const Price: React.FC<{
       jetton.id,
       jettonCurrency?.symbol,
       JSON.stringify(enabled),
+      pairJetton,
     ],
     queryFn: ({ signal }) => {
       return axios
         .get(
-          `https://api.fck.foundation/api/v3/analytics?pairs=${jetton.id}${
-            page - 1 ? `&offset=${(page - 1) * 4}` : ""
-          }&period=${pagination[timescale]}&currency=${jettonCurrency?.symbol}`,
+          `https://api.fck.foundation/api/v3/analytics?pairs=${
+            pairJetton[0].id
+          }&page=${page}&period=${
+            pagination[timescale]
+          }&currency=${jettonCurrency?.symbol}`,
           { signal }
         )
-        .then(({ data: { data } }) => data[jetton?.id?.toString()]);
+        .then(({ data: { data } }) => data[pairJetton[0].id]);
     },
     // refetchOnMount: false,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
     cacheTime: 60 * 1000,
-    enabled: !!jetton?.id,
+    enabled: !!jetton?.id && !!pairJetton.length,
     onSuccess: (results) => {
       cookie.save("timescale", timescale, { path: "/" });
 
@@ -158,13 +164,15 @@ export const Price: React.FC<{
         setHasNextPage(false);
       }
 
-      results = [...results, ...data].sort((x, y) => moment(x.period).unix() - moment(y.period).unix());
+      results = [...results, ...data].sort(
+        (x, y) => new Date(x.period).getTime() - new Date(y.period).getTime()
+      );
 
       const list = results;
       volumeSeries.current?.setData(
         [...list].map((item) => ({
           time: moment(item.period).unix() as any,
-          value: _(item.volume),
+          value: _(item.pair2_volume),
           color:
             _(item.price_close) > _(item.price_open)
               ? "#26a69a80"
@@ -180,8 +188,8 @@ export const Price: React.FC<{
         close: _(item.price_close),
         high: _(item.price_high),
         low: _(item.price_low),
-        buy: _(item.volume),
-        sell: _(item.jetton_volume),
+        buy: _(item.pair2_volume),
+        sell: _(item.pair1_volume),
       }));
 
       candlestickSeries.current?.setData(dataCandle);
@@ -225,7 +233,9 @@ export const Price: React.FC<{
         // which in this case is YYYY-MM-DD
 
         const time = candle?.time ? new Date(candle.time * 1000) : new Date();
-        const item = list?.find(({ time }) => time === volume?.time);
+        const item = dataCandle?.find(({ time }) => time === volume?.time);
+
+        console.log('item', item);
 
         const selectedInfo = {
           time: moment(time).format("HH:mm"),
@@ -235,8 +245,8 @@ export const Price: React.FC<{
           close: candle?.close,
           high: candle?.high,
           low: candle?.low,
-          buy: item?.volume,
-          sell: item?.jetton_volume,
+          buy: item?.buy,
+          sell: item?.sell,
           color:
             candle?.close > candle?.open
               ? "#26a69a"
@@ -501,6 +511,7 @@ export const Price: React.FC<{
           jetton.id,
           jettonCurrency?.symbol,
           JSON.stringify(enabled),
+          pairJetton,
         ],
         []
       );
@@ -529,6 +540,7 @@ export const Price: React.FC<{
     enabled,
     jettonCurrency?.symbol,
     isLoad,
+    pairJetton,
   ]);
 
   useEffect(() => {
@@ -602,12 +614,9 @@ export const Price: React.FC<{
 
   const percent = useMemo(
     () =>
-      data[data.length - 2]?.price_close
-        ? ((data[data.length - 1]?.price_close -
-            data[data.length - 2]?.price_close) /
-            data[data.length - 2]?.price_close) *
-          100
-        : 0,
+      ((data[data.length - 2]?.price_close - data[data.length - 3]?.price_close) /
+        data[data.length - 3]?.price_close) *
+      100,
     [data]
   );
 
@@ -670,8 +679,7 @@ export const Price: React.FC<{
                               >
                                 {(info?.price || 0)
                                   .toFixed(jettonCurrency?.decimals)
-                                  .toLocaleString()}{" "}
-                                {jettonCurrency?.symbol}
+                                  .toLocaleString()}
                               </Grid>
                             </Grid.Container>
                           </Grid>
@@ -703,8 +711,7 @@ export const Price: React.FC<{
                                   (info?.buy || 0).toFixed(
                                     jettonCurrency?.decimals
                                   )
-                                )}{" "}
-                                {jettonCurrency?.symbol}
+                                )}
                               </Grid>
                             </Grid.Container>
                           </Grid>
@@ -741,8 +748,7 @@ export const Price: React.FC<{
                                   : 0
                                 )
                                   .toFixed(jettonCurrency?.decimals)
-                                  .toLocaleString()}{" "}
-                                {jettonCurrency?.symbol}
+                                  .toLocaleString()}
                               </Grid>
                             </Grid.Container>
                           </Grid>
@@ -798,8 +804,7 @@ export const Price: React.FC<{
                                   (info?.close || 0).toFixed(
                                     jettonCurrency?.decimals
                                   )
-                                )}{" "}
-                                {jettonCurrency?.symbol}
+                                )}
                               </Grid>
                             </Grid.Container>
                           </Grid>
@@ -830,8 +835,7 @@ export const Price: React.FC<{
                                   (info?.open || 0).toFixed(
                                     jettonCurrency?.decimals
                                   )
-                                )}{" "}
-                                {jettonCurrency?.symbol}
+                                )}
                               </Grid>
                             </Grid.Container>
                           </Grid>
@@ -863,8 +867,7 @@ export const Price: React.FC<{
                                   (info?.high || 0).toFixed(
                                     jettonCurrency?.decimals
                                   )
-                                )}{" "}
-                                {jettonCurrency?.symbol}
+                                )}
                               </Grid>
                             </Grid.Container>
                           </Grid>
@@ -896,8 +899,7 @@ export const Price: React.FC<{
                                   (info?.low || 0).toFixed(
                                     jettonCurrency?.decimals
                                   )
-                                )}{" "}
-                                {jettonCurrency?.symbol}
+                                )}
                               </Grid>
                             </Grid.Container>
                           </Grid>
@@ -943,7 +945,7 @@ export const Price: React.FC<{
                 <Spacer x={0.4} />
                 <Grid>
                   <Text className="text-base" color="gray">
-                    FCK.DEV
+                    FCK.Foundation
                   </Text>
                 </Grid>
               </Grid.Container>

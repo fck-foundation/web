@@ -29,6 +29,7 @@ import { FJetton } from "../Jetton";
 
 import "./index.scss";
 import { FCard } from "components/Card";
+import { usePairs } from "hooks";
 
 interface Props {
   isCompact?: boolean;
@@ -87,12 +88,23 @@ export const Search: React.FC<Props> = ({ isCompact = false }) => {
     cacheTime: 60 * 1000,
   });
 
+  const pairJetton = usePairs(
+    "search",
+    searchList?.map(({ id }) => id as number) || []
+  );
+
   const { data: dataStatsSearch, isLoading: isLoadingStatsSearch } = useQuery({
-    queryKey: ["jettons-analytics-search", timescale, searchList, currency],
+    queryKey: [
+      "jettons-analytics-search",
+      timescale,
+      searchList,
+      currency,
+      pairJetton,
+    ],
     queryFn: ({ signal }) =>
       axios
         .get(
-          `https://api.fck.foundation/api/v3/analytics?pairs=${searchList
+          `https://api.fck.foundation/api/v3/analytics?pairs=${pairJetton
             ?.map(({ id }) => id)
             ?.join(",")}&period=${pagination[timescale]}&currency=${currency}`,
           { signal }
@@ -101,20 +113,12 @@ export const Search: React.FC<Props> = ({ isCompact = false }) => {
     refetchOnMount: false,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
-    enabled: !!searchList?.length && ["all", "tokens"].includes(tab),
+    enabled:
+      !!pairJetton?.length &&
+      !!jettons.length &&
+      ["all", "tokens"].includes(tab),
     cacheTime: 60 * 1000,
-    select: (results) => {
-      results = results.data.sources.DeDust.jettons;
-      console.log("dataStatsSearch", results);
-
-      return getList(
-        Object.keys(results).reduce((acc, curr) => {
-          acc[curr] = results[curr]?.prices || [];
-          return acc;
-        }, {}),
-        jettons
-      );
-    },
+    select: (results) => getList(results.data, jettons, pairJetton),
   });
 
   const onAdd = (value) => {
@@ -234,13 +238,20 @@ export const Search: React.FC<Props> = ({ isCompact = false }) => {
                 onPress={() => setOpen(true)}
               >
                 <div className="flex place-items-center overflow-hidden text-ellipsis whitespace-nowrap">
-                <User
-                size="sm"
-                bordered
-                src={jetton.image}
-                name={<div className="flex place-items-center pl-2" style={{ paddingTop: 4 }}>{jetton.symbol}</div>}
-                css={{ padding: 0 }}
-              />
+                  <User
+                    size="sm"
+                    bordered
+                    src={jetton.image}
+                    name={
+                      <div
+                        className="flex place-items-center pl-2"
+                        style={{ paddingTop: 4 }}
+                      >
+                        {jetton.symbol}
+                      </div>
+                    }
+                    css={{ padding: 0 }}
+                  />
                 </div>
                 <Spacer x={0.4} />
                 <ARR24 className="text-lg fill-current" />

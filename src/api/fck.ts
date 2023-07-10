@@ -11,47 +11,41 @@ export const fck = {
     return data.data;
   },
   getRecentlyAdded: async (
-    timescale: number,
-    currency = "",
-    signal: any
+    signal: any,
+    limit = 10,
+    offset = 0,
   ) => {
     const { data } = await axios.get(
-      `https://api.fck.foundation/api/v3/analytics/preview/recentlyAdded?onlyJettons=false&count=${10}&period=${timescale}&currency=${(
-        currency || "ton"
-      ).toLowerCase()}`,
+      `https://api.fck.foundation/api/v3/analytics/preview/recentlyAdded?count=${limit}${offset? `&offset=${offset}` : ''}`,
       { signal }
     );
     return data;
   },
   getPromoting: async (
-    timescale: number,
-    currency = "",
-    signal: any
+    signal: any,
+    limit = 10,
+    offset = 0,
   ) => {
     const { data } = await axios.get(
-      `https://api.fck.foundation/api/v3/analytics/preview/promoting?onlyJettons=false&count=${10}&period=${timescale}&currency=${(
-        currency || "ton"
-      ).toLowerCase()}`,
+      `https://api.fck.foundation/api/v3/analytics/preview/promoting?count=${limit}${offset? `&offset=${offset}` : ''}`,
       { signal }
     );
     return data;
   },
-  getPairs: async ({ signal, limit, offset }) => {
+  getPairs: async ({ signal, jetton_ids = '', limit, offset }) => {
     const { data } = await axios.get(
-      `https://api.fck.foundation/api/v3/jettons/pairs?limit=${limit}&offset=${offset}`,
+      `https://api.fck.foundation/api/v3/jettons/pairs?limit=${limit}&offset=${offset}&jetton_ids=${jetton_ids}`,
       { signal }
     );
     return data;
   },
   getTrending: async (
-    timescale: number,
-    currency = "",
-    signal: any
+    signal: any,
+    limit = 10,
+    offset = 0,
   ) => {
     const { data } = await axios.get(
-      `https://api.fck.foundation/api/v3/analytics/preview/trending?onlyJettons=false&count=${10}&period=${timescale}&currency=${(
-        currency || "ton"
-      ).toLowerCase()}`,
+      `https://api.fck.foundation/api/v3/analytics/preview/trending?count=${limit}${offset? `&offset=${offset}` : ''}`,
       { signal }
     );
     return data;
