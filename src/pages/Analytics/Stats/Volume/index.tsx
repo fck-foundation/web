@@ -101,8 +101,8 @@ export const Volume = ({ timescale }) => {
         background: { color: "transparent" },
       },
       grid: {
-        vertLines: { color: enabled ? "#3e3e3e" : "#eae5e7" },
-        horzLines: { color: enabled ? "#3e3e3e" : "#eae5e7" },
+        vertLines: { color: "transparent" },
+        horzLines: { color: "transparent" },
       },
       timeScale: {
         timeVisible: true,

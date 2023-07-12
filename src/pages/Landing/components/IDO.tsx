@@ -33,7 +33,8 @@ import { IDO as CoreIDO } from "../core/IDO";
 import { toast } from "react-toastify";
 
 type TouchType = "increase" | "decrease";
-const targetTime = new Date("2023-07-12 15:00").getTime();
+const targetTime = 1689163200000;
+const endTime = 1689768000000;
 const contractIDO = "EQDeeRmi98TQJgWuvLWTCpSWf6ir_mJ0KbU9mCee6fMWZlHd";
 
 export const IDO = () => {
@@ -69,7 +70,8 @@ export const IDO = () => {
     getData();
   }, []);
 
-  const timeBetween = targetTime - currentTime;
+  const timeBetween =
+    targetTime >= Date.now() ? targetTime - currentTime : endTime - currentTime;
   const seconds = Math.floor((timeBetween / 1000) % 60);
   const minutes = Math.floor((timeBetween / 1000 / 60) % 60);
   const hours = Math.floor((timeBetween / (1000 * 60 * 60)) % 24);
@@ -133,7 +135,7 @@ export const IDO = () => {
           document.getElementsByTagName("tc-root")[0]?.childNodes
         )[0] as any
       )?.click();
-    } else {
+    } else if (Date.now() >= targetTime) {
       if (wallet) {
         const jetton = Address.parseRaw(whiteTokens["FCK"]);
         const masterContract = JettonMaster.create(jetton);
@@ -150,7 +152,7 @@ export const IDO = () => {
                   to: contractIDO,
                 })
               )
-              .finally(() => {
+              .then(() => {
                 toast.success(t("transactionSuccess"), {
                   position: toast.POSITION.TOP_RIGHT,
                   theme: enabled ? "dark" : "light",
@@ -186,11 +188,25 @@ export const IDO = () => {
               ).toLocaleString()}{" "}
               {t("total")}
             </Badge>
-            <Badge color="primary">
-              {days ? `${days}${t("D")}.` : ""}{" "}
-              {hours ? `${hours}${t("H")}.` : ""}{" "}
-              {minutes ? `${minutes}${t("M")}.` : ""}{" "}
-              {seconds ? `${seconds}${t("S")}.` : ""}
+            <Badge
+              color={
+                Date.now() <= targetTime
+                  ? "primary"
+                  : Date.now() <= endTime
+                  ? "error"
+                  : "default"
+              }
+            >
+              {Date.now() <= endTime || Date.now() <= targetTime ? (
+                <>
+                  {days ? `${days}${t("D")}.` : ""}{" "}
+                  {hours ? `${hours}${t("H")}.` : ""}{" "}
+                  {minutes ? `${minutes}${t("M")}.` : ""}{" "}
+                  {seconds ? `${seconds}${t("S")}.` : ""}
+                </>
+              ) : (
+                t("ended")
+              )}
             </Badge>
           </div>
           <div>

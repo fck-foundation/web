@@ -979,11 +979,11 @@ export const Price: React.FC<{
 
       <Grid xs={12} className="flex place-items-center">
         <Text className="text-2xl" weight="bold">
-          {t("holders")}
+          {t("holders")}:
         </Text>
         <Spacer x={0.4} />
         <Text className="text-2xl" color="$accents7">
-          {results?.total}
+          {results?.total || 0}
         </Text>
       </Grid>
       <Grid xs={12}>

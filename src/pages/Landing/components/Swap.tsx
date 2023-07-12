@@ -33,7 +33,8 @@ import { JettonMaster } from "ton";
 import { SwapToV2Contract } from "../core/Swap";
 import { toast } from "react-toastify";
 
-const targetTime = new Date("2023-07-14 15:00").getTime();
+const targetTime = 1689336000000;
+const endTime = 1694692800000;
 
 export const Swap = () => {
   const address = useTonAddress();
@@ -43,11 +44,12 @@ export const Swap = () => {
   const { client, walletJettons, enabled } = useContext(AppContext);
   const [stats, setStats] = useState({
     new: 0,
-    old: 0
+    old: 0,
   });
   const [currentTime, setCurrentTime] = useState(Date.now());
 
-  const timeBetween = targetTime - currentTime;
+  const timeBetween =
+    targetTime >= Date.now() ? targetTime - currentTime : endTime - currentTime;
   const seconds = Math.floor((timeBetween / 1000) % 60);
   const minutes = Math.floor((timeBetween / 1000 / 60) % 60);
   const hours = Math.floor((timeBetween / (1000 * 60 * 60)) % 24);
@@ -88,7 +90,7 @@ export const Swap = () => {
           document.getElementsByTagName("tc-root")[0]?.childNodes
         )[0] as any
       )?.click();
-    } else {
+    } else if (Date.now() >= targetTime) {
       if (wallet) {
         const jetton = Address.parseRaw(whiteTokens["OLDFCK"]);
         const masterContract = JettonMaster.create(jetton);
@@ -105,8 +107,9 @@ export const Swap = () => {
                 contract: "EQCEFIAX9z37LMSkulOPNu4l6l-rSSpUpuLj6wWtwg2lUSWz",
               })
             );
-          }).finally(() => {
-            toast.success(t('transactionSuccess'), {
+          })
+          .then(() => {
+            toast.success(t("transactionSuccess"), {
               position: toast.POSITION.TOP_RIGHT,
               theme: enabled ? "dark" : "light",
             });
@@ -119,9 +122,7 @@ export const Swap = () => {
     () =>
       normalize(
         walletJettons?.find(
-          ({ jetton }) =>
-            jetton.address ===
-            whiteTokens.OLDFCK
+          ({ jetton }) => jetton.address === whiteTokens.OLDFCK
         )?.balance || 0,
         5
       ),
@@ -137,9 +138,29 @@ export const Swap = () => {
             className="flex justify-between w-full max-w-[305px]"
             style={{ padding: "var(--nextui-space-sm)" }}
           >
-            <Badge color="default">{(125000).toLocaleString()/*stats.old + stats.new */} {t('total')}</Badge>
-            <Badge color="primary">
-              {days ? `${days}${t('D')}.` : ''} {hours ? `${hours}${t('H')}.` : ''} {minutes ? `${minutes}${t('M')}.` : ''} {seconds ? `${seconds}${t('S')}.` : ''}
+            <Badge color="default">
+              {(125000).toLocaleString() /*stats.old + stats.new */}{" "}
+              {t("total")}
+            </Badge>
+            <Badge
+              color={
+                Date.now() <= targetTime
+                  ? "primary"
+                  : Date.now() <= endTime
+                  ? "error"
+                  : "default"
+              }
+            >
+              {Date.now() <= endTime || Date.now() >= targetTime ? (
+                <>
+                  {days ? `${days}${t("D")}.` : ""}{" "}
+                  {hours ? `${hours}${t("H")}.` : ""}{" "}
+                  {minutes ? `${minutes}${t("M")}.` : ""}{" "}
+                  {seconds ? `${seconds}${t("S")}.` : ""}
+                </>
+              ) : (
+                t("ended")
+              )}
             </Badge>
           </div>
           <div className="flex justify-between place-items-center">
@@ -158,9 +179,14 @@ export const Swap = () => {
               </Text>
             </div>
             <div className="text-center">
-              <Button flat css={{ minWidth: "auto" }} onPress={onPay} disabled={Date.now() <= targetTime || (!!address && value < 1)}>
+              <Button
+                flat
+                css={{ minWidth: "auto" }}
+                onPress={onPay}
+                disabled={!!address && (Date.now() <= targetTime || (value < 1))}
+              >
                 <ARR24 className="text-2xl fill-current" /> <Spacer x={0.4} />{" "}
-                {address ? 'Get new' : t('signIn')}
+                {address ? t("getNew") : t("signIn")}
               </Button>
               {value > 0 && (
                 <Text
@@ -193,8 +219,12 @@ export const Swap = () => {
               maxWidth: "calc(305px - var(--nextui-space-sm) * 2)",
             }}
           >
-            <Text className="text-xs">{stats.old.toLocaleString()} {t('exchanged')}</Text>
-            <Text className="text-xs">{(stats.old + stats.new).toLocaleString()} {t('left')}</Text>
+            <Text className="text-xs">
+              {stats.old.toLocaleString()} {t("exchanged")}
+            </Text>
+            <Text className="text-xs">
+              {(stats.old + stats.new).toLocaleString()} {t("left")}
+            </Text>
           </div>
           <Spacer y={0.2} />
           <Progress

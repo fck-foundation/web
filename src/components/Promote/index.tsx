@@ -132,7 +132,7 @@ export const Promote: React.FC<{
     select: (response) =>
       normalize(
         response.data.balances?.find(
-          ({ jetton }) => jetton.address === price.jetton.address
+          ({ jetton }) => jetton.address === price?.jetton?.address
         )?.balance,
         5
       ),
@@ -220,7 +220,7 @@ export const Promote: React.FC<{
       )?.click();
     } else {
       if (wallet) {
-        const jetton = Address.parseRaw(price.jetton.address);
+        const jetton = Address.parseRaw(price?.jetton?.address as string);
         const masterContract = JettonMaster.create(jetton);
         const master = client.open(masterContract);
 
@@ -274,7 +274,7 @@ export const Promote: React.FC<{
               ) : (
                 <>
                   <Grid css={{ display: "flex" }}>
-                    <Heart className="text-lg text-current text-red-500 fill-red-500" />
+                    <Heart className="text-2xl text-current text-red-500 fill-red-500" />
                   </Grid>
                   <Spacer x={0.4} />
                 </>

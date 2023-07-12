@@ -10,10 +10,10 @@ export const SwapPage = () => {
   return (
     <Container sm className="py-4">
       <Grid.Container justify="center">
-        <Grid xs={12} sm={8}>
+        <Grid xs={12} sm={5}>
           <Swap />
         </Grid>
-        <Grid xs={12} css={{ mt: "$16" }}>
+        <Grid xs={12} sm={8} css={{ mt: "$16" }}>
           <Grid.Container justify="center">
             <Text size="$2xl" color="primary">
               {t("ourTokenomics")}:
@@ -24,6 +24,7 @@ export const SwapPage = () => {
         </Grid>
         <Grid
           xs={12}
+          sm={8}
           className="text-center"
           css={{ display: "block !important" }}
         >
@@ -91,7 +92,7 @@ export const SwapPage = () => {
           <Arrow
             height="auto"
             className="floating-arrow"
-            style={{ animationDelay: "2s", minWidth: 64 }}
+            style={{ animationDelay: "2s", maxWidth: 48 }}
           />
         </Grid>
         <Grid xs={12} sm={5} css={{ mt: "$16" }}>

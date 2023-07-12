@@ -792,7 +792,7 @@ export function Home() {
                         setVoteId={setVoteId}
                         trigger={
                           <Button flat auto css={{ pointerEvents: "none" }}>
-                            <Heart className="text-lg fill-current text-red-500 fill-red-500" />{" "}
+                            <Heart className="text-2xl fill-current text-red-500 fill-red-500" />{" "}
                             <Spacer x={0.4} /> {t("castVote")}
                           </Button>
                         }

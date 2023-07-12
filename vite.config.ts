@@ -44,7 +44,7 @@ export default defineConfig({
       // strategies: 'injectManifest',
       manifest: {
         name: "Find & Check",
-        short_name: "FCK Foundation",
+        short_name: "Find & Check",
         description: "Find & Check Foundation description",
         theme_color: "#2eab8f",
         background_color: "#121212",

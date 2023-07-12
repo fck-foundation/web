@@ -4,7 +4,7 @@ import { IDO } from "./Landing/components";
 export const IDOPage = () => (
   <Container sm className="py-4">
     <Grid.Container justify="center">
-      <Grid xs={12} sm={8}>
+      <Grid xs={12} sm={6}>
         <IDO />
       </Grid>
     </Grid.Container>

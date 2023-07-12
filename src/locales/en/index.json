@@ -203,7 +203,7 @@
   "disclamer": "The analytics charts provided on this site are intended for informational purposes only. They are not to be construed as financial, investment, or trading advice. The information contained within these charts is derived from various sources, and while we strive to ensure its accuracy, we cannot guarantee its completeness or reliability.",
   "scam": "SCAM",
   "joinIDO": "Join IDO",
-  "joinIDODescription": "We are excited to announce our Initial 10,000 tokens DEX Offering (IDO).",
+  "joinIDODescription": "We are excited to announce our Initial 10,000 tokens.",
   "D": "D",
   "H": "H",
   "M": "M",
@@ -279,5 +279,7 @@
   "sender": "Sender",
   "recipient": "Recipient",
   "soldOut": "Sold out",
-  "transactionSuccess": "Transaction has been successfully sent, funds will be credited to your wallet soon!"
+  "transactionSuccess": "Transaction has been successfully sent, funds will be credited to your wallet soon!",
+  "ended": "Ended",
+  "getNew": "Get new"
 }

@@ -97,7 +97,7 @@ export const Analytics = () => {
           </Grid.Container>
         </Grid> */}
               <Grid xs={12}>
-                <Grid.Container>
+                <Grid.Container gap={0.8} css={{ m: '-$4', width: 'calc(100% + $8)' }}>
                   <Grid xs={12} sm={4} lg={3}>
                     <Jettons isDrag={isDrag} setIsDrag={setIsDrag} />
                   </Grid>

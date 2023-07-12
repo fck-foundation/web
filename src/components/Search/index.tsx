@@ -218,46 +218,47 @@ export const Search: React.FC<Props> = ({ isCompact = false }) => {
               value={search as string}
               placeholder={t("searchToken") as string}
               clearable
-              css={{ minWidth: "100%" }}
+              css={{ minWidth: "100%", }}
               onChange={(e) => setSearch(e.target.value as any)}
             />
           </Grid>
-          <Spacer x={0.8} />
-          <Grid>
-            {location.pathname.includes("price") ||
-            location.pathname.includes("volume") ? (
-              <Button
-                ref={refJetton}
-                flat
-                css={{
-                  minWidth: "auto",
-                  "@sm": { display: "none" },
-                  padding: "$4",
-                  width: "100%",
-                }}
-                onPress={() => setOpen(true)}
-              >
-                <div className="flex place-items-center overflow-hidden text-ellipsis whitespace-nowrap">
-                  <User
-                    size="sm"
-                    bordered
-                    src={jetton.image}
-                    name={
-                      <div
-                        className="flex place-items-center pl-2"
-                        style={{ paddingTop: 4 }}
-                      >
-                        {jetton.symbol}
-                      </div>
-                    }
-                    css={{ padding: 0 }}
-                  />
-                </div>
-                <Spacer x={0.4} />
-                <ARR24 className="text-lg fill-current" />
-              </Button>
-            ) : null}
-          </Grid>
+          {location.pathname.includes("price") ||
+          location.pathname.includes("volume") ? (
+            <>
+            <Spacer x={0.8} css={{ "@sm": { display: "none" }, }} />
+              <Grid css={{ "@sm": { display: "none" }, }}>
+                <Button
+                  ref={refJetton}
+                  flat
+                  css={{
+                    minWidth: "auto",
+                    padding: "$4",
+                    width: "100%",
+                  }}
+                  onPress={() => setOpen(true)}
+                >
+                  <div className="flex place-items-center overflow-hidden text-ellipsis whitespace-nowrap">
+                    <User
+                      size="sm"
+                      bordered
+                      src={jetton.image}
+                      name={
+                        <div
+                          className="flex place-items-center pl-2"
+                          style={{ paddingTop: 4 }}
+                        >
+                          {jetton.symbol}
+                        </div>
+                      }
+                      css={{ padding: 0 }}
+                    />
+                  </div>
+                  <Spacer x={0.4} />
+                  <ARR24 className="text-lg fill-current" />
+                </Button>
+              </Grid>
+            </>
+          ) : null}
         </Grid.Container>
       </Grid>
       <Grid xs={12} className="w-full">
