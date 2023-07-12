@@ -13,6 +13,7 @@ import { ABS13, ABS14 } from "assets/icons";
 import { ReactComponent as Logo } from "assets/logo.svg";
 
 import "./index.scss";
+import { colors } from "colors";
 
 interface Props {
   loading?: boolean;
@@ -22,8 +23,6 @@ interface Props {
 export const ThemeSwitcher: React.FC<Props> = ({ loading, isLogo }) => {
   const { privateKey, nftItems, enabled, theme, setEnabled, setTheme } =
     useContext(AppContext);
-
-  console.log("nftItems", nftItems);
 
   return isLogo ? (
     loading ? (
@@ -89,6 +88,43 @@ export const ThemeSwitcher: React.FC<Props> = ({ loading, isLogo }) => {
           </Button>
         </Grid>
       )}
+      <Grid
+            xs={4}
+            className="nft-item"
+            onClick={() =>
+              setTheme({
+                color: enabled ? "dark" : "light",
+                id: undefined
+              })
+            }
+          >
+            <Badge
+              placement="top-left"
+              css={{
+                backgroundColor: colors.dark.primary,
+                left: "50%",
+                height: "$5",
+                marginTop: "$5",
+              }}
+              size="xs"
+              content={""}
+            >
+              <div
+                className={`diamond-item ${
+                  !theme.id ? "selected" : ""
+                }`}
+              >
+                <Image
+                  showSkeleton
+                  src="/img/coin.png"
+                  width="100%"
+                  height="100%"
+                  alt=""
+                  css={{ objectFit: "cover" }}
+                />
+              </div>
+            </Badge>
+          </Grid>
       {nftItems?.map((item, i) => {
         const color = item.metadata?.attributes?.find(
           ({ trait_type }) => trait_type === "Color"
@@ -115,7 +151,7 @@ export const ThemeSwitcher: React.FC<Props> = ({ loading, isLogo }) => {
                 marginTop: "$5",
               }}
               size="xs"
-              content={theme.id === item.metadata.id && color}
+              content={""}
             >
               <div
                 className={`diamond-item ${

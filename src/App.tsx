@@ -48,6 +48,8 @@ import {
   Privacy,
   Cookie,
   Terms,
+  IDOPage,
+  SwapPage
 } from "./pages";
 import NotFound from "./NotFound";
 
@@ -141,6 +143,14 @@ const router = createBrowserRouter([
       {
         path: "/terms",
         element: <Terms />,
+      },
+      {
+        path: "/ido",
+        element: <IDOPage />,
+      },
+      {
+        path: "/swap",
+        element: <SwapPage />,
       },
     ],
   },

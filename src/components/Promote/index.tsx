@@ -26,7 +26,7 @@ import { useTranslation } from "react-i18next";
 import cookie from "react-cookies";
 import { JettonMaster } from "ton";
 import { Address } from "ton-core";
-import { normalize, payJetton, whiteCoins } from "utils";
+import { normalize, payJetton } from "utils";
 import moment from "moment";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
@@ -132,7 +132,7 @@ export const Promote: React.FC<{
     select: (response) =>
       normalize(
         response.data.balances?.find(
-          ({ jetton }) => jetton.address === whiteCoins.FCK
+          ({ jetton }) => jetton.address === price.jetton.address
         )?.balance,
         5
       ),
@@ -207,33 +207,6 @@ export const Promote: React.FC<{
         selected.forEach((curr) => {
           mutate({ amount: curr.amount, jetton_id: curr.id });
         });
-        // const jetton = Address.parseRaw(whiteCoins["FCK"]);
-        // const masterContract = JettonMaster.create(jetton);
-        // const master = client.open(masterContract);
-
-        // master
-        //   .getWalletAddress(Address.parseRaw(wallet.account.address))
-        //   .then((addr) => {
-        //     tonConnectUi
-        //       .sendTransaction(
-        //         payJetton({
-        //           selected,
-        //           address: addr,
-        //           forward: address,
-        //           coin: "FCK",
-        //           to: "EQBjTg5KAKakMQ_BT_DVkUWMGhhiqW0ADppVOLnF3m7sNv5P",
-        //         })
-        //       )
-        //       .finally(() => {
-        //         onSuccess(
-        //           selected.reduce((acc, curr) => (acc += curr.amount), 0)
-        //         );
-        //         setSelected([]);
-        //         setPage(1);
-
-        //         setVisible(false);
-        //       });
-        //   });
       }
     }
   };
@@ -247,7 +220,7 @@ export const Promote: React.FC<{
       )?.click();
     } else {
       if (wallet) {
-        const jetton = Address.parseRaw(whiteCoins["FCK"]);
+        const jetton = Address.parseRaw(price.jetton.address);
         const masterContract = JettonMaster.create(jetton);
         const master = client.open(masterContract);
 
@@ -622,9 +595,11 @@ export const Promote: React.FC<{
                                     >
                                       <Heart className="text-lg text-red-500 fill-red-500" />
                                       <Spacer x={0.4} />
-                                      {item?.amount
-                                        ? item?.amount
-                                        : jetton.stats.promoting_points}
+                                      <Text className="text-xs">
+                                        {item?.amount
+                                          ? item?.amount
+                                          : jetton.stats.promoting_points}
+                                      </Text>
                                     </Badge>
                                     {!!item?.amount && (
                                       <>
@@ -707,7 +682,10 @@ export const Promote: React.FC<{
                     css={{ minWidth: "auto" }}
                     onPress={() => (!processing?.wait ? onVote() : undefined)}
                     disabled={
-                      !!wallet && (!toPay || !dataFCK || (toPay * (price?.price || 1)) > dataFCK)
+                      !!wallet &&
+                      (!toPay ||
+                        !dataFCK ||
+                        toPay * (price?.price || 1) > dataFCK)
                     }
                   >
                     <Grid.Container alignItems="center">

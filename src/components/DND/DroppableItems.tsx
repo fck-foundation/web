@@ -12,10 +12,11 @@ interface Props {
 
 export const DroppableItems: React.FC<Props> = ({ column, id, data }) => {
   return (
-    <div key={id} className="w-full">
-      <Droppable key={id} droppableId={id}>
+    <div className="w-full">
+      <Droppable droppableId={column}>
         {(provided, snapshot) => (
           <div
+            key={`drop-${id}`}
             {...provided.droppableProps}
             ref={provided.innerRef}
             className={cn("h-full", {

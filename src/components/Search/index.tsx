@@ -118,7 +118,7 @@ export const Search: React.FC<Props> = ({ isCompact = false }) => {
       !!jettons.length &&
       ["all", "tokens"].includes(tab),
     cacheTime: 60 * 1000,
-    select: (results) => getList(results.data, jettons, pairJetton),
+    select: (results) => getList(results.data, searchList, pairJetton),
   });
 
   const onAdd = (value) => {
@@ -286,7 +286,6 @@ export const Search: React.FC<Props> = ({ isCompact = false }) => {
               <AnimatePresence>
                 <FCard
                   isLoading={isLoadingStatsSearch}
-                  title={undefined}
                   list={
                     dataStatsSearch
                       ?.sort(

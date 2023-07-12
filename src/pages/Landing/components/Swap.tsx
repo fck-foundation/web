@@ -28,18 +28,19 @@ import {
   useTonConnectUI,
   useTonWallet,
 } from "@tonconnect/ui-react";
-import { normalize, getSwapJetton, whiteCoins } from "utils";
+import { normalize, getSwapJetton, whiteTokens } from "utils";
 import { JettonMaster } from "ton";
 import { SwapToV2Contract } from "../core/Swap";
+import { toast } from "react-toastify";
 
-const targetTime = new Date("2023-07-14 12:00").getTime();
+const targetTime = new Date("2023-07-14 15:00").getTime();
 
 export const Swap = () => {
   const address = useTonAddress();
   const wallet = useTonWallet();
   const [tonConnectUi] = useTonConnectUI();
   const { t } = useTranslation();
-  const { client, walletJettons } = useContext(AppContext);
+  const { client, walletJettons, enabled } = useContext(AppContext);
   const [stats, setStats] = useState({
     new: 0,
     old: 0
@@ -89,7 +90,7 @@ export const Swap = () => {
       )?.click();
     } else {
       if (wallet) {
-        const jetton = Address.parseRaw(whiteCoins["OLDFCK"]);
+        const jetton = Address.parseRaw(whiteTokens["OLDFCK"]);
         const masterContract = JettonMaster.create(jetton);
         const master = client.open(masterContract);
 
@@ -104,6 +105,11 @@ export const Swap = () => {
                 contract: "EQCEFIAX9z37LMSkulOPNu4l6l-rSSpUpuLj6wWtwg2lUSWz",
               })
             );
+          }).finally(() => {
+            toast.success(t('transactionSuccess'), {
+              position: toast.POSITION.TOP_RIGHT,
+              theme: enabled ? "dark" : "light",
+            });
           });
       }
     }
@@ -115,8 +121,7 @@ export const Swap = () => {
         walletJettons?.find(
           ({ jetton }) =>
             jetton.address ===
-            // "0:3a4d2так191094e3a33d4601efa51bb52dc5baa354516e162b7706955385f8144a7"
-            "0:8a2f4c2cbee23cdde55e2971d180d36015404bb2f094a57d52144a0ec8ec44c7"
+            whiteTokens.OLDFCK
         )?.balance || 0,
         5
       ),
@@ -132,9 +137,9 @@ export const Swap = () => {
             className="flex justify-between w-full max-w-[305px]"
             style={{ padding: "var(--nextui-space-sm)" }}
           >
-            <Badge color="default">{125000/*stats.old + stats.new */} {t('total')}</Badge>
+            <Badge color="default">{(125000).toLocaleString()/*stats.old + stats.new */} {t('total')}</Badge>
             <Badge color="primary">
-              {days}{t('D')}. {hours}{t('H')}. {minutes}{t('M')}. {seconds}{t('S')}.
+              {days ? `${days}${t('D')}.` : ''} {hours ? `${hours}${t('H')}.` : ''} {minutes ? `${minutes}${t('M')}.` : ''} {seconds ? `${seconds}${t('S')}.` : ''}
             </Badge>
           </div>
           <div className="flex justify-between place-items-center">
@@ -153,7 +158,7 @@ export const Swap = () => {
               </Text>
             </div>
             <div className="text-center">
-              <Button flat css={{ minWidth: "auto" }} onPress={onPay} disabled={!!address && value < 1}>
+              <Button flat css={{ minWidth: "auto" }} onPress={onPay} disabled={Date.now() <= targetTime || (!!address && value < 1)}>
                 <ARR24 className="text-2xl fill-current" /> <Spacer x={0.4} />{" "}
                 {address ? 'Get new' : t('signIn')}
               </Button>
@@ -162,7 +167,7 @@ export const Swap = () => {
                   className="text-xs mt-2"
                   css={{ color: "var(--nextui-colors-primary)" }}
                 >
-                  {value} FCK
+                  {value.toLocaleString()} FCK
                 </Text>
               )}
             </div>
@@ -188,8 +193,8 @@ export const Swap = () => {
               maxWidth: "calc(305px - var(--nextui-space-sm) * 2)",
             }}
           >
-            <Text className="text-xs">{stats.old} {t('exchanged')}</Text>
-            <Text className="text-xs">{125000 /*stats.old + stats.new */} {t('left')}</Text>
+            <Text className="text-xs">{stats.old.toLocaleString()} {t('exchanged')}</Text>
+            <Text className="text-xs">{(stats.old + stats.new).toLocaleString()} {t('left')}</Text>
           </div>
           <Spacer y={0.2} />
           <Progress

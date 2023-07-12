@@ -117,7 +117,7 @@ export const Layout = ({ children }: { children?: any }) => {
 
   const background = useMemo(
     () =>
-      theme && (
+      theme?.id && (
         <SvgInline
           url={
             nftItems?.find(({ metadata }) => metadata.id === theme.id)?.metadata
@@ -151,7 +151,17 @@ export const Layout = ({ children }: { children?: any }) => {
     {
       title: t("pairs"),
       href: `/pairs`,
-      disabled: true
+      disabled: true,
+    },
+    {
+      title: t("ido"),
+      href: `/ido`,
+      // disabled: true
+    },
+    {
+      title: `${t('swap')} v1 > v2`,
+      href: `/swap`,
+      // disabled: true
     },
     // { title: t("events"), href: "/events" },
     // { title: t("roadMap"), href: "/roadmap" },
@@ -275,7 +285,11 @@ export const Layout = ({ children }: { children?: any }) => {
                       key={index}
                       isActive={href === location.pathname}
                       onClick={() => navigate(href)}
-                      css={disabled ? { pointerEvents: 'none', color: '$accents5' } : undefined}
+                      css={
+                        disabled
+                          ? { pointerEvents: "none", color: "$accents5" }
+                          : undefined
+                      }
                     >
                       {title}
                     </Navbar.Link>
@@ -299,9 +313,9 @@ export const Layout = ({ children }: { children?: any }) => {
                 css={{ display: "none", "@smMin": { display: "flex" } }}
               >
                 <DEX />
-          <Spacer x={0.8} />
+                <Spacer x={0.8} />
                 <Currency />
-          <Spacer x={0.8} />
+                <Spacer x={0.8} />
               </Grid>
               <LanguageSwitcher />
               <TonConnectButton className="tconnect-button" />
@@ -370,7 +384,7 @@ export const Layout = ({ children }: { children?: any }) => {
                         display: "flex",
                         "@sm": { display: "none" },
                         zIndex: 9999,
-                        bg: 'var(--nextui--navbarBackgroundColor)'
+                        bg: "var(--nextui--navbarBackgroundColor)",
                       }}
                     >
                       <DEX />
@@ -404,8 +418,15 @@ export const Layout = ({ children }: { children?: any }) => {
                       ) as any)}
                     {!!address &&
                       ((
-                        <Dropdown.Item key="analytics" withDivider>
-                          {t("analytics")}
+                        <Dropdown.Item
+                          key="analytics"
+                          withDivider
+                          css={{
+                            mt: undefined,
+                            "@sm": { mt: 0 },
+                          }}
+                        >
+                          {t("wallet")}
                         </Dropdown.Item>
                       ) as any)}
                     {!!address &&
@@ -436,7 +457,11 @@ export const Layout = ({ children }: { children?: any }) => {
                 isActive={href === location.pathname}
                 onClick={() => onChangeHref(href)}
                 className="cursor-pointer"
-                css={disabled ? { pointerEvents: 'none', color: '$accents5' } : undefined}
+                css={
+                  disabled
+                    ? { pointerEvents: "none", color: "$accents5" }
+                    : undefined
+                }
               >
                 {title}
               </Navbar.CollapseItem>
@@ -474,7 +499,7 @@ export const Layout = ({ children }: { children?: any }) => {
                 </Card.Body>
                 <Card.Footer className="flex justify-center" css={{ pt: 0 }}>
                   <Button auto onClick={() => onPrivate()} size="lg">
-                    {t(address ? "buy" : "connect")} {address && "NFT"}
+                    {t(address ? "buyToken" : "connect")} {address && "NFT"}
                   </Button>
                 </Card.Footer>
               </Card>
@@ -526,22 +551,20 @@ export const Layout = ({ children }: { children?: any }) => {
                 <Spacer x={0.4} />
                 <Text css={{ maxW: 400 }}>{t("footerDescription")}</Text>
                 <Spacer x={0.4} />
-                <Grid.Container>
+                <Grid.Container gap={2} css={{ m: "-$10" }}>
                   <Grid>
                     <Link to="/privacy">
-                      <Text>{t('privacyPolicy')}</Text>
+                      <Text color="text-current">{t("privacyPolicy")}</Text>
                     </Link>
                   </Grid>
-                  <Spacer x={1} />
                   <Grid>
                     <Link to="/cookie">
-                      <Text>{t('cookiePolicy')}</Text>
+                      <Text color="text-current">{t("cookiePolicy")}</Text>
                     </Link>
                   </Grid>
-                  <Spacer x={1} />
                   <Grid>
                     <Link to="/terms">
-                      <Text>{t('termsOfUse')}</Text>
+                      <Text color="text-current">{t("termsOfUse")}</Text>
                     </Link>
                   </Grid>
                 </Grid.Container>
@@ -550,7 +573,7 @@ export const Layout = ({ children }: { children?: any }) => {
               <Grid xs={12} sm={5}>
                 <Grid.Container justify="space-between">
                   <Grid>
-                    <Text className="text-lg">{t('project')}</Text>
+                    <Text className="text-lg">{t("project")}</Text>
                     <ul className="m-0 mt-4">
                       {/* <li>
                             <Link to="https://ton.app" target="_blank">
@@ -587,7 +610,7 @@ export const Layout = ({ children }: { children?: any }) => {
                   </Grid>
                   <Spacer x={1} />
                   <Grid>
-                    <Text className="text-lg">{t('community')}</Text>
+                    <Text className="text-lg">{t("community")}</Text>
                     <ul className="m-0 mt-4">
                       <li>
                         <Link to="https://t.me/tokenFCK" target="_blank">
@@ -619,27 +642,27 @@ export const Layout = ({ children }: { children?: any }) => {
                   </Grid>
                   <Spacer x={1} />
                   <Grid>
-                    <Text className="text-lg">{t('token')}</Text>
+                    <Text className="text-lg">{t("token")}</Text>
                     <ul className="m-0 mt-4">
                       <li>
-                        <Link to="/#introduction">{t('introduction')}</Link>
+                        <Link to="/#introduction">{t("introduction")}</Link>
                       </li>
                       <li>
-                        <Link to="/#tokenomics">{t('tokenomics')}</Link>
+                        <Link to="/#tokenomics">{t("tokenomics")}</Link>
                       </li>
                       <li>
                         <Link
                           to="https://dedust.io/swap/TON/EQA6TSGRCU46M9RgHvpRu1LcW6o1RRbhYrdwaVU4X4FEp_Z2"
                           target="_blank"
                         >
-                          {t('buyFCK')}
+                          {t("buyFCK")}
                         </Link>
                       </li>
                       <li>
                         <Promote
                           voteId={voteId}
                           setVoteId={setVoteId}
-                          trigger={<Link to="#">{t('castVote')}</Link>}
+                          trigger={<Link to="#">{t("castVote")}</Link>}
                         />
                       </li>
                     </ul>

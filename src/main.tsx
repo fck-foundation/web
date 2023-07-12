@@ -1,4 +1,4 @@
-import ReactDOM from "react-dom/client";
+import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AppProvider } from "contexts";
 import App from "./App";
@@ -10,8 +10,7 @@ const queryClient = new QueryClient();
 
 window.global = window;
 
-ReactDOM.hydrateRoot(
-  document.getElementById("root") as any,
+createRoot(document.getElementById("root") as any).render(
   <QueryClientProvider client={queryClient}>
     <AppProvider>
       <App />

@@ -143,11 +143,11 @@ export const Dex: React.FC<Props> = ({ isLoading, selected, swaps }) => {
                           <Grid css={{ display: "flex" }}>
                             {parseFloat(swap.ton) ? (
                               ["sell", "buy"].includes(swap.type) ? (
-                                <ARR33 className="text-current text-xl" />
+                                <ARR33 className="fill-current text-xl" />
                               ) : swap.type === "liquidity_withdraw" ? (
-                                <ARR36 className="text-current text-xl" />
+                                <ARR36 className="fill-current text-xl" />
                               ) : (
-                                <ARR37 className="text-current text-xl" />
+                                <ARR37 className="fill-current text-xl" />
                               )
                             ) : null}
                           </Grid>

@@ -9,3 +9,5 @@ export * from "./Pairs";
 export * from "./Privacy";
 export * from "./Cookie";
 export * from "./Terms";
+export * from "./IDO";
+export * from "./Swap";

@@ -9,13 +9,13 @@ export const getList = (
   jettons?: JType[],
   pairs?: PairType
 ): Item[] =>
-  Object.keys({ ...data }).map((pairId) => {
+  [...(jettons || [])].map((jetton) => {
     const id = pairs
-      ?.find(({ id }) => id.toString() === pairId)
-      ?.jetton1_id?.toString() as string;
+      ?.find(({ jetton1_id }) => jetton1_id === jetton.id)
+      ?.id?.toString() as string;
 
-    const stats = data[pairId]
-      .sort(
+    const stats = data[id]
+      ?.sort(
         (x, y) =>
           new Date(x.period as any).getTime() -
           new Date(y.period as any).getTime()
@@ -23,12 +23,14 @@ export const getList = (
       ?.map((item) => ({
         value: _(item.price_close),
         volume: _(item.pair2_volume),
-      }));
-    const jetton = jettons?.find((i) => i.id.toString() === id);
+      })) || [];
     const chart = [...stats].map(({ value }: { value: number }, i: number) => ({
       value,
     }));
-    const volume = [...(stats || [])].reduce((acc, i) => (acc += i?.pair2_volume), 0);
+    const volume = [...(stats || [])].reduce(
+      (acc, i) => (acc += i?.pair2_volume),
+      0
+    );
     const percent =
       ((stats[stats.length - 1]?.value - stats[stats.length - 3]?.value) /
         stats[stats.length - 3]?.value) *

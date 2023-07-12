@@ -4,6 +4,10 @@
   background-color: #fff;
   width: 100%;
 
+  .nextui-image-container {
+    height: 100%;
+  }
+
   > div {
     pointer-events: none;
   }

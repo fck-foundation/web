@@ -8,6 +8,7 @@ import {
   Spacer,
   Badge,
   Loading,
+  Divider,
 } from "@nextui-org/react";
 import { ARR10, ARR12, ARR16, ARR20, GEN03, Heart } from "assets/icons";
 
@@ -33,7 +34,7 @@ export type Item = {
 };
 
 interface Props {
-  title: React.ReactNode;
+  title?: React.ReactNode;
   list: Item[];
   isLoading: boolean;
   setVoteId: (value?: number) => void;
@@ -78,20 +79,19 @@ export const FCard: React.FC<React.PropsWithChildren<Props>> = ({
   }, [animate]);
 
   return (
-    <Card variant={title ? "bordered" : undefined}>
-      {title && (
+    <Card variant="bordered" css={{ overflow: 'hidden', filter: 'none',}}>
         <Card.Header
           className="flex place-items-center"
-          css={{ pb: title ? "$4" : 0, minHeight: 50 }}
+          css={{ pb: title ? "$4" : 0, minHeight: title ? 50 : 0, overflow: 'hidden', p: title ? undefined : 0 }}
         >
           {title}
         </Card.Header>
-      )}
       <Card.Body css={{ p: 0, overflow: "hidden" }}>
-        <Grid.Container gap={!isLoading ? 0.8 : 0} css={{ h: "100%" }}>
+        <Grid.Container alignItems="flex-start">
+          {title && <Divider />}
           <Grid xs={12}>
-            <Card>
-              <Card.Header>
+            <Card css={{ borderRadius: 0  }}>
+              <Card.Header css={{ py: 0 }}>
                 <Grid.Container
                   wrap="nowrap"
                   alignItems="center"
@@ -118,7 +118,7 @@ export const FCard: React.FC<React.PropsWithChildren<Props>> = ({
                       </div>
                     </Text>
                   </Grid>
-                  <Grid xs={3}>
+                  <Grid xs={3} className="text-right">
                     <Text className="text-xs" css={{ width: "100%" }}>
                       <div className="overflow-hidden text-ellipsis whitespace-nowrap w-full">
                         {t("analytics")}
@@ -129,8 +129,10 @@ export const FCard: React.FC<React.PropsWithChildren<Props>> = ({
               </Card.Header>
             </Card>
           </Grid>
+
+          <Divider />
           {isLoading
-            ? Array(9)
+            ? Array(10)
                 .fill(null)
                 .map((_, i) => (
                   <Grid
@@ -243,10 +245,13 @@ export const FCard: React.FC<React.PropsWithChildren<Props>> = ({
                                     <>
                                       <Spacer x={0.4} />
                                       <Grid className="flex place-items-center">
-                                        <Badge color="primary" variant="flat" className="flex" css={{ p: 0, border: 'none' }}>
-                                          <ARR16
-                                            className="overflow-hidden rounded-full text-2xl fill-current"
-                                          />
+                                        <Badge
+                                          color="primary"
+                                          variant="flat"
+                                          className="flex"
+                                          css={{ p: 0, border: "none" }}
+                                        >
+                                          <ARR16 className="overflow-hidden rounded-full text-2xl fill-current" />
                                         </Badge>
                                       </Grid>
                                     </>

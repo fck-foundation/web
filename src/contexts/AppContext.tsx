@@ -7,6 +7,7 @@ import {
   Dispatch,
   useRef,
   useCallback,
+  useMemo,
 } from "react";
 import cookie from "react-cookies";
 import { useTranslation } from "react-i18next";
@@ -350,13 +351,25 @@ const AppProviderWrapper = ({
     },
   });
 
+  const selectedWallet = useMemo(
+    () =>
+      location.pathname.includes("wallet")
+        ? location.pathname.split("/").pop()
+        : address,
+    [address, location.pathname]
+  );
+
   const { data: walletJettons, isLoading: isLoadingWalletJettons } = useQuery({
-    queryKey: ["wallet-jettons", wallet],
+    queryKey: ["wallet-jettons", selectedWallet],
     queryFn: async ({ signal }) =>
-      await axios.get(`https://tonapi.io/v2/accounts/${address}/jettons`, {
-        signal,
-      }),
-    enabled: !!wallet,
+      await axios.get(
+        `https://tonapi.io/v2/accounts/${selectedWallet}/jettons`,
+        {
+          signal,
+        }
+      ),
+    enabled: !!selectedWallet,
+    refetchOnWindowFocus: false,
     refetchOnMount: false,
     refetchOnReconnect: false,
     select: (response) => response.data.balances,

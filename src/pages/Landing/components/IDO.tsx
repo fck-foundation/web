@@ -27,12 +27,14 @@ import {
   useTonConnectUI,
   useTonWallet,
 } from "@tonconnect/ui-react";
-import { getIDOJetton, normalize, whiteCoins } from "utils";
+import { getIDOJetton, normalize, whiteTokens } from "utils";
 import { JettonMaster } from "ton";
 import { IDO as CoreIDO } from "../core/IDO";
+import { toast } from "react-toastify";
 
 type TouchType = "increase" | "decrease";
-const targetTime = new Date("2023-07-12 12:00").getTime();
+const targetTime = new Date("2023-07-12 15:00").getTime();
+const contractIDO = "EQDeeRmi98TQJgWuvLWTCpSWf6ir_mJ0KbU9mCee6fMWZlHd";
 
 export const IDO = () => {
   const isLongPress = useRef<any>();
@@ -40,7 +42,7 @@ export const IDO = () => {
   const wallet = useTonWallet();
   const [tonConnectUi] = useTonConnectUI();
   const { t } = useTranslation();
-  const { ton, client } = useContext(AppContext);
+  const { enabled, client } = useContext(AppContext);
 
   const [value, setValue] = useState(4);
   const [stats, setStats] = useState({
@@ -54,9 +56,7 @@ export const IDO = () => {
   useEffect(() => {
     const getData = async () => {
       const master = client.open(
-        CoreIDO.createFromAddress(
-          Address.parse("EQBoG1CEPfvfGG5aJS71qpF6rb_n_pElx5ZQZh7ba2gq1gKF")
-        )
+        CoreIDO.createFromAddress(Address.parse(contractIDO))
       );
       const getAllData = await master.getAllData();
       setStats({
@@ -135,20 +135,27 @@ export const IDO = () => {
       )?.click();
     } else {
       if (wallet) {
-        const jetton = Address.parseRaw(whiteCoins["FCK"]);
+        const jetton = Address.parseRaw(whiteTokens["FCK"]);
         const masterContract = JettonMaster.create(jetton);
         const master = client.open(masterContract);
 
         master
           .getWalletAddress(Address.parseRaw(wallet.account.address))
           .then((addr) => {
-            tonConnectUi.sendTransaction(
-              getIDOJetton({
-                value: value / stats.price,
-                forward: address,
-                to: "EQBoG1CEPfvfGG5aJS71qpF6rb_n_pElx5ZQZh7ba2gq1gKF",
-              })
-            );
+            tonConnectUi
+              .sendTransaction(
+                getIDOJetton({
+                  value: value / stats.price,
+                  forward: address,
+                  to: contractIDO,
+                })
+              )
+              .finally(() => {
+                toast.success(t("transactionSuccess"), {
+                  position: toast.POSITION.TOP_RIGHT,
+                  theme: enabled ? "dark" : "light",
+                });
+              });
           });
       }
     }
@@ -158,13 +165,11 @@ export const IDO = () => {
     <Card variant="bordered">
       <Card.Header css={{ pb: 0 }}>
         <Text className="text-2xl" color="primary">
-          {t('joinIDO')}
+          {t("joinIDO")}
         </Text>
       </Card.Header>
       <Card.Body css={{ overflow: "visible", pt: 0, pb: 0 }}>
-        <Text className="pb-4">
-          {t('joinIDODescription')}
-        </Text>
+        <Text className="pb-4">{t("joinIDODescription")}</Text>
         <Divider />
         <div className="flex flex-col justify-between place-items-center mt-4 card-ido">
           <div className="card-ido__bg"></div>
@@ -172,9 +177,20 @@ export const IDO = () => {
             className="flex justify-between w-full max-w-[305px]"
             style={{ padding: "var(--nextui-space-sm)" }}
           >
-            <Badge color="default">{(stats.balance + stats.sold).toFixed(0)} {t('total')}</Badge>
+            <Badge color="default">
+              {parseFloat(
+                (Date.now() < targetTime
+                  ? 10000
+                  : stats.balance + stats.sold
+                ).toFixed(0)
+              ).toLocaleString()}{" "}
+              {t("total")}
+            </Badge>
             <Badge color="primary">
-              {days}{t('D')}. {hours}{t('H')}. {minutes}{t('M')}. {seconds}{t('S')}.
+              {days ? `${days}${t("D")}.` : ""}{" "}
+              {hours ? `${hours}${t("H")}.` : ""}{" "}
+              {minutes ? `${minutes}${t("M")}.` : ""}{" "}
+              {seconds ? `${seconds}${t("S")}.` : ""}
             </Badge>
           </div>
           <div>
@@ -183,18 +199,23 @@ export const IDO = () => {
           <div
             className="flex justify-between w-full"
             style={{
-              maxWidth: "calc(305px - var(--nextui-space-sm) * 4)",
+              maxWidth: "calc(305px - var(--nextui-space-sm) * 2)",
             }}
           >
-            <Text className="text-xs">{stats.sold} {t('sold')}</Text>
-            <Text className="text-xs">{stats.balance.toFixed(0)} {t('left')}</Text>
+            <Text className="text-xs">
+              {parseFloat(stats.sold.toFixed(0)).toLocaleString()} {t("sold")}
+            </Text>
+            <Text className="text-xs">
+              {parseFloat(stats.balance.toFixed(0)).toLocaleString()}{" "}
+              {t("left")}
+            </Text>
           </div>
           <Spacer y={0.2} />
           <Progress
             color="success"
             value={(stats.sold / 10000) * 100}
             style={{
-              maxWidth: "calc(305px - var(--nextui-space-sm) * 4)",
+              maxWidth: "calc(305px - var(--nextui-space-sm) * 2)",
             }}
           />
           <Spacer y={0.4} />
@@ -215,7 +236,7 @@ export const IDO = () => {
                 <Input
                   size="lg"
                   bordered
-                  value={value}
+                  value={Date.now() < targetTime ? 1 : value}
                   min={1}
                   max={10000}
                   className="text-xs text-center card-ido__input-container"
@@ -234,20 +255,28 @@ export const IDO = () => {
                 </div>
               </div>
               <div className="flex place-items-center justify-end whitespace-nowrap text-xs w-[40%]">
-                ≈ ?{/*parseFloat((value / stats.price).toFixed(2))*/}
+                ≈{" "}
+                {Date.now() < targetTime
+                  ? "?"
+                  : parseFloat((value / stats.price).toFixed(2))}
                 <Spacer x={0.2} />
                 <Ton className="text-lg" />
               </div>
             </div>
             <Spacer y={0.8} />
-            <Button color="gradient" auto disabled onPress={onPay}>
-              {t("buy")} $FCK
+            <Button
+              color="gradient"
+              auto
+              disabled={stats.balance < 4}
+              onPress={onPay}
+            >
+              {Date.now() < targetTime || stats.balance >= 4
+                ? `${t("buyToken")} $FCK`
+                : t("soldOut")}
             </Button>
           </Card.Footer>
         </div>
-        <Text className="text-base pb-2" >
-          {t('joinMotivation')}
-        </Text>
+        {/* <Text className="text-base pb-2">{t("joinMotivation")}</Text> */}
       </Card.Body>
     </Card>
   );
