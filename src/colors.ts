@@ -1,5 +1,6 @@
 export const colors = {
   light: {
+    background: '#F7F9FB',
     primaryLight: "$blue200",
     primaryLightHover: "$blue300",
     primaryLightActive: "$blue400",
@@ -19,10 +20,11 @@ export const colors = {
     secondaryBorderHover: "$blue800",
     secondarySolidHover: "$blue900",
     secondarySolidContrast: "$white",
-    gradient: "linear-gradient(45deg, #0088CC 0%, #31a6f5 100%)",
+    gradient: "linear-gradient(45deg, #6AAEFF 0%, #B2D4FC 100%)",
     link: "#31a6f5",
   },
   dark: {
+    background: '#232328',
     primaryLight: "$blue200",
     primaryLightHover: "$blue300",
     primaryLightActive: "$blue400",
@@ -42,7 +44,7 @@ export const colors = {
     secondaryBorderHover: "$blue800",
     secondarySolidHover: "$blue900",
     secondarySolidContrast: "$white",
-    gradient: "linear-gradient(45deg, #0088CC 0%, #31a6f5 100%)",
+    gradient: "linear-gradient(45deg, #6AAEFF 0%, #B2D4FC 100%)",
     link: "#31a6f5",
   },
   sky: {

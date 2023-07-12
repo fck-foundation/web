@@ -34,15 +34,15 @@ export const Wallet = () => {
   }, [wallet]);
 
   useQuery({
-    queryKey: ["wallet-ton", tonAddress],
+    queryKey: ["wallet-ton", wallet],
     queryFn: async ({ signal }) =>
       await axios.get(
         `https://tonapi.io/v1/blockchain/getAccount?account=${Address.parse(
-          tonAddress
+          wallet as string
         ).toRawString()}`,
         { signal }
       ),
-    enabled: !!tonAddress,
+    enabled: !!wallet,
     refetchOnMount: false,
     refetchOnReconnect: false,
     select: (response) => ({

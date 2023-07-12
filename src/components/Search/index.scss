@@ -56,6 +56,7 @@
   &.side {
     padding: 50px;
     margin: -50px;
+    overflow: unset;
 
     @media (max-width: 960px) {
       overflow: auto;

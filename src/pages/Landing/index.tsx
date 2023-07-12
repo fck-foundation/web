@@ -55,7 +55,7 @@ import axios from "axios";
 
 export type TimeScale = "1M" | "5M" | "30M" | "1H" | "4H" | "1D" | "30D";
 
-const TCard = ({ type = "primary", value, amount, title }) => (
+export const TCard = ({ type = "primary", value, amount, title }) => (
   <Card
     variant="flat"
     css={{ background: type === "primary" ? "$primary" : "$accents1" }}
@@ -123,7 +123,7 @@ export function Home() {
     queryFn: async ({ signal }) => await fck.getPromoting(signal),
     refetchOnMount: false,
     refetchOnReconnect: false,
-    select: (response) => response?.data?.map(({ id }) => id),
+    select: (response) => response?.data,
   });
 
   const { data: dataTrending, isLoading: isLoadingTrending } = useQuery({
@@ -131,11 +131,11 @@ export function Home() {
     queryFn: async ({ signal }) => await fck.getTrending(signal),
     refetchOnMount: false,
     refetchOnReconnect: false,
-    select: (response) => response?.data?.map(({ id }) => id),
+    select: (response) => response?.data,
   });
 
-  const pairsPromo = usePairs("promo", dataPromo);
-  const pairsTrending = usePairs("trending", dataTrending);
+  const pairsPromo = usePairs("promo", dataPromo?.map(({ id }) => id));
+  const pairsTrending = usePairs("trending", dataTrending?.map(({ id }) => id));
 
   const { data: dataStatsPromo, isLoading: isLoadingStatsPromo } = useQuery({
     queryKey: ["stats-promo", timescale, currency, pairsPromo],
@@ -152,7 +152,7 @@ export function Home() {
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
     enabled: !!pairsPromo?.length && !!jettons?.length,
-    select: (results) => getList(results.data, jettons, pairsPromo),
+    select: (results) => getList(results.data, dataPromo, pairsPromo),
   });
 
   const { data: dataStatsTrending, isLoading: isLoadingStatsTrending } =
@@ -171,7 +171,7 @@ export function Home() {
       refetchOnReconnect: false,
       refetchOnWindowFocus: false,
       enabled: !!pairsTrending?.length && !!jettons?.length,
-      select: (results) => getList(results.data, jettons, pairsTrending),
+      select: (results) => getList(results.data, dataTrending, pairsTrending),
     });
 
   const onCopy = () => {
@@ -200,7 +200,7 @@ export function Home() {
             <Grid.Container gap={2} className="text-center">
               <Grid xs={12}>
                 <Text
-                  className="text-2xl w-full"
+                  className="text-xl w-full"
                   css={{
                     textGradient: "-180deg, $primary 25%, $secondary 125%",
                   }}
@@ -743,10 +743,10 @@ export function Home() {
                           </Card.Body>
                         </Card>
                       </Grid>
-                      <Spacer y={0.8} />
+                      {/* <Spacer y={0.8} />
                       <Grid xs={12}>
                         <Swap />
-                      </Grid>
+                      </Grid> */}
                     </Grid.Container>
                   </Grid>
                 </Grid.Container>
@@ -822,7 +822,7 @@ export function Home() {
           </Grid>
           <Spacer y={1} />
           <Grid>
-            <Container xs>
+            <Container xs css={{ p: 0 }}>
               <Grid.Container gap={2} className="text-center">
                 <Grid xs={6} className="flex-col place-items-center">
                   <Explore className="w-20 h-20" />

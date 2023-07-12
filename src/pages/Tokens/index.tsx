@@ -34,6 +34,7 @@ export function Tokens() {
     setIsBottom,
     setTimescale,
   } = useContext(AppContext);
+  const [loaded, setLoaded] = useState<Record<string, any>>({});
   const [voteId, setVoteId] = useState<number>();
   const [tab, setTab] = useState<"top" | "trending" | "new">("top");
   const [data, setData] = useState<any[]>([]);
@@ -41,11 +42,7 @@ export function Tokens() {
   useEffect(() => {
     setData([]);
     setPage(1);
-
-    return () => {
-      setData([]);
-      setPage(1);
-    };
+    setLoaded({});
   }, [tab, timescale]);
 
   useEffect(() => {
@@ -61,7 +58,8 @@ export function Tokens() {
     refetchOnMount: false,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
-    select: (response) => response?.data?.map(({ id }) => id),
+    enabled: tab === "top",
+    select: (response) => response?.data,
   });
 
   const { data: dataTrending, isLoading: isLoadingTrending } = useQuery({
@@ -71,7 +69,8 @@ export function Tokens() {
     refetchOnMount: false,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
-    select: (response) => response?.data?.map(({ id }) => id),
+    enabled: tab === "trending",
+    select: (response) => response?.data,
   });
 
   const { data: dataRecently, isLoading: isLoadingRecently } = useQuery({
@@ -81,12 +80,22 @@ export function Tokens() {
     refetchOnMount: false,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
-    select: (response) => response?.data?.map(({ id }) => id),
+    enabled: tab === "new",
+    select: (response) => response?.data,
   });
 
-  const pairsPromo = usePairs("promo", dataPromo);
-  const pairsTrending = usePairs("trending", dataTrending);
-  const pairsRecently = usePairs("recently", dataRecently);
+  const pairsPromo = usePairs(
+    "promo",
+    dataPromo?.map(({ id }) => id)
+  );
+  const pairsTrending = usePairs(
+    "trending",
+    dataTrending?.map(({ id }) => id)
+  );
+  const pairsRecently = usePairs(
+    "recently",
+    dataRecently?.map(({ id }) => id)
+  );
 
   const { isLoading: isLoadingStatsPromo } = useQuery({
     queryKey: ["stats-promo", timescale, currency, pairsPromo],
@@ -102,13 +111,18 @@ export function Tokens() {
     refetchOnMount: false,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
-    enabled: !!pairsPromo?.length && !!jettons?.length && tab === "top",
+    enabled:
+      !!pairsPromo?.length &&
+      !!jettons?.length &&
+      tab === "top" &&
+      !loaded[page],
     onSuccess: (results) => {
       setData((prevData) => [
         ...prevData,
-        ...getList(results.data, jettons, pairsPromo),
+        ...getList(results.data, dataPromo, pairsPromo),
       ]);
 
+      setLoaded((prevLoaded) => ({ ...prevLoaded, [page]: true }));
       if (page % 2) {
         setPage((i) => i + 1);
       } else {
@@ -131,13 +145,18 @@ export function Tokens() {
     refetchOnMount: false,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
-    enabled: !!pairsTrending?.length && !!jettons?.length && tab === "trending",
+    enabled:
+      !!pairsTrending?.length &&
+      !!jettons?.length &&
+      tab === "trending" &&
+      !loaded[page],
     onSuccess: (results) => {
       setData((prevData) => [
         ...prevData,
-        ...getList(results.data, jettons, pairsTrending),
+        ...getList(results.data, dataTrending, pairsTrending),
       ]);
 
+      setLoaded((prevLoaded) => ({ ...prevLoaded, [page]: true }));
       if (page % 2) {
         setPage((i) => i + 1);
       } else {
@@ -160,13 +179,18 @@ export function Tokens() {
     refetchOnMount: false,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
-    enabled: !!pairsRecently?.length && !!jettons?.length && tab === "new",
+    enabled:
+      !!pairsRecently?.length &&
+      !!jettons?.length &&
+      tab === "new" &&
+      !loaded[page],
     onSuccess: (results) => {
       setData((prevData) => [
         ...prevData,
-        ...getList(results.data, jettons, pairsRecently),
+        ...getList(results.data, dataRecently, pairsRecently),
       ]);
 
+      setLoaded((prevLoaded) => ({ ...prevLoaded, [page]: true }));
       if (page % 2) {
         setPage((i) => i + 1);
       } else {
@@ -265,6 +289,7 @@ export function Tokens() {
                           ))}
                         </Dropdown.Menu>
                       </Dropdown>
+                      <Promote voteId={voteId} setVoteId={setVoteId} />
                     </div>
                   }
                   list={

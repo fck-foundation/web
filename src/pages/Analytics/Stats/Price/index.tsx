@@ -311,7 +311,7 @@ export const Price: React.FC<{
           )} ${
             jettonCurrency?.symbol
           }</div></div></div><div class="nextui-c-kRHeuF nextui-c-kRHeuF-idJnZoH-css nextui-grid-item xs sm" style="padding: 0; flex-basics: 100%; max-width: 100%;"><div class="nextui-c-kRHeuF nextui-c-kRHeuF-iiwAayw-css nextui-grid-item nextui-grid-container"><div class="nextui-c-kRHeuF nextui-c-kRHeuF-igNCIse-css nextui-grid-item" style="font-size: 12px"><p class="nextui-c-PJLV nextui-c-PJLV-ikeegJh-css chart-label" style="font-size: 12px;"><svg width="14px" height="14px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="fill: currentcolor; font-size: 14px !important;"><defs><style>.cls-1{opacity:0.3;}</style></defs><g id="Charts_Dashboards_and_Graphs" data-name="Charts, Dashboards and Graphs"><g id="gra011-012"><g id="gra011"><polygon class="cls-1" points="9.41 8.84 16.64 14 20 14 20 12 16 11 9 4 5 6 5 9.94 9.41 8.84"></polygon><path d="M21,18H20V16H16L9,11l-3,.75V3A1,1,0,0,0,4,3V18H3a1,1,0,0,0,0,2H4v1a1,1,0,0,0,2,0V20H21a1,1,0,0,0,0-2Z"></path></g></g></g></svg> ${t(
-            "min"
+            "low"
           )}</p></div><span aria-hidden="true" class="nextui-c-gNVTSf nextui-c-gNVTSf-hakyQ-inline-false nextui-c-gNVTSf-ijSsVeB-css"></span><div class="nextui-c-kRHeuF nextui-c-kRHeuF-iajzRv-css nextui-grid-item" style="font-size: 12px">${toFixed(
             (selectedInfo?.low || 0).toFixed(jetton?.decimals)
           )} ${
@@ -400,7 +400,7 @@ export const Price: React.FC<{
           newVisibleLogicalRange
         );
         if (hasNextPage && barsInfo !== null && barsInfo.barsBefore < 0) {
-          setLoadingPage(page + 1);
+          // setLoadingPage(page + 1); // FIX THIS
         }
       }
     },

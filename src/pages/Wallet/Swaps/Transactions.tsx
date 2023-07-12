@@ -1,4 +1,12 @@
-import { Divider, Grid, Link, Loading, Spacer, Text } from "@nextui-org/react";
+import {
+  Container,
+  Divider,
+  Grid,
+  Link,
+  Loading,
+  Spacer,
+  Text,
+} from "@nextui-org/react";
 import { useQuery } from "@tanstack/react-query";
 import { Announcement } from "assets/icons";
 import { Arrowright, Link as LinkIcon } from "assets/icons";
@@ -63,216 +71,225 @@ export const Transactions = () => {
   // "JettonTransfer"
 
   return (
-    <Grid.Container justify="center">
-      {data?.map((event, i) => (
-        <>
-          <Grid key={i} xs={12} sm={6} md={4}>
-            <Grid.Container alignItems="center">
-              <Grid xs={12}>
-                <Grid.Container direction="column" justify="center">
-                  {event?.actions?.map((item, y) => {
-                    const sender =
-                      item[item?.type as any]?.sender?.address &&
-                      Address.parseRaw(
-                        item[item?.type as any]?.sender?.address
-                      ).toString();
-                    const recipient =
-                      item[item?.type as any]?.recipient?.address &&
-                      Address.parseRaw(
-                        item[item?.type as any]?.recipient?.address
-                      ).toString();
-                    return (
-                      <>
-                        <Grid key={y}>
-                          <Grid.Container
-                            justify="space-between"
-                            alignItems="center"
-                          >
-                            <Grid>
-                              <Grid.Container wrap="nowrap" alignItems="center">
-                                {item?.type === "SmartContractExec" && (
-                                  <Grid>
-                                    <Text>{item.simple_preview?.name}</Text>
-                                  </Grid>
-                                )}
-                                <Grid className="flex flex-col">
-                                  {sender && (
-                                    <div className="flex">
-                                      {t("sender")}
-                                      <Spacer x={0.4} />
-                                      <Link
-                                        href={`https://tonviewer.com/${sender}`}
-                                        target="_blank"
-                                      >
-                                        {item[item?.type as any]?.sender?.name
-                                          ? item[item?.type as any]?.sender
-                                              ?.name
-                                          : `${sender?.slice(
-                                              0,
-                                              4
-                                            )}...${sender?.slice(-4)}`}
-                                      </Link>
-                                    </div>
-                                  )}
-                                  {recipient && (
-                                    <div className="flex">
-                                      {t("recipient")}
-                                      <Spacer x={0.4} />
-                                      <Link
-                                        href={`https://tonviewer.com/${recipient}`}
-                                        target="_blank"
-                                      >
-                                        {item[item?.type as any]?.recipient
-                                          ?.name
-                                          ? item[item?.type as any]?.recipient
-                                              ?.name
-                                          : `${recipient?.slice(
-                                              0,
-                                              4
-                                            )}...${recipient?.slice(-4)}`}
-                                      </Link>
-                                    </div>
-                                    //<Arrowright className="text-current text-2xl" />
-                                  )}
-                                </Grid>
-                              </Grid.Container>
-                            </Grid>
-                            {item[item?.type as any]?.comment && (
-                              <>
-                                <Spacer x={1} />
-                                <Grid>
-                                  <Grid.Container
-                                    wrap="nowrap"
-                                    alignItems="center"
-                                  >
+    <Container xs>
+      <Grid.Container justify="center">
+        {data?.map((event, i) => (
+          <>
+            <Grid key={i} xs={12}>
+              <Grid.Container alignItems="center">
+                <Grid xs={12}>
+                  <Grid.Container direction="column" justify="center">
+                    {event?.actions?.map((item, y) => {
+                      const sender =
+                        item[item?.type as any]?.sender?.address &&
+                        Address.parseRaw(
+                          item[item?.type as any]?.sender?.address
+                        ).toString();
+                      const recipient =
+                        item[item?.type as any]?.recipient?.address &&
+                        Address.parseRaw(
+                          item[item?.type as any]?.recipient?.address
+                        ).toString();
+                      return (
+                        <>
+                          <Grid key={y}>
+                            <Grid.Container
+                              justify="space-between"
+                              alignItems="center"
+                            >
+                              <Grid>
+                                <Grid.Container
+                                  wrap="nowrap"
+                                  alignItems="center"
+                                >
+                                  {item?.type === "SmartContractExec" && (
                                     <Grid>
-                                      <Announcement className="text-current text-lg" />
+                                      <Text>{item.simple_preview?.name}</Text>
                                     </Grid>
-                                    <Spacer x={0.4} />
-                                    <Grid>
-                                      <Text>
-                                        {item[item?.type as any]?.comment ||
-                                          "-"}
-                                      </Text>
-                                    </Grid>
-                                  </Grid.Container>
-                                </Grid>
-                              </>
-                            )}
-                            {(item[item?.type as any]?.amount ||
-                              item[item?.type as any]?.jetton ||
-                              item[item?.type as any]?.nft) && (
-                              <>
-                                <Spacer x={1} />
-                                <Grid>
-                                  <Text>
-                                    {item[item?.type as any]?.jetton ? (
-                                      <>
-                                        {parseFloat(
-                                          normalize(
-                                            item[item?.type as any]?.amount
-                                              ?.value ||
-                                              item[item?.type as any]?.amount ||
-                                              0,
-                                            item[item?.type as any]?.jetton
-                                              ? item[item?.type as any]?.jetton
-                                                  ?.decimals
-                                              : 9
-                                          ).toFixed(
-                                            item[item?.type as any]?.jetton
-                                              ? item[item?.type as any]?.jetton
-                                                  ?.decimals
-                                              : 9
-                                          )
-                                        )}{" "}
-                                        {item[item?.type as any]?.jetton
-                                          ? item[item?.type as any]?.jetton
-                                              ?.symbol
-                                          : "TON"}
-                                      </>
-                                    ) : item[item?.type as any]?.amount ? (
-                                      <>
-                                        {parseFloat(
-                                          normalize(
-                                            item[item?.type as any]?.amount
-                                              ?.value ||
-                                              item[item?.type as any]?.amount ||
-                                              0,
-                                            9
-                                          ).toFixed(9)
-                                        )}{" "}
-                                        {item[item?.type as any]?.jetton
-                                          ? item[item?.type as any]?.jetton
-                                              ?.symbol
-                                          : "TON"}
-                                      </>
-                                    ) : (
-                                      item[item?.type as any]?.nft && (
+                                  )}
+                                  <Grid className="flex flex-col">
+                                    {sender && (
+                                      <div className="flex">
+                                        {t("sender")}
+                                        <Spacer x={0.4} />
                                         <Link
-                                          href={`https://getgems.io/nft/${Address.parseRaw(
-                                            item[item?.type as any].nft
-                                          ).toString()}`}
+                                          href={`https://tonviewer.com/${sender}`}
                                           target="_blank"
                                         >
-                                          {item.simple_preview.value}
+                                          {item[item?.type as any]?.sender?.name
+                                            ? item[item?.type as any]?.sender
+                                                ?.name
+                                            : `${sender?.slice(
+                                                0,
+                                                4
+                                              )}...${sender?.slice(-4)}`}
                                         </Link>
-                                      )
+                                      </div>
                                     )}
-                                  </Text>
-                                </Grid>
-                              </>
-                            )}
-                          </Grid.Container>
-                        </Grid>
-                      </>
-                    );
-                  })}
-                </Grid.Container>
-              </Grid>
+                                    {recipient && (
+                                      <div className="flex">
+                                        {t("recipient")}
+                                        <Spacer x={0.4} />
+                                        <Link
+                                          href={`https://tonviewer.com/${recipient}`}
+                                          target="_blank"
+                                        >
+                                          {item[item?.type as any]?.recipient
+                                            ?.name
+                                            ? item[item?.type as any]?.recipient
+                                                ?.name
+                                            : `${recipient?.slice(
+                                                0,
+                                                4
+                                              )}...${recipient?.slice(-4)}`}
+                                        </Link>
+                                      </div>
+                                      //<Arrowright className="text-current text-2xl" />
+                                    )}
+                                  </Grid>
+                                </Grid.Container>
+                              </Grid>
+                              {item[item?.type as any]?.comment && (
+                                <>
+                                  <Spacer x={1} />
+                                  <Grid>
+                                    <Grid.Container
+                                      wrap="nowrap"
+                                      alignItems="center"
+                                    >
+                                      <Grid>
+                                        <Announcement className="text-current text-lg" />
+                                      </Grid>
+                                      <Spacer x={0.4} />
+                                      <Grid>
+                                        <Text>
+                                          {item[item?.type as any]?.comment ||
+                                            "-"}
+                                        </Text>
+                                      </Grid>
+                                    </Grid.Container>
+                                  </Grid>
+                                </>
+                              )}
+                              {(item[item?.type as any]?.amount ||
+                                item[item?.type as any]?.jetton ||
+                                item[item?.type as any]?.nft) && (
+                                <>
+                                  <Spacer x={1} />
+                                  <Grid>
+                                    <Text>
+                                      {item[item?.type as any]?.jetton ? (
+                                        <>
+                                          {parseFloat(
+                                            normalize(
+                                              item[item?.type as any]?.amount
+                                                ?.value ||
+                                                item[item?.type as any]
+                                                  ?.amount ||
+                                                0,
+                                              item[item?.type as any]?.jetton
+                                                ? item[item?.type as any]
+                                                    ?.jetton?.decimals
+                                                : 9
+                                            ).toFixed(
+                                              item[item?.type as any]?.jetton
+                                                ? item[item?.type as any]
+                                                    ?.jetton?.decimals
+                                                : 9
+                                            )
+                                          )}{" "}
+                                          {item[item?.type as any]?.jetton
+                                            ? item[item?.type as any]?.jetton
+                                                ?.symbol
+                                            : "TON"}
+                                        </>
+                                      ) : item[item?.type as any]?.amount ? (
+                                        <>
+                                          {parseFloat(
+                                            normalize(
+                                              item[item?.type as any]?.amount
+                                                ?.value ||
+                                                item[item?.type as any]
+                                                  ?.amount ||
+                                                0,
+                                              9
+                                            ).toFixed(9)
+                                          )}{" "}
+                                          {item[item?.type as any]?.jetton
+                                            ? item[item?.type as any]?.jetton
+                                                ?.symbol
+                                            : "TON"}
+                                        </>
+                                      ) : (
+                                        item[item?.type as any]?.nft && (
+                                          <Link
+                                            href={`https://getgems.io/nft/${Address.parseRaw(
+                                              item[item?.type as any].nft
+                                            ).toString()}`}
+                                            target="_blank"
+                                          >
+                                            {item.simple_preview.value}
+                                          </Link>
+                                        )
+                                      )}
+                                    </Text>
+                                  </Grid>
+                                </>
+                              )}
+                            </Grid.Container>
+                          </Grid>
+                        </>
+                      );
+                    })}
+                  </Grid.Container>
+                </Grid>
 
-              <Grid>
-                <Grid.Container wrap="nowrap" alignItems="center">
-                  <Grid>
-                    <Link
-                      href={`https://tonscan.org/tx/${event?.event_id}`}
-                      target="_blank"
-                      css={{ display: "flex" }}
-                    >
-                      <LinkIcon className="text-current text-lg" />
-                    </Link>
-                  </Grid>
-                  <Spacer x={1} />
-                  <Grid>
-                    <Text className="text-sm" css={{ whiteSpace: "nowrap" }}>
-                      {moment(event?.timestamp * 1000).format("DD.MM.YY HH:mm")}
-                    </Text>
-                  </Grid>
-                </Grid.Container>
-              </Grid>
-            </Grid.Container>
-          </Grid>
-
-          {i !== data.length - 1 && (
-            <Grid xs={12}>
-              <Divider />
+                <Grid>
+                  <Grid.Container wrap="nowrap" alignItems="center">
+                    <Grid>
+                      <Link
+                        href={`https://tonscan.org/tx/${event?.event_id}`}
+                        target="_blank"
+                        css={{ display: "flex" }}
+                      >
+                        <LinkIcon className="text-current text-lg" />
+                      </Link>
+                    </Grid>
+                    <Spacer x={1} />
+                    <Grid>
+                      <Text className="text-sm" css={{ whiteSpace: "nowrap" }}>
+                        {moment(event?.timestamp * 1000).format(
+                          "DD.MM.YY HH:mm"
+                        )}
+                      </Text>
+                    </Grid>
+                  </Grid.Container>
+                </Grid>
+              </Grid.Container>
             </Grid>
-          )}
-        </>
-      ))}
 
-      {(isLoading || isFetching) && (
-        <Grid
-          xs={12}
-          css={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            h: 100,
-          }}
-        >
-          <Loading />
-        </Grid>
-      )}
-    </Grid.Container>
+            {i !== data.length - 1 && (
+              <Grid xs={12}>
+                <Divider />
+              </Grid>
+            )}
+          </>
+        ))}
+
+        {(isLoading || isFetching) && (
+          <Grid
+            xs={12}
+            css={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              h: 100,
+            }}
+          >
+            <Loading />
+          </Grid>
+        )}
+      </Grid.Container>
+    </Container>
   );
 };

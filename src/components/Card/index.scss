@@ -1,7 +1,7 @@
 .card {
   transition: all 500ms;
   border-radius: 0 !important;
-  
+  background: transparent !important;
 
   &__item:not(:last-child) {
     border-bottom: 1px solid var(--nextui--navbarBorderColor);

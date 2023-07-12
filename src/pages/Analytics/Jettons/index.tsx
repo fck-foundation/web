@@ -6,7 +6,13 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { DragDropContext, DropResult } from "react-beautiful-dnd";
+import cn from "classnames";
+import {
+  DragDropContext,
+  DropResult,
+  Droppable,
+  Draggable,
+} from "react-beautiful-dnd";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Badge,
@@ -50,6 +56,7 @@ import { pagination } from "..";
 import { toast } from "react-toastify";
 import { arrayMove, copyTextToClipboard } from "utils";
 import { usePairs } from "hooks";
+import { DraggableItem } from "components/DND/DraggableItem";
 
 const icon = {
   t: <TG className="text-2xl" />,
@@ -141,35 +148,39 @@ export const Jettons: React.FC<Props> = ({ isDrag }) => {
     enabled: !!pageList.length && !!pairJetton.length,
   });
 
-  const renderList = pageList.map((jetton, key) => {
-    const pairId = pairJetton.find((x) => x.jetton1_id === jetton.id)?.id;
-    const dataJetton =
-      (jetton.data =
-        pairId &&
-        dataStats &&
-        dataStats[pairId]
-          ?.sort(
-            (x, y) =>
-              new Date(x.period).getTime() - new Date(y.period).getTime()
-          )
-          ?.map((item) => ({
-            ...item,
-            pv: item.price_close,
-          }))) || [];
-    const dataChart = [...dataJetton].map((d, i) => ({
-      ...d,
-      pv: d.pv,
-    }));
+  const renderList = useMemo(
+    () =>
+      pageList.map((jetton) => {
+        const pairId = pairJetton.find((x) => x.jetton1_id === jetton.id)?.id;
+        const dataJetton =
+          (jetton.data =
+            pairId &&
+            dataStats &&
+            dataStats[pairId]
+              ?.sort(
+                (x, y) =>
+                  new Date(x.period).getTime() - new Date(y.period).getTime()
+              )
+              ?.map((item) => ({
+                ...item,
+                pv: item.price_close,
+              }))) || [];
+        const dataChart = [...dataJetton].map((d, i) => ({
+          ...d,
+          pv: d.pv,
+        }));
 
-    const volume = dataJetton[dataJetton.length - 1]?.pair2_volume;
-    const percent =
-      ((dataJetton[dataJetton.length - 1]?.pv -
-        dataJetton[dataJetton.length - 3]?.pv) /
-        dataJetton[dataJetton.length - 3]?.pv) *
-      100;
+        const volume = dataJetton[dataJetton.length - 1]?.pair2_volume;
+        const percent =
+          ((dataJetton[dataJetton.length - 1]?.pv -
+            dataJetton[dataJetton.length - 3]?.pv) /
+            dataJetton[dataJetton.length - 3]?.pv) *
+          100;
 
-    return { key, jetton, dataJetton, dataChart, percent, volume };
-  });
+        return { jetton, dataJetton, dataChart, percent, volume };
+      }),
+    [pageList, pairJetton, dataStats]
+  );
 
   const onRemove = (jetton: JType) => {
     setList((prevList) => prevList.filter((i) => i !== jetton.address));
@@ -190,37 +201,6 @@ export const Jettons: React.FC<Props> = ({ isDrag }) => {
       setInfo(value.address);
     }
   };
-
-  const renderItems = useMemo(
-    () =>
-      renderList?.map((column, i) => (
-        <DroppableItems
-          key={i}
-          column={column?.jetton?.address}
-          id={column.key}
-          data={{
-            address: column.jetton.address as any,
-            children: (
-              <motion.div
-                key={`${i}-${column.key}-${column?.jetton.symbol}`}
-                className="w-full"
-              >
-                <Token
-                  index={i}
-                  isDrag={isDrag}
-                  column={column}
-                  jetton={column.jetton as JType}
-                  onPress={onPress}
-                  setInfo={setInfo}
-                />
-                <Spacer y={0.4} />
-              </motion.div>
-            ),
-          }}
-        />
-      )),
-    [renderList]
-  );
 
   return info ? (
     !metadata?.total_supply ? (
@@ -260,7 +240,6 @@ export const Jettons: React.FC<Props> = ({ isDrag }) => {
             isStatic
           />
         </Grid>
-        <Spacer y={0.4} />
         <Grid>
           <Grid.Container alignItems="center">
             <Grid>
@@ -298,7 +277,6 @@ export const Jettons: React.FC<Props> = ({ isDrag }) => {
             </Grid>
           </Grid.Container>
         </Grid>
-        <Spacer y={0.4} />
         <Grid>
           <Text css={{ overflowWrap: "anywhere" }}>
             {metadata?.description}
@@ -361,43 +339,79 @@ export const Jettons: React.FC<Props> = ({ isDrag }) => {
         >
           <div>
             <AnimatePresence>
-              <DragDropContext onDragEnd={onDragEnd}>
-                {!renderList?.length ? (
-                  <Grid.Container justify="center">
-                    <Grid xs={12}>
-                      <Card>
-                        <Card.Body>
-                          <Grid.Container justify="center" alignItems="center">
-                            <GEN03
-                              className="text-lg"
-                              style={{
-                                fill: "var(--nextui-colors-primary)",
-                              }}
-                            />
-                            <Spacer x={0.4} /> {t("empty")}
-                          </Grid.Container>
-                        </Card.Body>
-                      </Card>
-                    </Grid>
-                  </Grid.Container>
-                ) : (
-                  renderItems
-                )}
-                {Math.ceil(list.length / 10) > 1 && (
-                  <Pagination
-                    css={{
-                      m: "$8",
-                      display: "block !important",
-                      "@smMin": { display: "none  !important" },
-                    }}
-                    loop
-                    color="success"
-                    total={Math.ceil(list.length / 10)}
-                    page={page}
-                    onChange={setPage}
-                  />
-                )}
-              </DragDropContext>
+              {!renderList?.length ? (
+                <Grid.Container justify="center">
+                  <Grid xs={12}>
+                    <Card>
+                      <Card.Body>
+                        <Grid.Container justify="center" alignItems="center">
+                          <GEN03
+                            className="text-lg"
+                            style={{
+                              fill: "var(--nextui-colors-primary)",
+                            }}
+                          />
+                          <Spacer x={0.4} /> {t("empty")}
+                        </Grid.Container>
+                      </Card.Body>
+                    </Card>
+                  </Grid>
+                </Grid.Container>
+              ) : (
+                <DragDropContext onDragEnd={onDragEnd}>
+                  <Droppable droppableId="droppable">
+                    {(provided, snapshot) => (
+                      <div {...provided.droppableProps} ref={provided.innerRef}>
+                        {renderList?.map((column, i) => (
+                          <div key={i}>
+                          <Draggable
+                            key={column.jetton.id}
+                            draggableId={column.jetton.address}
+                            index={i}
+                          >
+                            {(provided, snapshot) => (
+                              <div
+                                className={cn("draggable", {
+                                  "is-active": snapshot.isDragging,
+                                })}
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                              >
+                                <Token
+                                  index={column.jetton.id as number}
+                                  isDrag={isDrag}
+                                  column={column}
+                                  jetton={column.jetton as JType}
+                                  onPress={onPress}
+                                  setInfo={setInfo}
+                                />
+                              </div>
+                            )}
+                          </Draggable>
+                          </div>
+                        ))}
+
+                        {provided.placeholder}
+                      </div>
+                    )}
+                  </Droppable>
+                </DragDropContext>
+              )}
+              {Math.ceil(list.length / 10) > 1 && (
+                <Pagination
+                  css={{
+                    m: "$8",
+                    display: "block !important",
+                    "@smMin": { display: "none  !important" },
+                  }}
+                  loop
+                  color="success"
+                  total={Math.ceil(list.length / 10)}
+                  page={page}
+                  onChange={setPage}
+                />
+              )}
             </AnimatePresence>
           </div>
         </div>
